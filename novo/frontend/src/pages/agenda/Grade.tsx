@@ -4,17 +4,17 @@
 // `Somente visualização` (RN-012).
 
 import { useState } from 'react'
-import { Eye, MoreHorizontal } from 'lucide-react'
+import { Building2, Car, Eye, MoreHorizontal, Tag, Target, User, Users } from 'lucide-react'
 import {
-  DIAS_SEMANA, acaoPrincipal, corStatus, ddmm, mesEmSemanas, posicaoAgora, rotuloDia, rotuloOrigem, rotuloStatus, semanaDe, somarDias,
-  somenteVisualizacao,
+  DIAS_SEMANA, acaoPrincipal, corStatus, ddmm, duracao, ehDeslocamento, mesEmSemanas, posicaoAgora, rotuloDia, rotuloOrigem, rotuloStatus,
+  semanaDe, somarDias, somenteVisualizacao, turno,
 } from '@/lib/agenda'
 import { agoraBrasilia } from '@/lib/formato'
 import type { Acao, Modo } from '@/lib/agenda'
 import { Button, EmptyState, IconButton } from '@/components/page'
 import { SoCelular, SoDesktop } from '../clientes/layout'
 import {
-  AbaDia, AbasDias, Bloco, CelulaMes, ColunaDia, EntradaMes, GradeMes, GradeSemana, ItemTrilho, LinhaAgora, NomeLink, Trilho,
+  AbaDia, AbasDias, Bloco, CelulaMes, ColunaDia, Detalhe, EntradaMes, GradeMes, GradeSemana, ItemDia, LinhaAgora, NomeLink, Ponto,
 } from './layout'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,31 +28,36 @@ export interface Eventos {
 
 const hora = (item: Linha) => `${item.HORA_INICIO ?? ''}–${item.HORA_FIM ?? ''}`
 
-function legenda(item: Linha) {
-  const partes = [rotuloStatus(item.STATUS), rotuloOrigem(item)]
-  if (item.ORIGEM !== 'INTERNA' && item.TIPO) partes.push(item.TIPO)
-  if (Number(item.EH_DONO) !== 1) partes.push(item.DONO)
-  return partes.join(' · ')
-}
+const iconeOrigem = (item: Linha) =>
+  item.ORIGEM === 'VISITA' ? Building2 : item.ORIGEM === 'PROSPECCAO' ? Target : ehDeslocamento(item) ? Car : Users
 
 function Item({ item, ev }: { item: Linha; ev: Eventos }) {
   const principal = acaoPrincipal(item)
+  const inicio = item.HORA_INICIO ?? ''
+  const tempo = duracao(inicio, item.HORA_FIM ?? '')
   return (
-    <ItemTrilho
-      inicio={item.HORA_INICIO ?? ''}
-      fim={item.HORA_FIM ?? ''}
-      cor={corStatus(item.STATUS)}
+    <ItemDia
+      turno={turno(inicio)}
+      inicio={inicio}
+      duracao={tempo}
       cancelado={item.STATUS === 'CANCELADA'}
       titulo={
         <NomeLink onClick={item.ORIGEM === 'VISITA' && item.CLIENTE_ID ? () => ev.historico(Number(item.CLIENTE_ID)) : undefined}>
           {item.TITULO}
         </NomeLink>
       }
-      meta={legenda(item)}
+      detalhes={
+        <>
+          <Detalhe icone={iconeOrigem(item)}>{rotuloOrigem(item)} · {inicio}–{item.HORA_FIM ?? ''}</Detalhe>
+          {item.ORIGEM !== 'INTERNA' && item.TIPO ? <Detalhe icone={Tag}>{item.TIPO}</Detalhe> : null}
+          {Number(item.EH_DONO) !== 1 ? <Detalhe icone={User}>{item.DONO}</Detalhe> : null}
+        </>
+      }
+      status={<span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink"><Ponto cor={corStatus(item.STATUS)} />{rotuloStatus(item.STATUS)}</span>}
       acoes={
         <>
           {somenteVisualizacao(item) ? (
-            <span className="inline-flex items-center gap-1 text-[12px] text-ink-secondary"><Eye aria-hidden className="size-3.5" />Somente visualização</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-ink-secondary"><Eye aria-hidden className="size-3" />Somente visualização</span>
           ) : null}
           {principal ? <Button size="sm" onClick={() => ev.agir(principal.acao, item)}>{principal.rotulo}</Button> : null}
           <IconButton label="Detalhes e ações" onClick={() => ev.detalhe(item)}><MoreHorizontal aria-hidden /></IconButton>
@@ -69,7 +74,7 @@ function ListaDia({ itens, ev, ehHoje }: { itens: Linha[]; ev: Eventos; ehHoje: 
   const linhas = itens.map(i => <Item key={`${i.ORIGEM}-${i.ID}`} item={i} ev={ev} />)
   if (pos !== null) linhas.splice(pos === -1 ? linhas.length : pos, 0, <LinhaAgora key="agora" hora={agora} />)
   // Mesma altura fixa da Semana, com rolagem interna.
-  return <div className="h-[560px] overflow-y-auto"><Trilho>{linhas}</Trilho></div>
+  return <div className="h-[560px] overflow-y-auto">{linhas}</div>
 }
 
 const doDia = (itens: Linha[], dia: string) => itens.filter(i => i.DATA === dia)

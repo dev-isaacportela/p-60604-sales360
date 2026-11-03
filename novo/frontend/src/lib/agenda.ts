@@ -246,6 +246,18 @@ export function acoes(item: Linha): { acao: Acao; rotulo: string }[] {
 
 export const somenteVisualizacao = (item: Linha) => Number(item.PODE_OPERAR) !== 1;
 
+/** Visão Dia: duração entre HH:MM e HH:MM, em "45 min", "1h" ou "1h30". */
+export function duracao(inicio: string, fim: string): string {
+  const min = (h: string) => { const [a, b] = String(h ?? '').split(':').map(Number); return a * 60 + (b || 0); };
+  const d = min(fim) - min(inicio);
+  if (!Number.isFinite(d) || d <= 0) return '';
+  const h = Math.floor(d / 60), m = d % 60;
+  return h ? `${h}h${m ? String(m).padStart(2, '0') : ''}` : `${m} min`;
+}
+
+/** Visão Dia: Manhã até 11:59, Tarde até 17:59, depois Noite. */
+export const turno = (hhmm: string) => (hhmm < '12:00' ? 'Manhã' : hhmm < '18:00' ? 'Tarde' : 'Noite');
+
 /** Visão Dia: antes de qual item (pela hora de início) entra a linha de "agora"; -1 = depois de todos. */
 export const posicaoAgora = (itens: Linha[], hhmm: string) => itens.findIndex(i => String(i.HORA_INICIO ?? '') > hhmm);
 

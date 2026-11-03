@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   formularioInicial, validar, validarReagendar, validarConclusao, validarCheckout, validarCancelar, mensagemConflito,
   acoes, acaoPrincipal, periodo, navegar, semanaDe, mesEmSemanas, salvarAtividades, atividadeVazia, textoSimples,
-  relatoInterno, participantes, meta, posicaoAgora, MSG,
+  relatoInterno, participantes, meta, posicaoAgora, duracao, turno, MSG,
 } from '../src/lib/agenda.ts';
 
 const HOJE = '2026-11-04';
@@ -137,4 +137,12 @@ test('Visão Dia: linha de agora entra antes do primeiro compromisso que ainda n
   assert.equal(posicaoAgora(itens, '08:30'), 1);
   assert.equal(posicaoAgora(itens, '07:00'), 0);
   assert.equal(posicaoAgora(itens, '18:00'), -1);
+});
+
+test('Visão Dia: duração e turno do compromisso', () => {
+  assert.equal(duracao('08:00', '08:45'), '45 min');
+  assert.equal(duracao('09:00', '10:00'), '1h');
+  assert.equal(duracao('13:00', '14:30'), '1h30');
+  assert.equal(duracao('10:00', '09:00'), '');
+  assert.deepEqual(['08:00', '12:00', '18:30'].map(turno), ['Manhã', 'Tarde', 'Noite']);
 });

@@ -36,56 +36,50 @@ export function Ponto({ cor }: { cor: string }) {
 }
 
 /**
- * Visão Dia em linha do tempo: hora à esquerda, trilho com o ponto da cor do
- * status (RF-002) e o compromisso. O trilho é uma linha só, atrás dos pontos.
+ * Visão Dia em lista: bloco da hora à esquerda (turno, início e duração), o
+ * compromisso com os detalhes em itens com ícone e, à direita, o status com o
+ * ponto da cor dele (RF-002) e a ação.
  */
-export function Trilho({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative min-h-full py-1">
-      <span aria-hidden className="absolute top-0 bottom-0 left-[94px] w-px bg-rule-table" />
-      {children}
-    </div>
-  )
-}
-
-const COLUNAS = 'relative grid grid-cols-[3.5rem_1.25rem_minmax(0,1fr)] gap-x-3 px-4'
-
-export function ItemTrilho({ inicio, fim, cor, cancelado, titulo, meta, acoes }: {
+export function ItemDia({ turno, inicio, duracao, cancelado, titulo, detalhes, status, acoes }: {
+  turno: string
   inicio: string
-  fim: string
-  cor: string
+  duracao: string
   cancelado: boolean
   titulo: React.ReactNode
-  meta: React.ReactNode
+  detalhes: React.ReactNode
+  status: React.ReactNode
   acoes: React.ReactNode
 }) {
   return (
-    <div className={COLUNAS}>
-      <span className="py-2.5 text-right tabular-nums">
-        <span className={cn('block text-[13px] font-semibold', cancelado ? 'text-ink-secondary' : 'text-ink')}>{inicio}</span>
-        <span className="block text-[12px] text-ink-secondary">{fim}</span>
+    <div className="flex items-center gap-4 border-b border-rule-row px-4 py-3 last:border-b-0">
+      <span className={cn('flex w-16 shrink-0 flex-col items-center rounded-xl bg-secondary px-1 py-1.5 text-center', cancelado && 'opacity-60')}>
+        <span className="text-[10px] font-semibold tracking-[0.12em] text-ink-secondary uppercase">{turno}</span>
+        <span className="font-title text-[17px] leading-tight font-bold text-ink tabular-nums">{inicio}</span>
+        <span className="text-[11px] text-ink-secondary">{duracao || '—'}</span>
       </span>
-      <span className="flex justify-center pt-[15px]">
-        <span aria-hidden className={cn('size-2.5 rounded-full ring-4 ring-card', cor)} />
-      </span>
-      <div className="flex min-w-0 items-center gap-3 border-b border-rule-row py-2.5">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className={cn('truncate text-[14px] font-semibold', cancelado ? 'text-ink-secondary line-through' : 'text-ink')}>{titulo}</span>
-          <span className="truncate text-[12px] text-ink-secondary">{meta}</span>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">{acoes}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className={cn('truncate text-[15px] font-semibold', cancelado ? 'text-ink-secondary line-through' : 'text-ink')}>{titulo}</span>
+        <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-secondary">{detalhes}</span>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        {status}
+        <span className="flex items-center gap-1.5">{acoes}</span>
       </div>
     </div>
   )
 }
 
+/** Um detalhe do compromisso: ícone + texto. */
+export function Detalhe({ icone: Icone, children }: { icone: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>; children: React.ReactNode }) {
+  return <span className="inline-flex min-w-0 items-center gap-1.5"><Icone aria-hidden className="size-3.5 shrink-0" /><span className="truncate">{children}</span></span>
+}
+
 /** Linha de "agora" na visão Dia de hoje. */
 export function LinhaAgora({ hora }: { hora: string }) {
   return (
-    <div className={cn(COLUNAS, 'items-center py-1')} role="separator" aria-label={`Agora, ${hora}`}>
-      <span className="text-right text-[12px] font-semibold text-primary tabular-nums">{hora}</span>
-      <span className="flex justify-center"><span aria-hidden className="size-2.5 rounded-full bg-primary ring-4 ring-card" /></span>
-      <span aria-hidden className="h-0.5 rounded-full bg-primary" />
+    <div className="flex items-center gap-3 px-4 py-1" role="separator" aria-label={`Agora, ${hora}`}>
+      <span className="w-16 shrink-0 text-center text-[12px] font-semibold text-primary tabular-nums">Agora {hora}</span>
+      <span aria-hidden className="h-0.5 flex-1 rounded-full bg-primary" />
     </div>
   )
 }
