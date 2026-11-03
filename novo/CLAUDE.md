@@ -23,7 +23,8 @@ esqueleto descobre todos sozinho:
 | Regras puras e testes de tela | `novo/frontend/src/lib/<domínio>.ts` + `tests/<domínio>.test.mjs` | `npm test` |
 
 Regras que evitam conflito:
-- **Uma tabela, um arquivo de schema.** Antes de declarar tabela, procure em `schema-producao/` e nos `add-*.mjs`. Já existe: use, não redeclare. Filial, BU e seção estão em `000-base.mjs`; as da 001 em `001-acesso.mjs`.
+- **Uma tabela, um arquivo de schema.** Antes de declarar tabela, procure em `schema-producao/` e nos `add-*.mjs`. Já existe: use, não redeclare. Base comum (filial, BU, seção, clientes, carteira) em `000-base.mjs`; as da 001 em `001-acesso.mjs`.
+- **Ids nos seeds:** cliente e demais registros com id escolhido usam a faixa da spec, NNN×1000+n (spec 002: 2001, 2002…; spec 009: 9001…). Assim dois seeds nunca disputam o mesmo id. Filial, BU, seção, clientes e carteira (`CLIENTES`, `EQUIPE_CLIENTE`) estão declarados em `000-base.mjs`; os dados de clientes e carteira de cada spec vão no seed dela.
 - **Usuários:** os 11 de `simulator/seed.mjs` (ids 1..11, `ID.ANA` etc.) são de todos e não mudam. Usuário extra entra pelo `ctx.usuario(nome, email)` no seed da spec; no smoke, ache o id pelo e-mail.
 - **Arquivos compartilhados** — mexa o mínimo, sempre com edição pontual, nunca reescrevendo o arquivo:
   - `novo/frontend/src/lib/server-functions.ts`: entradas em ordem alfabética da chave; id do simulador na faixa NNN×100+n.
