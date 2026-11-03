@@ -77,6 +77,7 @@ export const CHECK_INPUT = {
   nome: 'Ana Souza', modoAgenda: 'SEMANA', exibicaoAtividades: 'LISTA', paginaInicial: '/',
   // spec 010
   vendedorId: 0, filtro: '', papel: '', limite: 50,
+  ramo: '', origemId: 0, destinoId: 0, vinculoId: 0, codFilial: '1', codepto: '1', idSecao: '',
   // spec 009
   busca: 'whey', buscaDigitos: '', clienteId: '9001', produtos: '9714,9715', offset: '0', mixId: '0',
   // spec 003

@@ -69,4 +69,47 @@ export function semear({ inserir, usuario }) {
     [10003, 10021, 'TEREZA LIMA', '2026-12-01', '2026-12-15', 10022, 'ULISSES REIS', 1],
     [10004, 10023, 'VÍTOR GOMES', '2026-10-20', '2026-11-10', 10024, 'XAVIER MELO', 1],
   ]);
+
+  // Gestão de Carteira (etapa 2): BU 15 Ortopedia só desta spec. Célia
+  // coordena F1·15 e F2·15; Wagner atua em F3·15, fora dela (RN-017).
+  const CELIA = u('Célia Rocha');
+  const LARA = u('Lara Pinto');
+  const MAURO = u('Mauro Teles');
+  const OTTO = u('Otto Brito');
+  const ZILDA = u('Zilda Faria');
+  const WAGNER = u('Wagner Lopes');
+  const equipe = [LARA, MAURO, OTTO, ZILDA, WAGNER];
+
+  inserir('BU', ['ID', 'CODIGO', 'NOME', 'ATIVO'], [[10015, '15', 'Ortopedia', 1]]);
+  inserir('SECAO', ['ID', 'NOME_SECAO', 'ID_BU', 'ATIVO'], [[10011, 'Órteses', 10015, 1], [10012, 'Próteses', 10015, 1]]);
+  inserir('USUARIO_PAPEL', ['USER_ID', 'PAPEL', 'ATRIBUIDO_EM'], [
+    ...equipe.map((id) => [id, 'VENDEDOR', EM]), [CELIA, 'COORDENADOR', EM],
+  ]);
+  inserir('VENDEDOR_RCA', ['USER_ID', 'COD_RCA', 'COD_SUPERVISOR'], equipe.map((id, i) => [id, 10201 + i, 10049]));
+  inserir('COORDENADORES', ['COD_SUPERVISOR', 'NOME', 'EMAIL', 'USER_ID', 'ATIVO'], [
+    [10049, 'Célia Rocha', 'celia.rocha@benenutri.local', CELIA, 1],
+  ]);
+  inserir('COORDENADORES_BU', ['COD_SUPERVISOR', 'CODFILIAL', 'CODEPTO'], [[10049, 1, 15], [10049, 2, 15]]);
+  inserir('BU_VENDEDOR', ['BU_CODIGO', 'VENDEDOR_ID', 'ATIVO', 'CODFILIAL', 'ID_SECAO', 'CRIADO_EM'], [
+    ['15', LARA, 1, '1', 10011, EM], ['15', MAURO, 1, '1', 10011, EM], ['15', OTTO, 1, '2', null, EM],
+    ['15', ZILDA, 1, '1', 10011, EM], ['15', ZILDA, 1, '2', 10011, EM], ['15', WAGNER, 1, '3', null, EM],
+  ]);
+
+  // Clientes 10101–10140 (Lara; Mauro já tem 10101–10103: C-019), 10141 (Wagner,
+  // F3), 10142 (Otto, F2), disponíveis 10150–10160 e um Pessoa Física (10161).
+  const ids = (de, ate) => Array.from({ length: ate - de + 1 }, (_, i) => de + i);
+  const clientes = [...ids(10101, 10142), ...ids(10150, 10161)];
+  inserir('CLIENTES', ['ID', 'RAZAO_SOCIAL', 'NOME_FANTASIA', 'CNPJ', 'CIDADE', 'UF', 'STATUS'], clientes.map((id) => [
+    id, `Ortopedia ${id} Ltda`, id >= 10150 ? `Clínica Órtese ${id}` : `Ortopédica ${id}`,
+    `55${String(id).padStart(12, '0')}`, 'Brasília', 'DF', 'ATIVO',
+  ]));
+  inserir('IMP_CLIENTES_TOTVS', ['CODCLI', 'CLIENTE', 'RAMO', 'UF', 'CIDADE'], clientes.map((id) => [
+    id, `ORTOPEDIA ${id}`, id === 10161 ? 'PESSOA FISICA' : id % 2 ? 'HOSPITAL' : 'FARMACIA', 'DF', 'BRASILIA',
+  ]));
+  inserir('EQUIPE_CLIENTE', ['ID_CLIENTE', 'ID_VENDEDOR', 'CRIADO_EM', 'CODFILIAL', 'ID_SECAO'], [
+    ...ids(10101, 10140).map((id) => [id, LARA, EM, '1', 10011]),
+    ...ids(10101, 10103).map((id) => [id, MAURO, EM, '1', 10011]),
+    [10141, WAGNER, EM, '3', null],
+    [10142, OTTO, EM, '2', 10011],
+  ]);
 }

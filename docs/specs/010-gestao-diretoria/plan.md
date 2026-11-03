@@ -12,7 +12,7 @@ A spec 010 é construída em três etapas, cada uma com o seu plano e o seu
 | Etapa | O quê | Por quê separado |
 |---|---|---|
 | **1 (este plano)** | Usuários (papéis, RCA, escopo e acesso de executivas), Gestão Coordenadores, Férias de Vendedores | só depende da 001 |
-| **2** (plano no fim deste arquivo, aguardando aprovação) | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, já na main |
+| **2** (plano no fim deste arquivo, aprovado em 2026-11-03) | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, já na main |
 | **3** (aprovada em 2026-11-03) | Rotinas automáticas: RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003 | nada roda nem se verifica nesta máquina: integração com o planejamento estratégico e Data Loader do ERP só existem no sandbox, e a rotina de clientes grava `CLIENTES`, dado da 002 |
 
 O **RF-009** (`Gerar novos alertas`) era um botão do Painel de Gestão e saiu
@@ -290,7 +290,7 @@ RN-023, RN-024.
 
 Vazio.
 
-## Etapa 2 — Gestão de Carteira (aguardando aprovação)
+## Etapa 2 — Gestão de Carteira (aprovada em 2026-11-03)
 
 **Escopo:** RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004, e a
 confirmação de `Transferir toda carteira` da RN-025. Tela `/gestao-carteira`,
@@ -366,7 +366,7 @@ confirmação `transferirCarteira` entra em `confirmacao()` de `lib/gestao.ts`.
 
 - **Seed** (`seeds/010-gestao.mjs`), tudo novo e isolado: BU 15 "Ortopedia"
   (id fixo 10015) com seções 10011 e 10012, para nenhuma outra spec ver estes
-  dados; coordenadora nova, Célia Rocha (supervisor 10046), com F1·15 e F2·15;
+  dados; coordenadora nova, Célia Rocha (supervisor 10049), com F1·15 e F2·15;
   vendedores novos por `ctx.usuario`:
 
   | Usuário | Para | Dados |
