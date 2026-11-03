@@ -67,7 +67,7 @@ Uma task por grupo de linhas da seção Testes do plan.
 - [x] **T-100** — `cd novo/backend && npm test` verde
 - [x] **T-101** — `cd novo/frontend && npm test` verde; `npm run build` e `npm run lint` limpos
 - [x] **T-102** — No simulador (portas próprias desta sessão): Painel como Paulo (GESTOR), Papéis como Gil, Férias e Executivas como Carlos, bloqueio como Ana (feito em 2026-11-03: Painel, BUs, RCA e Escopo como Paulo; Papéis, Coordenadores e Férias como Gil; Executivas e bloqueio do RCA e Escopo como Carlos)
-- [ ] **T-103** — Verificação manual da spec: menu de DIRETORIA com Papéis de Usuários e Gestão Coordenadores; as 8 telas em tema escuro e em 360 px
+- [x] **T-103** — Verificação manual da spec: menu de DIRETORIA com Papéis de Usuários e Gestão Coordenadores; as 8 telas em tema escuro e em 360 px (feito em 2026-11-03 como Tânia, TI: menu certo; as 8 telas abrem sem bloco com falha e sem rolagem lateral da página em 360 px; as tabelas rolam dentro do painel, como o `Table` do design system, o que basta porque a 010 não tem a RNFT-003)
 - [ ] **T-104** `[sandbox]` — Publicar `add-010-gestao.mjs`, depois `add-000-perfil-acesso.mjs` e `sync:function-map`; medir o Painel com outubro/2026 de produção (RNF-001)
 
 ## Dependências
