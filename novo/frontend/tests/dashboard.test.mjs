@@ -153,3 +153,13 @@ test('C-009 / RN-012: relatos do cenário, da mais recente para a mais antiga', 
 test('C-011: mensagem padrão do bloco com falha (C-007 da 000)', () => {
   assert.equal(MSG_FALHA_BLOCO, 'Não foi possível carregar este bloco agora. Tente atualizar a tela.');
 });
+
+test('D-509: o card do mês pede ao Analytics o mesmo recorte do período Mês; o gráfico, 8 dias úteis por dia', async () => {
+  const { entradaMes, entradaDiarias, diasDaEvolucao } = await import('../src/lib/dashboard.ts');
+  const { periodo, paramsRecorte } = await import('../src/lib/analytics.ts');
+  const escopo = { modo: 'ME', coordenador: '', vendedor: '', filial: '', depto: '', secao: '', hoje: '2026-11-20' };
+  const p = periodo('MES', '2026-11-20');
+  assert.deepEqual(entradaMes(escopo, '2026-11-20'), { ...escopo, ...paramsRecorte(p.de, p.ate, { ramos: [], clientes: [], produtos: [] }) });
+  assert.deepEqual([entradaDiarias(escopo, '2026-11-12').de, entradaDiarias(escopo, '2026-11-12').ate, entradaDiarias(escopo, '2026-11-12').porDia], ['2026-11-03', '2026-11-12', '1']);
+  assert.deepEqual(diasDaEvolucao([{ TIPO: 'L', CHAVE: '2026-11-12', VALOR: 6000 }, { TIPO: 'M', CHAVE: '2026-11', VALOR: 100000 }]), [{ DIA: '2026-11-12', LIQUIDO: 6000 }]);
+});

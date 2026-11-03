@@ -3,6 +3,7 @@
 // (percentual, projeção, selo, variação, relato) moram aqui (D-505).
 
 import { semanaDe, somarDias } from './agenda.ts'
+import { paramsRecorte } from './analytics.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Linha = Record<string, any>
@@ -116,6 +117,27 @@ export function serieDiaria(linhas: Linha[], hoje: string) {
   const dias = ultimosDiasUteis(hoje, 8).map(dia => ({ dia, valor: valor.get(dia) ?? 0 }))
   return dias.slice(1).map((d, i) => ({ ...d, variacao: variacao(d.valor, dias[i].valor) }))
 }
+
+/* ─────────────── entradas das SFs do Analytics (D-509) ─────────────── */
+
+// O card do mês e o gráfico usam s360AnalyticsResumo e s360AnalyticsEvolucao
+// com o recorte do Analytics sem filtro de ramo, cliente ou produto: o mês é o
+// mesmo período "Mês" da tela Analytics, então o número é o mesmo (C-004 da 000).
+const SEM_FILTRO = { ramos: [], clientes: [], produtos: [] }
+
+export function entradaMes(escopo: Record<string, string>, hoje: string) {
+  const { inicio, fim } = mesDe(hoje)
+  return { ...escopo, ...paramsRecorte(inicio, fim, SEM_FILTRO) }
+}
+
+/** 8 dias úteis: o primeiro só dá a variação da primeira barra. */
+export function entradaDiarias(escopo: Record<string, string>, hoje: string) {
+  return { ...escopo, ...paramsRecorte(ultimosDiasUteis(hoje, 8)[0], hoje, SEM_FILTRO), porDia: '1' }
+}
+
+/** Linhas de líquido por dia (TIPO L) de s360AnalyticsEvolucao, no formato de serieDiaria. */
+export const diasDaEvolucao = (linhas: Linha[]): Linha[] =>
+  linhas.filter(l => l.TIPO === 'L').map(l => ({ DIA: l.CHAVE, LIQUIDO: l.VALOR }))
 
 /* ─────────────── atividades e resumo da semana (RN-011, RN-012) ─────────────── */
 

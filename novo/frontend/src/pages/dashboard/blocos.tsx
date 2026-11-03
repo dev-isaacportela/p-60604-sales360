@@ -169,7 +169,7 @@ export function VendasDiarias({ estado, mes, hoje, className }: { estado: Estado
             </div>
             {mes ? (
               <p className="mt-3 text-[12px] text-ink-secondary">
-                Bruto {moeda(mes.BRUTO)} − devoluções {moeda(mes.DEVOLUCOES)} no mês = líquido {moeda(mes.LIQUIDO)}
+                Bruto {moeda(mes.BRUTO)} − devoluções {moeda(mes.DEVOLVIDO)} no mês = líquido {moeda(mes.LIQUIDO)}
               </p>
             ) : null}
             <div className="mt-1"><Atualizacao quando={mes?.ATUALIZADO_EM} /></div>

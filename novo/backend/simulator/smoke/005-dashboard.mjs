@@ -4,6 +4,9 @@
 
 import { registerMysqlFunctions } from '../mysql-dialect.mjs';
 import { EMAIL, BU } from '../seeds/005-dashboard.mjs';
+// A entrada que a tela manda (Dashboard e Analytics): o teste compara as duas telas.
+import { entradaMes, entradaDiarias, diasDaEvolucao } from '../../../frontend/src/lib/dashboard.ts';
+import { periodo, paramsRecorte } from '../../../frontend/src/lib/analytics.ts';
 
 export default async function smoke({ teste, chamar, linhas, banco, db, ID, assert }) {
   let relogio = new Date();
@@ -59,8 +62,11 @@ export default async function smoke({ teste, chamar, linhas, banco, db, ID, asse
     const domingo = `${segunda.slice(0, 8)}${String(Number(segunda.slice(8)) + 6).padStart(2, '0')}`;
     return (await linhas('s360AgendaResumo', { ...ESC(modo, extra), segunda, sexta, domingo }, user))[0];
   };
-  const mes = async (user, modo = 'ME', extra = {}, inicio = '2026-11-01', fim = '2026-11-30') =>
-    (await linhas('s360DashboardMes', { ...ESC(modo, extra), inicio, fim }, user))[0];
+  // Card do mes = s360AnalyticsResumo com a entrada do Dashboard (D-509).
+  const mes = async (user, modo = 'ME', extra = {}, hoje = '2026-11-20') =>
+    (await linhas('s360AnalyticsResumo', entradaMes(ESC(modo, extra), hoje), user))[0];
+  const diarias = async (user, hoje, modo = 'ME') =>
+    diasDaEvolucao(await linhas('s360AnalyticsEvolucao', entradaDiarias(ESC(modo), hoje), user));
   const salvar = async (user, perfil, valor, vigencia) =>
     (await chamar('s360MetaVisitasSalvar', { perfil, valor: String(valor), vigencia }, user)).affectedRows ?? 0;
 
@@ -135,13 +141,24 @@ export default async function smoke({ teste, chamar, linhas, banco, db, ID, asse
 
   /* ─────────────── faturamento ─────────────── */
 
-  await teste('C-005 / RN-006: bruto 70.000 − devolução 5.000 = 65.000; meta distribuída 100.000', async () => {
+  await teste('C-005 / RN-006: bruto 70.000 − devolução 5.000 = 65.000; meta distribuída 100.000 (SF do Analytics)', async () => {
     venda(5001, '3', '2026-11-05', 40000);
     venda(5002, '3', '2026-11-19', 30000);
     devolucao(5001, '3', '2026-11-10', 5000);
     venda(5001, '3', '2026-10-30', 9999); // outubro
     const m = await mes(DALVA);
-    assert.deepEqual([Number(m.BRUTO), Number(m.DEVOLUCOES), Number(m.LIQUIDO), Number(m.META)], [70000, 5000, 65000, 100000]);
+    assert.deepEqual([Number(m.BRUTO), Number(m.DEVOLVIDO), Number(m.LIQUIDO), Number(m.META)], [70000, 5000, 65000, 100000]);
+  });
+
+  await teste('C-004 da 000: card do mês = Overview do Analytics no período Mês, nos três escopos', async () => {
+    const hoje = '2026-11-20';
+    const doAnalytics = (e) => { const p = periodo('MES', hoje); return { ...e, ...paramsRecorte(p.de, p.ate, { ramos: [], clientes: [], produtos: [] }) }; };
+    for (const [user, e] of [[DALVA, ESC()], [CAETANO, ESC('TEAM')], [CAETANO, ESC('SELLER', { vendedor: String(DALVA) })]]) {
+      const [card] = await linhas('s360AnalyticsResumo', entradaMes(e, hoje), user);
+      const [analytics] = await linhas('s360AnalyticsResumo', doAnalytics(e), user);
+      assert.deepEqual(card, analytics);
+    }
+    assert.equal(Number((await mes(CAETANO, 'SELLER', { vendedor: String(DALVA) })).LIQUIDO), 65000, 'vendedor específico = Meu painel');
   });
 
   await teste('RNT-007: venda fora da carteira ou de filial sem escopo não entra', async () => {
@@ -157,35 +174,35 @@ export default async function smoke({ teste, chamar, linhas, banco, db, ID, asse
     db.exec(`DELETE FROM EQUIPE_CLIENTE WHERE ID = ${ec}`);
   });
 
-  await teste('C-007: sem distribuição no mês → META nula (nada de cadastro legado)', async () => {
-    const m = await mes(DORA);
-    assert.equal(m.META, null);
+  await teste('C-007: sem distribuição no mês → META 0, que a tela mostra como "Meta não distribuída"', async () => {
+    assert.equal(Number((await mes(DORA)).META), 0);
   });
 
   await teste('RN-006 (recorte): filtro Filial 3 · Hospitalar soma só as distribuições dessa BU', async () => {
+    const bv = ins('BU_VENDEDOR', { BU_CODIGO: BU, VENDEDOR_ID: DALVA, ATIVO: 1, CODFILIAL: '4' });
     ins('METAS_BU_VENDEDOR', { CODFILIAL: 4, CODEPTO: Number(BU), VENDEDOR_ID: DALVA, MES: 11, ANO: 2026, META_VALOR: 20000 });
     assert.equal(Number((await mes(CAETANO, 'TEAM')).META), 200000);
     assert.equal(Number((await mes(CAETANO, 'TEAM', { filial: '3', depto: BU })).META), 180000);
-    assert.equal((await mes(CAETANO, 'TEAM', { filial: '4' })).META, null, 'Dalva nao tem escopo na Filial 4: fora do filtro');
-    db.exec(`DELETE FROM METAS_BU_VENDEDOR WHERE CODFILIAL = 4 AND VENDEDOR_ID = ${DALVA}`);
+    assert.equal(Number((await mes(CAETANO, 'TEAM', { filial: '4' })).META), 20000);
+    db.exec(`DELETE FROM METAS_BU_VENDEDOR WHERE CODFILIAL = 4 AND VENDEDOR_ID = ${DALVA}; DELETE FROM BU_VENDEDOR WHERE ID = ${bv};`);
   });
 
-  await teste('C-008 / RN-009: líquido por dia e soma do mês = líquido do card', async () => {
+  await teste('C-008 / RN-009: líquido por dia (Evolução do Analytics) e soma do mês = líquido do card', async () => {
     limparVendas();
-    for (const [data, v] of [['2026-11-04', 3000], ['2026-11-06', 2000], ['2026-11-09', 5000], ['2026-11-10', 4000], ['2026-11-11', 9000], ['2026-11-12', 6000]]) venda(5003, '3', data, v);
+    for (const [data, v] of [['2026-11-03', 1000], ['2026-11-04', 3000], ['2026-11-06', 2000], ['2026-11-09', 5000], ['2026-11-10', 4000], ['2026-11-11', 9000], ['2026-11-12', 6000]]) venda(5003, '3', data, v);
     devolucao(5003, '3', '2026-11-11', 1000);
-    const dias = await linhas('s360DashboardVendasDiarias', { ...ESC(), de: '2026-11-04', ate: '2026-11-12' }, DALVA);
+    const dias = await diarias(DALVA, '2026-11-12');
     assert.deepEqual(dias.map((d) => [d.DIA, Number(d.LIQUIDO)]),
-      [['2026-11-04', 3000], ['2026-11-06', 2000], ['2026-11-09', 5000], ['2026-11-10', 4000], ['2026-11-11', 8000], ['2026-11-12', 6000]]);
-    const doMes = await linhas('s360DashboardVendasDiarias', { ...ESC(), de: '2026-11-01', ate: '2026-11-30' }, DALVA);
-    assert.equal(doMes.reduce((s, d) => s + Number(d.LIQUIDO), 0), Number((await mes(DALVA)).LIQUIDO));
+      [['2026-11-03', 1000], ['2026-11-04', 3000], ['2026-11-06', 2000], ['2026-11-09', 5000], ['2026-11-10', 4000], ['2026-11-11', 8000], ['2026-11-12', 6000]]);
+    const doMes = diasDaEvolucao(await linhas('s360AnalyticsEvolucao', { ...entradaMes(ESC(), '2026-11-12'), porDia: '1' }, DALVA));
+    assert.equal(doMes.reduce((t, d) => t + Number(d.LIQUIDO), 0), Number((await mes(DALVA, 'ME', {}, '2026-11-12')).LIQUIDO));
   });
 
-  await teste('RF-010: ATUALIZADO_EM = fim da última execução concluída', async () => {
+  await teste('RF-010: data da carga = s360SemanalAtualizacao da 006 (última execução concluída)', async () => {
     // execucoes deste teste; a falha das 08:00 nao conta (o seed da 006 traz a de 30/10)
     ins('ACOMP_SEMANAL_SYNC_LOG', { EXECUCAO_ID: '5001', STATUS: 'SUCCESS', INICIO_EM: '2026-11-03 07:00:00', FIM_EM: '2026-11-03 07:05:00', CRIADO_EM: '2026-11-03 07:00:00' });
     ins('ACOMP_SEMANAL_SYNC_LOG', { EXECUCAO_ID: '5002', STATUS: 'FAILED', INICIO_EM: '2026-11-03 08:00:00', FIM_EM: '2026-11-03 08:01:00', CRIADO_EM: '2026-11-03 08:00:00' });
-    assert.equal((await mes(DALVA)).ATUALIZADO_EM, '2026-11-03 07:05:00');
+    assert.equal((await linhas('s360SemanalAtualizacao', {}, DALVA))[0].FIM_EM, '2026-11-03 07:05:00');
   });
 
   /* ─────────────── resumo da semana, alertas e atividades ─────────────── */
@@ -211,6 +228,18 @@ export default async function smoke({ teste, chamar, linhas, banco, db, ID, asse
     const a = await linhas('s360DashboardAlertas', ESC(), DALVA);
     assert.deepEqual(a.map((x) => x.TITULO), [7, 6, 5, 4, 3].map((d) => `Alerta 2026-11-0${d} 08:00:00`));
     assert.equal((await linhas('s360DashboardAlertas', ESC('TEAM'), CAETANO)).length, 5, 'coordenador ve os da equipe');
+  });
+
+  await teste('C-004 da 000: alertas do Dashboard = os altos não lidos mais recentes da tela de Alertas', async () => {
+    const filtros = { busca: '', buscaDigitos: '', ramo: '', tipo: '', valorMin: '', situacao: 'NAO_LIDOS', clienteId: '', produto: '', pagina: '1' };
+    for (const [user, e] of [[DALVA, ESC()], [CAETANO, ESC('TEAM')]]) {
+      const tela = (await linhas('s360AlertasListar', { ...e, ...filtros }, user))
+        .filter((x) => x.PRIORIDADE === 'ALTA')
+        .sort((x, y) => String(y.DATA_GERACAO).localeCompare(String(x.DATA_GERACAO)) || y.ID - x.ID)
+        .slice(0, 5).map((x) => x.ID);
+      assert.ok(tela.length === 5);
+      assert.deepEqual((await linhas('s360DashboardAlertas', e, user)).map((x) => x.ID), tela);
+    }
   });
 
   await teste('RN-010: alerta alto de outra BU do vendedor fora do recorte aberto não aparece', async () => {

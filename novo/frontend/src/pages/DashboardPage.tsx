@@ -1,7 +1,8 @@
 // Dashboard (spec 005): a primeira tela de todo usuário. Os blocos de agenda,
 // meta semanal e atividades usam as SFs da 003 e da 004 (D-501), então os
-// números são os mesmos das outras telas. Cada bloco carrega e falha sozinho
-// (RF-011); a carga faz 8 consultas e trocar a barra do gráfico não consulta.
+// números são os mesmos das outras telas; o mês e o gráfico usam as SFs do
+// Analytics (007) e a data da carga a da 006 (D-509). Cada bloco carrega e
+// falha sozinho (RF-011); a carga faz 9 consultas e trocar a barra não consulta.
 
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +11,7 @@ import { agoraBrasilia, hojeBrasilia } from '@/lib/formato'
 import { paraInput } from '@/lib/escopo'
 import { semanaDe } from '@/lib/agenda'
 import { FILTROS_VAZIOS } from '@/lib/atividades'
-import { compromissosDeHoje, fraseCompromissos, mesDe, saudacao, ultimosDiasUteis } from '@/lib/dashboard'
+import { compromissosDeHoje, diasDaEvolucao, entradaDiarias, entradaMes, fraseCompromissos, mesDe, saudacao } from '@/lib/dashboard'
 import { AVISO_NAO_CONFIGURADO, mostrarAvisoNaoConfigurado } from '@/lib/sessao'
 import {
   Alert, Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, PageHeader, Panel, PanelBody, Stack, TextLink,
@@ -36,8 +37,12 @@ export default function DashboardPage() {
     linha('agendaResumo', { ...escopo, ...semana }),
     linha('metaVisitasObter', { segunda: semana.segunda }),
   ]), [chave])
-  const mes = useBloco(() => linha('dashboardMes', { ...escopo, inicio, fim }), [chave])
-  const diarias = useBloco(() => linhas('dashboardVendasDiarias', { ...escopo, de: ultimosDiasUteis(hoje, 8)[0], ate: hoje }), [chave])
+  // A data da carga (RF-010) é só um texto: se falhar, o card aparece sem ela.
+  const mes = useBloco(() => Promise.all([
+    linha('analyticsResumo', entradaMes(escopo, hoje)),
+    linha('semanalAtualizacao').catch(() => null),
+  ]).then(([resumo, carga]) => ({ ...resumo, ATUALIZADO_EM: carga?.FIM_EM ?? null })), [chave])
+  const diarias = useBloco(() => linhas('analyticsEvolucao', entradaDiarias(escopo, hoje)).then(diasDaEvolucao), [chave])
   const alertas = useBloco(() => linhas('dashboardAlertas', escopo), [chave])
   const atividades = useBloco(() => linhas('atividadesAbertas', { ...escopo, ...FILTROS_VAZIOS }), [chave])
 
