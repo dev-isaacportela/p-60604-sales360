@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils'
 export function ComPainel({ children, painel }: { children: React.ReactNode; painel: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_17rem]">
-      <div className="min-w-0">{children}</div>
-      <aside className="flex flex-col gap-4">{painel}</aside>
+      {/* As duas colunas terminam na mesma linha: o calendário estica até o fim do
+          painel lateral, e o último bloco do painel estica até o fim do calendário. */}
+      <div className="min-w-0 xl:[&>*]:h-full">{children}</div>
+      <aside className="flex flex-col gap-4 xl:[&>*:last-child]:flex-1">{painel}</aside>
     </div>
   )
 }
