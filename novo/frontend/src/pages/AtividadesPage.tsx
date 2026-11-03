@@ -25,7 +25,7 @@ import { useSessao } from '@/components/sessao-contexto'
 import { JanelaAtividade } from './atividades/JanelaAtividade'
 import { Kanban } from './atividades/Kanban'
 import { Lista } from './atividades/Lista'
-import { FiltroPrazo, GradeCards, PONTO_PRIORIDADE, Pilulas } from './atividades/comum'
+import { FiltroPrazo, GradeCards, MenuFiltro, PONTO_PRIORIDADE } from './atividades/comum'
 import type { AcoesAtividade, Linha } from './atividades/comum'
 
 const TODOS = { value: '', label: 'Todos' }
@@ -132,10 +132,10 @@ export default function AtividadesPage() {
         <InfoTile label="Concluídas">{n('CONCLUIDAS')}</InfoTile>
       </GradeCards>
       <Panel>
-        {/* Uma linha só: status e prioridade em botões, prazo num botão, visão e atualizar à direita. */}
-        <Toolbar className="items-center gap-x-5 gap-y-2.5">
-          <Pilulas rotulo="Status" opcoes={[TODOS, ...STATUS]} valor={filtros.status} mudar={v => mudar('status', v)} />
-          <Pilulas rotulo="Prioridade" opcoes={[{ value: '', label: 'Todas' }, ...PRIORIDADES.map(p => ({ ...p, ponto: PONTO_PRIORIDADE[p.value] }))]} valor={filtros.prioridade} mudar={v => mudar('prioridade', v)} />
+        {/* Uma linha só: três filtros compactos à esquerda, visão e atualizar à direita. */}
+        <Toolbar className="items-center gap-2">
+          <MenuFiltro rotulo="Status" opcoes={[TODOS, ...STATUS]} valor={filtros.status} mudar={v => mudar('status', v)} />
+          <MenuFiltro rotulo="Prioridade" opcoes={[{ value: '', label: 'Todas' }, ...PRIORIDADES.map(p => ({ ...p, ponto: PONTO_PRIORIDADE[p.value] }))]} valor={filtros.prioridade} mudar={v => mudar('prioridade', v)} />
           <FiltroPrazo valor={filtros.prazo} mudar={v => mudar('prazo', v)} />
           {temFiltro ? <TextLink onClick={() => setFiltros(FILTROS_VAZIOS)}>Limpar filtros</TextLink> : null}
           <div className="ml-auto flex items-center gap-2">
