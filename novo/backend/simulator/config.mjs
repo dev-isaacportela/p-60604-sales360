@@ -83,4 +83,6 @@ export const CHECK_INPUT = {
   pessoas: '[]',
   // spec 004
   status: '', prioridade: '', prazo: '', id: '0',
+  // spec 008
+  semana: '2026-10-26', desde: '2025-10-01', situacao: '', tipo: '', valorMin: '', alertaId: '0', prospectId: '0', etapa: '', faixa: '',
 };

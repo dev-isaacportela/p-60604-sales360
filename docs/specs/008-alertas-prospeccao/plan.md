@@ -289,12 +289,12 @@ Backend em `simulator/smoke/008-alertas.mjs` (banco próprio, hoje =
 | D-808 | Rotinas aceitam `hoje`/`agora` no `event` (só para teste); sem eles, relógio de Brasília | relógio fixo | o smoke prova as datas da spec; o agendamento não manda nada |
 | D-809 | Mensagem de C-021 = a mensagem padrão de tela restrita da 001 (a rota já bloqueia por perfil); o servidor devolve zero linhas | mensagem própria na página | a página nem monta para vendedor; o texto fica no relatório como divergência da spec |
 
-## Perguntas ao usuário (antes de codar)
+## Respostas do usuário (2026-11-03)
 
-- **P-1** Quem pode mudar etapa, incluir contato e converter um prospect.
-- **P-2** "Curva A" na Prospecção e nos Clientes Críticos: a mesma curva da Minha Carteira (fixada ou do ranking)?
-- **P-3** Incluir agora a aba Prospects (002), o resultado da visita no check-out e o `Agendar visita` (003)?
-- **P-4** Incluir agora os dois e-mails semanais?
+- **P-1** Mudar etapa, incluir contato e converter: só o responsável e o substituto com férias ATIVAS; coordenação e diretoria só consultam.
+- **P-2** "Curva A" na Prospecção e nos Clientes Críticos = a curva da Minha Carteira (fixada pelo vendedor, senão a do ranking, RN-004/005 da 002); o corte por ticket médio da RN-020 não chega a valer, porque toda linha da carteira tem curva.
+- **P-3** Aba Prospects (002), resultado da visita no check-out e `Agendar visita` com o cliente (003): entram agora, por edição pontual.
+- **P-4** Os dois e-mails semanais entram agora.
 
 ## Riscos
 
