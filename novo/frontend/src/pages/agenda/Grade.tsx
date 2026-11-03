@@ -57,7 +57,8 @@ function Item({ item, ev }: { item: Linha; ev: Eventos }) {
 
 function ListaDia({ itens, ev }: { itens: Linha[]; ev: Eventos }) {
   if (!itens.length) return <EmptyState title="Nenhum compromisso neste dia." hint="Use + Nova agenda para planejar." />
-  return <div>{itens.map(i => <Item key={`${i.ORIGEM}-${i.ID}`} item={i} ev={ev} />)}</div>
+  // Mesma altura fixa da Semana, com rolagem interna.
+  return <div className="h-[560px] overflow-y-auto">{itens.map(i => <Item key={`${i.ORIGEM}-${i.ID}`} item={i} ev={ev} />)}</div>
 }
 
 const doDia = (itens: Linha[], dia: string) => itens.filter(i => i.DATA === dia)
