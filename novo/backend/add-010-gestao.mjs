@@ -62,12 +62,13 @@ const sobrepoe = (col, rca) => `EXISTS (SELECT 1 FROM FERIAS_VENDEDOR FX
       AND FX.DT_INICIO <= '{{fim}}' AND FX.DT_FIM >= '{{inicio}}')`;
 
 // RN-021: sem DIRETORIA/ADMIN, sem cadastro ativo de coordenador, nao e quem
-// abre a tela; escopo ativo (coordenador: nas suas BUs) ou, global, RCA.
+// abre a tela; escopo ativo (coordenador: nas suas BUs) ou, global (GESTOR,
+// DIRETORIA, ADMIN), RCA.
 const executivaVisivel = (alvo) => `(${alvo} <> :VAR_USER
   AND NOT EXISTS (SELECT 1 FROM USUARIO_PAPEL XP WHERE XP.USER_ID = ${alvo} AND XP.PAPEL IN ('DIRETORIA', 'ADMIN'))
   AND NOT EXISTS (SELECT 1 FROM USUARIO_CARGO XC WHERE XC.USER_ID = ${alvo} AND XC.CARGO IN ('DIRETORIA', 'ADMIN'))
   AND NOT EXISTS (SELECT 1 FROM COORDENADORES XK WHERE XK.USER_ID = ${alvo} AND XK.ATIVO = 1)
-  AND ((${DIRETORIA} AND (
+  AND (((${GESTAO} OR ${DIRETORIA}) AND (
           EXISTS (SELECT 1 FROM BU_VENDEDOR XB WHERE XB.VENDEDOR_ID = ${alvo} AND XB.ATIVO = 1)
           OR EXISTS (SELECT 1 FROM VENDEDOR_RCA XR WHERE XR.USER_ID = ${alvo})))
        OR ${naEquipe(alvo)}))`;
@@ -375,20 +376,24 @@ WHERE U.ID = :VAR_USER
   {
     name: 's360PapelListar',
     type: 'SQL',
-    description: 'Lista da tela Usuarios: papeis (uniao nova + legado; vazio = VENDEDOR), RCA e supervisor; busca por nome, e-mail, ID ou RCA e filtro de papel, paginada (TOTAL). Params: busca, papel (vazio = todos), limite, offset. GESTOR/DIRETORIA/ADMIN.',
+    description: 'Lista da tela Usuarios: papeis (uniao nova + legado; vazio = VENDEDOR), RCA, supervisor e acesso; busca por nome, e-mail, ID ou RCA, filtro de papel e de acesso (TODAS|COM_ACESSO|DESATIVADAS), desativadas primeiro, paginada (TOTAL). Params: busca, papel (vazio = todos), filtro, limite, offset. GESTOR/DIRETORIA/ADMIN: todos; coordenador ativo: a equipe.',
     code: `WITH ${PAPEIS_CTE}
 SELECT U.ID AS USER_ID, ${nome('U')} AS NOME, U.DESCR AS EMAIL, VR.COD_RCA, VR.COD_SUPERVISOR,
-  COALESCE(PU.PAPEIS, 'VENDEDOR') AS PAPEIS, COUNT(*) OVER () AS TOTAL
+  COALESCE(PU.PAPEIS, 'VENDEDOR') AS PAPEIS, COALESCE(UB.BLOQUEADO, 0) AS BLOQUEADO, COUNT(*) OVER () AS TOTAL
 FROM INT_USER U
 LEFT JOIN POR_USUARIO PU ON PU.USER_ID = U.ID
 LEFT JOIN VENDEDOR_RCA VR ON VR.USER_ID = U.ID
+LEFT JOIN USUARIO_BLOQUEIO UB ON UB.USER_ID = U.ID
 WHERE (${busca('COALESCE(U.NOME, U.DESCR)', 'U.DESCR')}
        OR CAST(U.ID AS CHAR) = '{{busca}}' OR CAST(VR.COD_RCA AS CHAR) = '{{busca}}')
   AND ('{{papel}}' = ''
        OR CONCAT(',', COALESCE(PU.PAPEIS, 'VENDEDOR'), ',') LIKE CONCAT('%,', '{{papel}}', ',%'))
-  AND (${GESTAO} OR ${DIRETORIA})
+  AND ('{{filtro}}' IN ('', 'TODAS')
+       OR ('{{filtro}}' = 'COM_ACESSO' AND COALESCE(UB.BLOQUEADO, 0) = 0)
+       OR ('{{filtro}}' = 'DESATIVADAS' AND UB.BLOQUEADO = 1))
+  AND (${GESTAO} OR ${DIRETORIA} OR ${naEquipe('U.ID')})
   AND ${SEM_BLOQUEIO}
-ORDER BY NOME
+ORDER BY COALESCE(UB.BLOQUEADO, 0) DESC, NOME
 ${PAGINA}`,
   },
   {
@@ -505,7 +510,7 @@ WHERE AUTO_ID = {{id}}
   AND ${SEM_BLOQUEIO}`,
   },
 
-  // ── Executivas de Venda (RN-021, RN-022) ──
+  // ── Usuarios: acesso das executivas (RN-021, RN-022) ──
   {
     name: 's360ExecutivaListar',
     type: 'SQL',

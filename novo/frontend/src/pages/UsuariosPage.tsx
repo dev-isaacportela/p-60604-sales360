@@ -1,7 +1,8 @@
-// Usuários (spec 010: RF-022..RF-025, RF-027, RN-001, RN-012..RN-014, RN-016).
-// Papéis de Usuários, Governança RCA e Escopo Usuários fundidas (2026-11-03):
-// uma lista de usuários; `Editar` abre o painel do usuário só com as partes que
-// o papel de quem abre edita (diretoria: papéis; gestão: RCA e escopo; TI: tudo).
+// Usuários (spec 010: RF-022..RF-025, RF-027, RF-031, RF-032, RN-001, RN-012..RN-016, RN-021, RN-022).
+// Papéis de Usuários, Governança RCA, Escopo Usuários e Executivas de Venda
+// fundidas (2026-11-03): uma lista de usuários; `Editar` abre o painel do usuário
+// só com as partes que o papel de quem abre edita (diretoria: papéis e acesso;
+// gestão: RCA, escopo e acesso; coordenador ativo: acesso da equipe; TI: tudo).
 // O servidor confere de novo em cada SF.
 // RCA: auditoria primeiro, gravação depois, com o mesmo `agora` (D-010-1).
 // Escopo: reativar as combinações inativas e incluir as que nunca existiram (RN-013).
@@ -11,7 +12,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { linha, linhas } from '@/lib/mitra-api'
 import { agoraBrasilia, fmtDataHora } from '@/lib/formato'
-import { confirmacao, resumoEscopos, validarSupervisor } from '@/lib/gestao'
+import { confirmacao, resumoEscopos, validarMotivo, validarSupervisor } from '@/lib/gestao'
 import { EDITAVEIS, lerPapeis, marcacoes, mensagemPapeis, partesUsuarios } from '@/lib/papeis'
 import { rotuloPapeis } from '@/lib/sessao'
 import { BlocoFalhou, Confirmacao, Marcador } from '@/components/Confirmacao'
@@ -20,7 +21,7 @@ import { gravar, useBloco } from '@/components/use-bloco'
 import { useSessao } from '@/components/sessao-contexto'
 import {
   Actions, Alert, Button, Code, Dash, EmptyState, Field, FormRow, InfoGrid, InfoTile, Input, LabelledField, PageHeader, Pagination,
-  Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput, SelectMenu, Stack, Table, Td, Th, Toolbar, Tr,
+  Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput, SelectMenu, Stack, Status, Table, Td, Textarea, Th, Toolbar, Tr,
 } from '@/components/page'
 
 const POR_PAGINA = 20
@@ -30,17 +31,23 @@ type Linha = Record<string, string>
 type Usuario = Record<string, unknown>
 const ROTULO: Record<string, string> = { DIRETORIA: 'Diretoria', COORDENADOR: 'Coordenador', VENDEDOR: 'Vendedor', GESTOR: 'Gestor', ADMIN: 'Admin (TI)' }
 const FILTROS = [{ value: '', label: 'Todos os papéis' }, ...Object.entries(ROTULO).map(([value, label]) => ({ value, label }))]
+const FILTROS_ACESSO = [
+  { value: 'TODAS', label: 'Todos' },
+  { value: 'COM_ACESSO', label: 'Com acesso' },
+  { value: 'DESATIVADAS', label: 'Desativados' },
+]
 const vazio = () => Promise.resolve([] as Record<string, unknown>[])
 
 export default function UsuariosPage() {
   const { sessao } = useSessao()
-  const pode = partesUsuarios(sessao.papeis)
+  const pode = partesUsuarios(sessao.papeis, sessao.coordenadorAtivo)
   const [busca, setBusca] = useState('')
   const [papel, setPapel] = useState('')
+  const [filtro, setFiltro] = useState('TODAS')
   const [pagina, setPagina] = useState(1)
   const lista = useBloco(
-    () => linhas('papelListar', { busca: busca.trim(), papel, limite: POR_PAGINA, offset: (pagina - 1) * POR_PAGINA }),
-    [busca, papel, pagina],
+    () => linhas('papelListar', { busca: busca.trim(), papel, filtro, limite: POR_PAGINA, offset: (pagina - 1) * POR_PAGINA }),
+    [busca, papel, filtro, pagina],
   )
   const resumo = useBloco(() => (pode.papeis ? linha('papelResumo') : Promise.resolve(null)), [pode.papeis])
   const rcas = useBloco(() => (pode.rcaEscopo ? linhas('rcaTotvsListar') : vazio()), [pode.rcaEscopo])
@@ -68,6 +75,7 @@ export default function UsuariosPage() {
         description={[
           pode.papeis && 'Papéis acumulam; Gestor e Admin só são atribuídos pela TI.',
           pode.rcaEscopo && 'Código de vendedor do ERP e escopo (BU + filial + seção) de cada usuário; toda mudança de RCA fica na auditoria.',
+          pode.soEquipe && 'Você vê as executivas do seu departamento.',
         ].filter(Boolean).join(' ')}
       />
       <Stack>
@@ -91,6 +99,7 @@ export default function UsuariosPage() {
             <PanelBody>
               <Stack key={Number(editando.USER_ID)}>
                 {pode.papeis && <PapeisDoUsuario usuario={editando} aoGravar={gravou} />}
+                {pode.acesso && <AcessoDoUsuario usuario={editando} aoGravar={gravou} pedirConfirmacao={setPedido} />}
                 {pode.rcaEscopo && (
                   <>
                     <VinculoRca usuario={editando} rcas={rcas} aoGravar={gravou} pedirConfirmacao={setPedido} />
@@ -132,6 +141,17 @@ export default function UsuariosPage() {
                 }}
               />
             </Field>
+            <Field label="Acesso">
+              <SelectMenu
+                label="Acesso"
+                value={filtro}
+                options={FILTROS_ACESSO}
+                onChange={v => {
+                  setFiltro(v)
+                  setPagina(1)
+                }}
+              />
+            </Field>
           </Toolbar>
           {lista.erro ? (
             <BlocoFalhou />
@@ -146,6 +166,7 @@ export default function UsuariosPage() {
                     <Th>Papéis</Th>
                     <Th>RCA</Th>
                     <Th>Supervisor</Th>
+                    <Th>Acesso</Th>
                     <Th aria-label="Ações" />
                   </tr>
                 </thead>
@@ -161,6 +182,9 @@ export default function UsuariosPage() {
                       <Td>{rotuloPapeis(lerPapeis(u.PAPEIS))}</Td>
                       <Td>{ou(u.COD_RCA, 'Sem vínculo')}</Td>
                       <Td>{ou(u.COD_SUPERVISOR, 'Sem supervisor')}</Td>
+                      <Td>
+                        <Status tone={Number(u.BLOQUEADO) === 1 ? 'alert' : 'live'}>{Number(u.BLOQUEADO) === 1 ? 'Desativado' : 'Com acesso'}</Status>
+                      </Td>
                       <Td numeric>
                         <Button size="sm" variant="ghost" onClick={() => setEditando(u)}>
                           Editar
@@ -275,6 +299,89 @@ function PapeisDoUsuario({ usuario, aoGravar }: { usuario: Usuario; aoGravar: (m
           {salvando ? 'Salvando…' : 'Salvar papéis'}
         </Button>
       </Actions>
+    </Stack>
+  )
+}
+
+/** Campo do motivo dentro do diálogo: estado próprio; avisa quem abriu o diálogo a cada tecla. */
+function CampoMotivo({ onMudar }: { onMudar: (texto: string) => void }) {
+  const [texto, setTexto] = useState('')
+  const erro = validarMotivo(texto)
+  return (
+    <LabelledField label="Motivo (opcional)" hint={erro ?? `${texto.trim().length}/500`} hintTone={erro ? 'error' : 'muted'}>
+      <Textarea
+        value={texto}
+        onChange={e => {
+          setTexto(e.target.value)
+          onMudar(e.target.value)
+        }}
+      />
+    </LabelledField>
+  )
+}
+
+/**
+ * Acesso da executiva (RF-032, RN-021, RN-022): só quem a RN-021 deixa quem abre
+ * alterar tem botão; o servidor recusa o resto.
+ */
+function AcessoDoUsuario({ usuario, aoGravar, pedirConfirmacao }: {
+  usuario: Usuario
+  aoGravar: (mudou: Usuario) => void
+  pedirConfirmacao: (p: PedidoConfirmacao) => void
+}) {
+  const userId = Number(usuario.USER_ID)
+  const exec = useBloco(
+    () => linhas('executivaListar', { busca: String(usuario.EMAIL ?? ''), filtro: 'TODAS', limite: 50, offset: 0 })
+      .then(r => r.find(x => Number(x.USER_ID) === userId) ?? false),
+    [userId],
+  )
+  const [aviso, setAviso] = useState<Aviso>(null)
+  const x = exec.dados || null
+  const desativada = Number(x?.BLOQUEADO) === 1
+
+  function alternar() {
+    const desativar = !desativada
+    const motivo = { valor: '' }
+    pedirConfirmacao({
+      ...confirmacao(desativar ? 'desativarAcesso' : 'reativarAcesso', String(usuario.NOME)),
+      extra: desativar ? <CampoMotivo onMudar={texto => (motivo.valor = texto)} /> : undefined,
+      executar: async () => {
+        const erro = validarMotivo(motivo.valor)
+        if (erro) return setAviso({ tom: 'error', texto: erro })
+        let n = 0
+        try {
+          await gravar('executivaAcessoGarantir', { userId })
+          n = await gravar('executivaAcessoAlterar', { userId, bloqueado: desativar ? 1 : 0, motivo: desativar ? motivo.valor.trim() : '', agora: agoraBrasilia() })
+        } catch (falha) {
+          console.error('alterar acesso', falha)
+        }
+        setAviso(n
+          ? { tom: 'success', texto: `${usuario.NOME}: acesso ${desativar ? 'desativado' : 'reativado'}.` }
+          : { tom: 'error', texto: 'Nada foi alterado: você não tem permissão sobre esta executiva.' })
+        exec.recarregar()
+        if (n) aoGravar({ BLOQUEADO: desativar ? 1 : 0 })
+      },
+    })
+  }
+
+  return (
+    <Stack>
+      <PanelHeader title="Acesso" hint="Executiva desativada é desconectada na próxima ação e não consegue entrar. Carteira e histórico continuam." />
+      {exec.erro ? (
+        <BlocoFalhou />
+      ) : exec.dados === false ? (
+        <RowMeta>O acesso de diretoria, de coordenador ativo e o seu não se alteram por aqui (RN-021).</RowMeta>
+      ) : x ? (
+        <Actions>
+          <Status tone={desativada ? 'alert' : 'live'}>{desativada ? 'Desativado' : 'Com acesso'}</Status>
+          {desativada && x.MOTIVO ? <RowMeta>{String(x.MOTIVO)}</RowMeta> : null}
+          {x.ATUALIZADO_POR ? <RowMeta>{`${x.ATUALIZADO_POR} · ${fmtDataHora(String(x.ATUALIZADO_EM ?? '').replace(' ', 'T'))}`}</RowMeta> : <Dash />}
+          <Button variant={desativada ? 'secondary' : 'ghost'} onClick={alternar}>
+            {desativada ? 'Reativar acesso' : 'Desativar acesso'}
+          </Button>
+        </Actions>
+      ) : null}
+      {aviso && <Alert tone={aviso.tom}>{aviso.texto}</Alert>}
     </Stack>
   )
 }

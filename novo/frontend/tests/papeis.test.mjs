@@ -29,9 +29,10 @@ test('RN-001: Férias de Vendedores abre para Diretoria sem cadastro de coordena
   assert.ok(gil.find(s => s.id === 'coordenador').itens.some(i => i.caminho === '/ferias-vendedor'));
 });
 
-test('RN-001: em Usuários, diretoria edita papéis, gestão edita RCA e escopo, TI edita tudo', () => {
-  assert.deepEqual(partesUsuarios(['DIRETORIA', 'COORDENADOR']), { papeis: true, rcaEscopo: false });
-  assert.deepEqual(partesUsuarios(['GESTOR']), { papeis: false, rcaEscopo: true });
-  assert.deepEqual(partesUsuarios(['ADMIN']), { papeis: true, rcaEscopo: true });
-  assert.deepEqual(partesUsuarios(['VENDEDOR']), { papeis: false, rcaEscopo: false });
+test('RN-001: em Usuários, diretoria edita papéis, gestão RCA e escopo, coordenador ativo só o acesso da equipe', () => {
+  assert.deepEqual(partesUsuarios(['DIRETORIA', 'COORDENADOR'], true), { papeis: true, rcaEscopo: false, acesso: true, soEquipe: false });
+  assert.deepEqual(partesUsuarios(['GESTOR']), { papeis: false, rcaEscopo: true, acesso: true, soEquipe: false });
+  assert.deepEqual(partesUsuarios(['ADMIN']), { papeis: true, rcaEscopo: true, acesso: true, soEquipe: false });
+  assert.deepEqual(partesUsuarios(['COORDENADOR'], true), { papeis: false, rcaEscopo: false, acesso: true, soEquipe: true });
+  assert.deepEqual(partesUsuarios(['VENDEDOR']), { papeis: false, rcaEscopo: false, acesso: false, soEquipe: true });
 });

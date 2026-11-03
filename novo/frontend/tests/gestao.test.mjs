@@ -37,7 +37,7 @@ test('C-026: bloco que falha mostra a frase padrão', () => {
 
 test('RN-002: bloqueio de Usuários para vendedora diz os perfis e o dela, sem nome de cadastro interno', () => {
   const linhas = mensagemBloqueio('/governanca-rca', { papeis: ['VENDEDOR'], coordenadorAtivo: false });
-  assert.deepEqual(linhas, ['Esta tela está disponível apenas para Diretoria, Gestão e TI.', 'Seu perfil: Vendedor']);
+  assert.deepEqual(linhas, ['Esta tela está disponível apenas para Coordenador, Diretoria, Gestão e TI.', 'Seu perfil: Vendedor']);
   assert.ok(!/USUARIO|CARGO|COORDENADORES|tabela/i.test(linhas.join(' ')));
 });
 

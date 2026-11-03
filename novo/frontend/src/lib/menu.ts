@@ -34,7 +34,7 @@ const TODOS: Perfil[] = ['TODOS'];
 const COORD: Perfil[] = ['COORDENADOR_ATIVO'];
 const DIRETORIA: Perfil[] = ['DIRETORIA', 'ADMIN'];
 const COORD_DIRETORIA: Perfil[] = ['COORDENADOR_ATIVO', 'DIRETORIA', 'ADMIN'];
-const GESTAO_DIRETORIA: Perfil[] = ['DIRETORIA', 'GESTOR', 'ADMIN'];
+const USUARIOS: Perfil[] = ['COORDENADOR_ATIVO', 'DIRETORIA', 'GESTOR', 'ADMIN'];
 
 /**
  * Todas as telas do sistema novo. Telas canceladas não existem aqui: Ajuda, Suporte,
@@ -56,8 +56,7 @@ export const ROTAS: Rota[] = [
   { caminho: '/gestao-titulares', titulo: 'Titulares de Clientes', perfis: COORD_DIRETORIA },
   { caminho: '/ferias-vendedor', titulo: 'Férias de Vendedores', perfis: COORD_DIRETORIA },
   { caminho: '/gestao-coordenadores', titulo: 'Gestão Coordenadores', perfis: DIRETORIA },
-  { caminho: '/gestao-acesso-executivas', titulo: 'Executivas de Venda', perfis: COORD_DIRETORIA },
-  { caminho: '/governanca-rca', titulo: 'Usuários', perfis: GESTAO_DIRETORIA },
+  { caminho: '/governanca-rca', titulo: 'Usuários', perfis: USUARIOS },
   { caminho: '/configuracoes', titulo: 'Configurações', perfis: TODOS },
 ];
 
@@ -146,7 +145,7 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
       id: 'gestao',
       titulo: 'Gestão',
       itens: filtrar([
-        '/gestao-acesso-executivas', '/governanca-rca',
+        '/governanca-rca',
       ]),
     },
     { id: 'final', titulo: '', itens: filtrar(['/configuracoes']) },

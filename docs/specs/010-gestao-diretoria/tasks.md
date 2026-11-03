@@ -45,7 +45,7 @@
 - [x] **T-039** — `GestaoCoordenadoresPage` (`/gestao-coordenadores`)
 - [x] **T-040** — papéis dentro de `UsuariosPage` (`PapeisUsuariosPage` e `/gestao-cargos-usuarios` saíram em 2026-11-03)
 - [x] **T-041** — `FeriasVendedorPage` (`/ferias-vendedor`)
-- [x] **T-042** — `ExecutivasPage` (`/gestao-acesso-executivas`)
+- [x] **T-042** — acesso das executivas dentro de `UsuariosPage` (`ExecutivasPage` e `/gestao-acesso-executivas` saíram em 2026-11-03)
 
 ## Testes
 
