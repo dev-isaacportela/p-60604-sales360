@@ -13,12 +13,12 @@ import {
 } from '@/lib/direcionamento'
 import type { Planilha } from '@/lib/direcionamento'
 import {
-  Actions, Alert, Button, Dash, EmptyState, Field, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput, Stack,
+  Actions, Alert, Button, EmptyState, Field, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput, Stack,
   Status, Table, Td, Th, Toolbar, Tr,
 } from '@/components/page'
 import { useBloco } from '@/components/use-bloco'
 import { BlocoFalhou, Marcador } from '@/components/Confirmacao'
-import { Cresce, FaixaIndicadores } from '../clientes/layout'
+import { Cresce } from '../clientes/layout'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Linha = Record<string, any>
@@ -323,15 +323,33 @@ export function SemVisitacao({ escopo }: { escopo: Escopo }) {
   const totais = totaisFaixa(primeira)
   const lista = comCliente(paginas.flat())
   const total = Number(primeira[0]?.TOTAL) || 0
-  const itens = FAIXAS.filter(f => f.value).map(f => ({
-    rotulo: f.label,
-    valor: totais[f.value].toLocaleString('pt-BR'),
-    acao: { rotulo: `Filtrar ${f.label}`, ativo: faixa === f.value, onClick: () => setFaixa(a => (a === f.value ? '' : f.value)) },
-  }))
+  const semVisita = Object.values(totais).reduce((t, n) => t + n, 0)
+  const cartoes = [
+    { value: '', label: 'Total sem visita', n: semVisita, nota: 'sem visita concluída há 30 dias' },
+    ...FAIXAS.filter(f => f.value).map(f => ({ value: f.value, label: f.label, n: totais[f.value], nota: semVisita ? `${Math.round((totais[f.value] / semVisita) * 100)}% do total` : '' })),
+  ]
 
   return (
     <Stack>
-      {paginas.length ? <FaixaIndicadores itens={itens} /> : null}
+      {paginas.length ? (
+        <section role="group" aria-label="Filtrar por faixa" className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-rule-table bg-rule-row sm:grid-cols-3 lg:grid-cols-5">
+          {cartoes.map(c => {
+            const ativo = faixa === c.value
+            const tom = c.value ? tomFaixa(c.value) : 'off'
+            return (
+              <button key={c.value || 'todas'} type="button" aria-pressed={ativo} onClick={() => setFaixa(ativo && c.value ? '' : c.value)}
+                className={cn('flex min-w-0 flex-col gap-1 px-5 py-4 text-left transition-colors', ativo ? 'bg-accent shadow-[inset_0_-3px_0_var(--primary)]' : 'bg-card hover:bg-accent/60')}>
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-ink-secondary">
+                  {c.value ? <span aria-hidden className={cn('size-2 rounded-full', tom === 'alert' ? 'bg-destructive' : tom === 'attention' ? 'bg-ink-muted' : 'bg-ink-muted/40')} /> : null}
+                  {c.label}
+                </span>
+                <span className={cn('font-title text-[24px] leading-tight font-bold tabular-nums', c.n && tom === 'alert' ? 'text-destructive' : 'text-ink')}>{c.n.toLocaleString('pt-BR')}</span>
+                <span className="truncate text-[12px] text-ink-secondary">{c.nota}</span>
+              </button>
+            )
+          })}
+        </section>
+      ) : null}
       <Panel>
         <Toolbar>
           <Cresce>
@@ -340,7 +358,7 @@ export function SemVisitacao({ escopo }: { escopo: Escopo }) {
             </Field>
           </Cresce>
           <Actions>
-            {faixa ? <Button size="sm" variant="ghost" onClick={() => setFaixa('')}>Todas as faixas</Button> : null}
+            {faixa ? <Button size="sm" variant="ghost" onClick={() => setFaixa('')}>Mostrar todas as faixas</Button> : null}
             <Exportar planilha={tudo} disabled={!lista.length} />
           </Actions>
         </Toolbar>
@@ -354,7 +372,7 @@ export function SemVisitacao({ escopo }: { escopo: Escopo }) {
               <tr>
                 <Th>Cliente</Th>
                 <Th className="hidden sm:table-cell">Executivo</Th>
-                <Th>Faixa</Th>
+                <Th>Sem visita</Th>
                 <Th className="hidden sm:table-cell">Última visita</Th>
                 <Th className="hidden sm:table-cell">Próxima visita</Th>
               </tr>
@@ -369,10 +387,12 @@ export function SemVisitacao({ escopo }: { escopo: Escopo }) {
                   <Td className="hidden sm:table-cell">{l.EXECUTIVO}</Td>
                   <Td>
                     <Status tone={tomFaixa(l.FAIXA)}>{rotuloFaixa(l.FAIXA)}</Status>
-                    {l.DIAS != null ? <RowMeta>{l.DIAS} dias</RowMeta> : null}
+                    {l.DIAS != null ? <RowMeta>há {l.DIAS} dias</RowMeta> : null}
                   </Td>
-                  <Td className="hidden sm:table-cell">{l.ULTIMA ? fmtData(l.ULTIMA) : <Dash />}</Td>
-                  <Td className="hidden sm:table-cell">{l.PROXIMA ? fmtData(l.PROXIMA) : <Dash />}</Td>
+                  <Td className="hidden whitespace-nowrap tabular-nums sm:table-cell">{l.ULTIMA ? fmtData(l.ULTIMA) : <span className="text-ink-muted">nunca</span>}</Td>
+                  <Td className="hidden whitespace-nowrap tabular-nums sm:table-cell">
+                    {l.PROXIMA ? <span className="font-semibold text-primary">{fmtData(l.PROXIMA)}</span> : <span className="text-ink-secondary italic">nada marcado</span>}
+                  </Td>
                 </Tr>
               ))}
             </tbody>
