@@ -51,6 +51,13 @@ test('C-003 / C-004 / RN-005: realizadas 13 de 16 → restantes 3, 81%; meta com
   assert.equal(textoMetaComposta('TEAM', null, 0), 'Nenhuma pessoa no filtro atual.');
 });
 
+test('RN-005: ritmo — terça 03/11, 8 de 496 → esperado 198 (40%), 122 por dia nos 4 dias; sábado → semana encerrada', async () => {
+  const { ritmoSemana } = await import('../src/lib/dashboard.ts');
+  assert.deepEqual(ritmoSemana(496, 8, '2026-11-02', '2026-11-03'), { fracao: 0.4, esperado: 198, dias: 4, porDia: 122 });
+  assert.deepEqual(ritmoSemana(16, 3, '2026-11-02', '2026-11-02'), { fracao: 0.2, esperado: 3, dias: 5, porDia: 3 });
+  assert.deepEqual(ritmoSemana(16, 3, '2026-11-02', '2026-11-07'), { fracao: 1, esperado: 16, dias: 0, porDia: null });
+});
+
 test('RF-004: meta salva na quinta 12/11 ou no domingo 15/11 vale a partir de 16/11', () => {
   assert.equal(proximaSegunda('2026-11-12'), '2026-11-16');
   assert.equal(proximaSegunda('2026-11-15'), '2026-11-16');

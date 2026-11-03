@@ -59,6 +59,18 @@ export function textoMetaComposta(modo: Modo, valores: Linha | null, pessoas: nu
 /** A partir de quando vale uma meta salva hoje (RF-004). */
 export const proximaSegunda = (hoje: string) => somarDias(semanaDe(hoje).segunda, 7)
 
+/** Ritmo da semana (RN-005): esperado até hoje (inclusive) e visitas por dia útil que falta, hoje incluído. */
+export function ritmoSemana(meta: number, realizadas: number, segunda: string, hoje: string) {
+  const { decorridos } = diasUteis(segunda, somarDias(segunda, 4), hoje)
+  const dias = 5 - decorridos + (util(hoje) ? 1 : 0)
+  return {
+    fracao: decorridos / 5,
+    esperado: Math.round((meta * decorridos) / 5),
+    dias,
+    porDia: dias > 0 ? Math.ceil(Math.max(0, meta - realizadas) / dias) : null,
+  }
+}
+
 /* ─────────────── meta mensal (RN-006, RN-007, RN-008) ─────────────── */
 
 const util = (iso: string) => semanaDe(iso).segunda <= iso && iso <= semanaDe(iso).sexta

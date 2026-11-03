@@ -14,7 +14,7 @@ import { FILTROS_VAZIOS } from '@/lib/atividades'
 import { compromissosDeHoje, diasDaEvolucao, entradaDiarias, entradaMes, fraseCompromissos, mesDe, saudacao } from '@/lib/dashboard'
 import { AVISO_NAO_CONFIGURADO, mostrarAvisoNaoConfigurado } from '@/lib/sessao'
 import {
-  Alert, Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, PageHeader, Panel, PanelBody, Stack, TextLink,
+  Alert, Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, PageHeader, Stack, TextLink,
 } from '@/components/page'
 import { FiltroEscopo, useEscopo } from '@/components/FiltroEscopo'
 import { useSessao } from '@/components/sessao-contexto'
@@ -54,30 +54,22 @@ export default function DashboardPage() {
       <PageHeader
         module="Sales 360"
         title={saudacao(agoraBrasilia().slice(11, 16), sessao.nome, sessao.email)}
-        description="Semana de visitas, mês de faturamento e o que precisa de ação hoje."
+        description={agenda.erro ? (
+          <span className="text-destructive">Não foi possível carregar os compromissos de hoje.</span>
+        ) : deHoje ? (
+          <TextLink onClick={() => setJanela(true)} className="text-[14px]">{fraseCompromissos(deHoje.length, escopo.modo, nomeVendedor)}</TextLink>
+        ) : 'Carregando compromissos…'}
         actions={<FiltroEscopo {...filtro} />}
       />
       {mostrarAvisoNaoConfigurado(sessao) ? <Alert tone="warn">{AVISO_NAO_CONFIGURADO}</Alert> : null}
 
-      <Panel>
-        <PanelBody>
-          {agenda.erro ? (
-            <p className="text-[13px] text-destructive">Não foi possível carregar os compromissos de hoje.</p>
-          ) : deHoje ? (
-            <TextLink onClick={() => setJanela(true)} className="text-[15px]">{fraseCompromissos(deHoje.length, escopo.modo, nomeVendedor)}</TextLink>
-          ) : (
-            <span className="text-[13px] text-ink-secondary">Carregando compromissos…</span>
-          )}
-        </PanelBody>
-      </Panel>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <MetaSemanal estado={metaSemana} modo={escopo.modo} segunda={semana.segunda} sexta={semana.sexta} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <MetaSemanal estado={metaSemana} modo={escopo.modo} segunda={semana.segunda} sexta={semana.sexta} hoje={hoje} />
         <MetaMensal estado={mes} inicio={inicio} fim={fim} hoje={hoje} />
-        <Alertas estado={alertas} className="md:col-span-2 xl:col-span-1" />
       </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <VendasDiarias estado={diarias} mes={mes.dados} hoje={hoje} className="xl:col-span-2" />
+      <VendasDiarias estado={diarias} mes={mes.dados} hoje={hoje} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Alertas estado={alertas} />
         <UltimasAtividades estado={atividades} hoje={hoje} />
       </div>
       <ResumoSemana estado={agenda} hoje={hoje} />
