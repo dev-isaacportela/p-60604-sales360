@@ -66,13 +66,14 @@ export function NomeLink({ children, onClick }: { children: React.ReactNode; onC
 
 /** Sete colunas (seg–dom) da visão Semana no desktop. */
 export function GradeSemana({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-7 divide-x divide-rule-row">{children}</div>
+  // Altura fixa com rolagem interna; o cabeçalho de cada dia fica grudado no topo.
+  return <div className="grid h-[560px] grid-cols-7 divide-x divide-rule-row overflow-y-auto">{children}</div>
 }
 
 export function ColunaDia({ titulo, hoje, children }: { titulo: string; hoje: boolean; children: React.ReactNode }) {
   return (
     <section className="flex min-h-64 min-w-0 flex-col">
-      <header className={cn('border-b border-rule-row px-2 py-2 text-center text-[12px] font-semibold', hoje ? 'text-primary' : 'text-ink-secondary')}>
+      <header className={cn('sticky top-0 z-10 border-b border-rule-row bg-card px-2 py-2 text-center text-[12px] font-semibold', hoje ? 'text-primary' : 'text-ink-secondary')}>
         {titulo}
       </header>
       <div className="flex flex-col gap-1.5 p-1.5">{children}</div>
