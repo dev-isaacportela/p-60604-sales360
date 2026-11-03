@@ -60,7 +60,7 @@ export function periodoAnterior(de: string, ate: string): { deAnt: string; ateAn
   return { deAnt: somarDias(de, -dias), ateAnt: somarDias(de, -1) };
 }
 
-const ehUtil = (s: string) => { const d = data(s).getUTCDay(); return d >= 1 && d <= 5; };
+export const ehUtil = (s: string) => { const d = data(s).getUTCDay(); return d >= 1 && d <= 5; };
 
 /** RNT-016: segunda a sexta, sem descontar feriados. */
 export function diasUteis(de: string, ate: string): number {

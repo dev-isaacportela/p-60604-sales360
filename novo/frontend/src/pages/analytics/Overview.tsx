@@ -6,7 +6,7 @@ import { useState } from 'react'
 import type * as React from 'react'
 import { linhas } from '@/lib/mitra-api'
 import { fmtData, moeda } from '@/lib/formato'
-import { cardsResumo, fmtPct, metaBatidaEm, moedaCurta, pontosEvolucao, porDia, projecao, visitas } from '@/lib/analytics'
+import { cardsResumo, ehUtil, fmtPct, metaBatidaEm, moedaCurta, pontosEvolucao, porDia, projecao, visitas } from '@/lib/analytics'
 import { Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
 import { useBloco } from '@/components/use-bloco'
 import { cn } from '@/lib/utils'
@@ -27,6 +27,9 @@ export function Overview({ consulta, params, hoje, blocos, filtrarPor }: {
   const proj = projecao(c.liquido, consulta.de, consulta.ate, hoje)
   const pontos = pontosEvolucao(evolucao.dados ?? [], consulta.de, consulta.ate)
   const batida = metaBatidaEm(pontos, c.meta)
+  const diario = porDia(consulta.de, consulta.ate)
+  // RF-004: por dia, o gráfico mostra só dias úteis; venda de fim de semana segue nos cartões.
+  const noGrafico = diario ? pontos.filter(p => ehUtil(p.chave)) : pontos
   const v = visitas(vis.dados ?? [], consulta.de, consulta.ate)
   const escolher = (b: Barra) => filtrarPor('PRODUTO', { value: b.chave, label: b.rotulo })
 
@@ -56,12 +59,12 @@ export function Overview({ consulta, params, hoje, blocos, filtrarPor }: {
 
       <Panel>
         <PanelHeader
-          title={porDia(consulta.de, consulta.ate) ? 'Faturamento por dia' : 'Faturamento por mês'}
-          hint={porDia(consulta.de, consulta.ate) ? 'Verde: dia que alcançou a meta do dia útil. Fim de semana não tem meta.' : 'Verde: mês que alcançou a meta do mês.'}
+          title={diario ? 'Faturamento por dia útil' : 'Faturamento por mês'}
+          hint={diario ? 'Verde: dia que alcançou a meta do dia útil. Sábado e domingo ficam fora do gráfico.' : 'Verde: mês que alcançou a meta do mês.'}
         />
         <PanelBody>
           <EstadoBloco erro={evolucao.erro} carregando={!evolucao.dados && !evolucao.erro} nome="a evolução">
-            <Evolucao pontos={pontos} formato={moeda} compacto={moedaCurta} />
+            <Evolucao pontos={noGrafico} formato={moeda} compacto={moedaCurta} />
           </EstadoBloco>
         </PanelBody>
       </Panel>
