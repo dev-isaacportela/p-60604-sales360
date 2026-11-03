@@ -1,19 +1,20 @@
-// Grade da Agenda (RF-001/002): Dia em lista, Semana em sete colunas (no
-// celular, um dia por vez) e Mês em calendário. Cada compromisso mostra a cor
-// do status; quem não opera vê `Somente visualização` (RN-012).
+// Grade da Agenda (RF-001/002): Dia em linha do tempo (com a linha de agora
+// no dia de hoje), Semana em sete colunas (no celular, um dia por vez) e Mês em
+// calendário. Cada compromisso mostra a cor do status; quem não opera vê
+// `Somente visualização` (RN-012).
 
 import { useState } from 'react'
-import { MoreHorizontal } from 'lucide-react'
+import { Eye, MoreHorizontal } from 'lucide-react'
 import {
-  DIAS_SEMANA, acaoPrincipal, corStatus, ddmm, mesEmSemanas, rotuloDia, rotuloOrigem, rotuloStatus, semanaDe, somarDias,
+  DIAS_SEMANA, acaoPrincipal, corStatus, ddmm, mesEmSemanas, posicaoAgora, rotuloDia, rotuloOrigem, rotuloStatus, semanaDe, somarDias,
   somenteVisualizacao,
 } from '@/lib/agenda'
+import { agoraBrasilia } from '@/lib/formato'
 import type { Acao, Modo } from '@/lib/agenda'
 import { Button, EmptyState, IconButton } from '@/components/page'
 import { SoCelular, SoDesktop } from '../clientes/layout'
 import {
-  AbaDia, AbasDias, Bloco, CelulaMes, ColunaDia, ColunaHora, Discreto, EntradaMes, FaixaStatus, GradeMes, GradeSemana,
-  LinhaItem, Miolo, NomeLink, UmaLinha,
+  AbaDia, AbasDias, Bloco, CelulaMes, ColunaDia, EntradaMes, GradeMes, GradeSemana, ItemTrilho, LinhaAgora, NomeLink, Trilho,
 } from './layout'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,34 +32,44 @@ function legenda(item: Linha) {
   const partes = [rotuloStatus(item.STATUS), rotuloOrigem(item)]
   if (item.ORIGEM !== 'INTERNA' && item.TIPO) partes.push(item.TIPO)
   if (Number(item.EH_DONO) !== 1) partes.push(item.DONO)
-  if (somenteVisualizacao(item)) partes.push('Somente visualização')
   return partes.join(' · ')
 }
 
 function Item({ item, ev }: { item: Linha; ev: Eventos }) {
   const principal = acaoPrincipal(item)
   return (
-    <LinhaItem>
-      <FaixaStatus cor={corStatus(item.STATUS)} />
-      <ColunaHora>{hora(item)}</ColunaHora>
-      <Miolo>
-        <UmaLinha>
-          <NomeLink onClick={item.ORIGEM === 'VISITA' && item.CLIENTE_ID ? () => ev.historico(Number(item.CLIENTE_ID)) : undefined}>
-            {item.TITULO}
-          </NomeLink>
-        </UmaLinha>
-        <Discreto>{legenda(item)}</Discreto>
-      </Miolo>
-      {principal ? <Button size="sm" onClick={() => ev.agir(principal.acao, item)}>{principal.rotulo}</Button> : null}
-      <IconButton label="Detalhes e ações" onClick={() => ev.detalhe(item)}><MoreHorizontal aria-hidden /></IconButton>
-    </LinhaItem>
+    <ItemTrilho
+      inicio={item.HORA_INICIO ?? ''}
+      fim={item.HORA_FIM ?? ''}
+      cor={corStatus(item.STATUS)}
+      cancelado={item.STATUS === 'CANCELADA'}
+      titulo={
+        <NomeLink onClick={item.ORIGEM === 'VISITA' && item.CLIENTE_ID ? () => ev.historico(Number(item.CLIENTE_ID)) : undefined}>
+          {item.TITULO}
+        </NomeLink>
+      }
+      meta={legenda(item)}
+      acoes={
+        <>
+          {somenteVisualizacao(item) ? (
+            <span className="inline-flex items-center gap-1 text-[12px] text-ink-secondary"><Eye aria-hidden className="size-3.5" />Somente visualização</span>
+          ) : null}
+          {principal ? <Button size="sm" onClick={() => ev.agir(principal.acao, item)}>{principal.rotulo}</Button> : null}
+          <IconButton label="Detalhes e ações" onClick={() => ev.detalhe(item)}><MoreHorizontal aria-hidden /></IconButton>
+        </>
+      }
+    />
   )
 }
 
-function ListaDia({ itens, ev }: { itens: Linha[]; ev: Eventos }) {
+function ListaDia({ itens, ev, ehHoje }: { itens: Linha[]; ev: Eventos; ehHoje: boolean }) {
   if (!itens.length) return <EmptyState title="Nenhum compromisso neste dia." hint="Use + Nova agenda para planejar." />
+  const agora = agoraBrasilia().slice(11, 16)
+  const pos = ehHoje ? posicaoAgora(itens, agora) : null
+  const linhas = itens.map(i => <Item key={`${i.ORIGEM}-${i.ID}`} item={i} ev={ev} />)
+  if (pos !== null) linhas.splice(pos === -1 ? linhas.length : pos, 0, <LinhaAgora key="agora" hora={agora} />)
   // Mesma altura fixa da Semana, com rolagem interna.
-  return <div className="h-[560px] overflow-y-auto">{itens.map(i => <Item key={`${i.ORIGEM}-${i.ID}`} item={i} ev={ev} />)}</div>
+  return <div className="h-[560px] overflow-y-auto"><Trilho>{linhas}</Trilho></div>
 }
 
 const doDia = (itens: Linha[], dia: string) => itens.filter(i => i.DATA === dia)
@@ -96,7 +107,7 @@ function Semana({ itens, data, hoje, ev }: { itens: Linha[]; data: string; hoje:
             </AbaDia>
           ))}
         </AbasDias>
-        <ListaDia itens={doDia(itens, diaCelular)} ev={ev} />
+        <ListaDia itens={doDia(itens, diaCelular)} ev={ev} ehHoje={diaCelular === hoje} />
       </SoCelular>
     </>
   )
@@ -131,7 +142,7 @@ export function Grade({ modo, itens, data, hoje, ev, abrirDia }: {
   ev: Eventos
   abrirDia: (dia: string) => void
 }) {
-  if (modo === 'DIA') return <ListaDia itens={doDia(itens, data)} ev={ev} />
+  if (modo === 'DIA') return <ListaDia itens={doDia(itens, data)} ev={ev} ehHoje={data === hoje} />
   if (modo === 'SEMANA') return <Semana key={semanaDe(data).segunda} itens={itens} data={data} hoje={hoje} ev={ev} />
   return <Mes itens={itens} data={data} hoje={hoje} abrirDia={abrirDia} />
 }

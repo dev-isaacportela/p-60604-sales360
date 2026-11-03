@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   formularioInicial, validar, validarReagendar, validarConclusao, validarCheckout, validarCancelar, mensagemConflito,
   acoes, acaoPrincipal, periodo, navegar, semanaDe, mesEmSemanas, salvarAtividades, atividadeVazia, textoSimples,
-  relatoInterno, participantes, meta, MSG,
+  relatoInterno, participantes, meta, posicaoAgora, MSG,
 } from '../src/lib/agenda.ts';
 
 const HOJE = '2026-11-04';
@@ -130,4 +130,11 @@ test('RF-014: meta semanal com restantes e percentual', () => {
   assert.deepEqual(meta({ REALIZADO: 13, META: 16 }), { realizadas: 13, meta: 16, restantes: 3, percentual: 81 });
   assert.deepEqual(meta({ REALIZADO: 20, META: 16 }).restantes, 0);
   assert.equal(meta(null).percentual, 0);
+});
+
+test('Visão Dia: linha de agora entra antes do primeiro compromisso que ainda não começou', () => {
+  const itens = [{ HORA_INICIO: '08:00' }, { HORA_INICIO: '09:00' }, { HORA_INICIO: '13:00' }];
+  assert.equal(posicaoAgora(itens, '08:30'), 1);
+  assert.equal(posicaoAgora(itens, '07:00'), 0);
+  assert.equal(posicaoAgora(itens, '18:00'), -1);
 });

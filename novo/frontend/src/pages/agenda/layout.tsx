@@ -26,7 +26,7 @@ export function RotuloPeriodo({ children }: { children: React.ReactNode }) {
   return <span className="mr-auto font-title text-[15px] font-bold text-ink first-letter:uppercase">{children}</span>
 }
 
-/** Faixa de cor do status (RF-002), à esquerda do compromisso. */
+/** Faixa de cor do status (RF-002), à esquerda do compromisso na Semana. */
 export function FaixaStatus({ cor }: { cor: string }) {
   return <span className={cn('w-1 shrink-0 self-stretch rounded-full', cor)} aria-hidden />
 }
@@ -35,32 +35,66 @@ export function Ponto({ cor }: { cor: string }) {
   return <span className={cn('inline-block size-2 shrink-0 rounded-full', cor)} aria-hidden />
 }
 
-/** Linha compacta de um compromisso (visão Dia e Semana no celular). */
-export function LinhaItem({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-center gap-3 border-b border-rule-row px-4 py-2 text-[13px] last:border-b-0">{children}</div>
+/**
+ * Visão Dia em linha do tempo: hora à esquerda, trilho com o ponto da cor do
+ * status (RF-002) e o compromisso. O trilho é uma linha só, atrás dos pontos.
+ */
+export function Trilho({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative min-h-full py-1">
+      <span aria-hidden className="absolute top-0 bottom-0 left-[94px] w-px bg-rule-table" />
+      {children}
+    </div>
+  )
 }
 
-export function ColunaHora({ children }: { children: React.ReactNode }) {
-  return <span className="w-20 shrink-0 text-[12px] text-ink-secondary tabular-nums">{children}</span>
+const COLUNAS = 'relative grid grid-cols-[3.5rem_1.25rem_minmax(0,1fr)] gap-x-3 px-4'
+
+export function ItemTrilho({ inicio, fim, cor, cancelado, titulo, meta, acoes }: {
+  inicio: string
+  fim: string
+  cor: string
+  cancelado: boolean
+  titulo: React.ReactNode
+  meta: React.ReactNode
+  acoes: React.ReactNode
+}) {
+  return (
+    <div className={COLUNAS}>
+      <span className="py-2.5 text-right tabular-nums">
+        <span className={cn('block text-[13px] font-semibold', cancelado ? 'text-ink-secondary' : 'text-ink')}>{inicio}</span>
+        <span className="block text-[12px] text-ink-secondary">{fim}</span>
+      </span>
+      <span className="flex justify-center pt-[15px]">
+        <span aria-hidden className={cn('size-2.5 rounded-full ring-4 ring-card', cor)} />
+      </span>
+      <div className="flex min-w-0 items-center gap-3 border-b border-rule-row py-2.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className={cn('truncate text-[14px] font-semibold', cancelado ? 'text-ink-secondary line-through' : 'text-ink')}>{titulo}</span>
+          <span className="truncate text-[12px] text-ink-secondary">{meta}</span>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">{acoes}</div>
+      </div>
+    </div>
+  )
 }
 
-export function Miolo({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-w-0 flex-1 flex-col">{children}</div>
-}
-
-export function UmaLinha({ children }: { children: React.ReactNode }) {
-  return <span className="flex min-w-0 items-center gap-2 truncate">{children}</span>
-}
-
-export function Discreto({ children }: { children: React.ReactNode }) {
-  return <span className="truncate text-[12px] text-ink-secondary">{children}</span>
+/** Linha de "agora" na visão Dia de hoje. */
+export function LinhaAgora({ hora }: { hora: string }) {
+  return (
+    <div className={cn(COLUNAS, 'items-center py-1')} role="separator" aria-label={`Agora, ${hora}`}>
+      <span className="text-right text-[12px] font-semibold text-primary tabular-nums">{hora}</span>
+      <span className="flex justify-center"><span aria-hidden className="size-2.5 rounded-full bg-primary ring-4 ring-card" /></span>
+      <span aria-hidden className="h-0.5 rounded-full bg-primary" />
+    </div>
+  )
 }
 
 /** Nome do cliente que abre o histórico (RF-015). */
 export function NomeLink({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
-  if (!onClick) return <span className="truncate font-semibold text-ink">{children}</span>
+  if (!onClick) return <>{children}</>
   return (
-    <button type="button" onClick={onClick} className="truncate text-left font-semibold text-ink underline decoration-ink-muted underline-offset-2 hover:text-primary">
+    <button type="button" onClick={onClick} className="max-w-full truncate text-left hover:text-primary hover:underline">
       {children}
     </button>
   )

@@ -246,6 +246,9 @@ export function acoes(item: Linha): { acao: Acao; rotulo: string }[] {
 
 export const somenteVisualizacao = (item: Linha) => Number(item.PODE_OPERAR) !== 1;
 
+/** Visão Dia: antes de qual item (pela hora de início) entra a linha de "agora"; -1 = depois de todos. */
+export const posicaoAgora = (itens: Linha[], hhmm: string) => itens.findIndex(i => String(i.HORA_INICIO ?? '') > hhmm);
+
 /* ─────────────── status e legenda (RF-002) ─────────────── */
 
 export const LEGENDA: { status: Status; rotulo: string; cor: string }[] = [
