@@ -35,7 +35,6 @@ const COORD: Perfil[] = ['COORDENADOR_ATIVO'];
 const DIRETORIA: Perfil[] = ['DIRETORIA', 'ADMIN'];
 const COORD_DIRETORIA: Perfil[] = ['COORDENADOR_ATIVO', 'DIRETORIA', 'ADMIN'];
 const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
-const TI: Perfil[] = ['ADMIN'];
 
 /**
  * Todas as telas do sistema novo. Telas canceladas não existem aqui: Ajuda, Suporte,
@@ -59,13 +58,9 @@ export const ROTAS: Rota[] = [
   { caminho: '/gestao-cargos-usuarios', titulo: 'Papéis de Usuários', perfis: DIRETORIA },
   { caminho: '/gestao-coordenadores', titulo: 'Gestão Coordenadores', perfis: DIRETORIA },
   { caminho: '/gestao-acesso-executivas', titulo: 'Executivas de Venda', perfis: COORD_DIRETORIA },
-  { caminho: '/acomp-semanal', titulo: 'Acomp. Semanal', perfis: GESTAO },
-  { caminho: '/painel-gestao', titulo: 'Painel de Gestão', perfis: GESTAO },
   { caminho: '/governanca-rca', titulo: 'Governança RCA', perfis: GESTAO },
   { caminho: '/gestao-bus-vendedores', titulo: 'BUs e Vendedores', perfis: GESTAO },
   { caminho: '/configuracao-escopo-usuarios', titulo: 'Escopo Usuários', perfis: GESTAO },
-  { caminho: '/gestao-cadastros', titulo: 'Gestão Cadastros', perfis: GESTAO },
-  { caminho: '/painel-validacao', titulo: 'Painel de Validação', perfis: TI },
   { caminho: '/configuracoes', titulo: 'Configurações', perfis: TODOS },
 ];
 
@@ -153,9 +148,7 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
       id: 'gestao',
       titulo: 'Gestão',
       itens: filtrar([
-        '/gestao-acesso-executivas', '/acomp-semanal', '/painel-gestao', '/governanca-rca',
-        '/gestao-bus-vendedores', '/configuracao-escopo-usuarios', '/gestao-cadastros',
-        '/painel-validacao',
+        '/gestao-acesso-executivas', '/governanca-rca', '/gestao-bus-vendedores', '/configuracao-escopo-usuarios',
       ]),
     },
     { id: 'final', titulo: '', itens: filtrar(['/configuracoes']) },
@@ -166,7 +159,7 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
 /** Rodapé do menu: só Sair (RN-005). */
 export const RODAPE_MENU = ['Sair'];
 
-const PAGINAS_INICIAIS = ['/', '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics', '/painel-gestao'];
+const PAGINAS_INICIAIS = ['/', '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics'];
 
 /** Opções de `Página inicial` (RN-011): só telas que o usuário pode abrir. */
 export function opcoesPaginaInicial(sessao: SessaoAcesso): Array<{ valor: string; rotulo: string }> {

@@ -10,7 +10,7 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
-  BarChart3, Bell, Briefcase, CalendarDays, Compass, Contact, FileCheck, FileSpreadsheet, GitCompare, KeyRound,
+  BarChart3, Bell, Briefcase, CalendarDays, Compass, Contact, GitCompare, KeyRound,
   LayoutDashboard, ListChecks, LogOut, Menu as IconeMenu, Network, PackagePlus, PanelLeftClose, PanelLeftOpen, Plane,
   Settings, ShieldCheck, SlidersHorizontal, UserCheck, UserCog, Users, X,
 } from 'lucide-react'
@@ -39,13 +39,9 @@ const ICONES: Record<string, LucideIcon> = {
   '/gestao-cargos-usuarios': KeyRound,
   '/gestao-coordenadores': UserCog,
   '/gestao-acesso-executivas': Contact,
-  '/acomp-semanal': FileSpreadsheet,
-  '/painel-gestao': BarChart3,
   '/governanca-rca': ShieldCheck,
   '/gestao-bus-vendedores': Network,
   '/configuracao-escopo-usuarios': SlidersHorizontal,
-  '/gestao-cadastros': FileCheck,
-  '/painel-validacao': ShieldCheck,
   '/configuracoes': Settings,
 }
 

@@ -194,7 +194,7 @@ Lista de segmentos para o dropdown de clientes. Só tem SF de listagem; nenhuma 
 | CRIADO_EM / ATUALIZADO_EM | VARCHAR(19) | NULL | |
 
 ### `COMISSOES` — ativa
-Cadastro manual de comissão, aba "Comissões" de `/gestao-cadastros`, SFs 79–83. O cálculo automático está fora de escopo (spec 010).
+Cadastro manual de comissão, aba "Comissões" de `/gestao-cadastros`, SFs 79–83. A tela Gestão Cadastros foi cancelada em 2026-11-03 (D4); se alguma tela do sistema novo lê ou grava esta tabela é decisão da spec 010. O cálculo automático está fora de escopo (spec 010).
 
 | Coluna | Tipo | Nulo / default | Chave |
 |---|---|---|---|
@@ -502,7 +502,7 @@ Meta por usuário de antes da redistribuição. Nenhuma SF grava aqui. Ainda apa
 UNIQUE `UX_META_VENDEDOR_PERIODO` (USER_ID, ANO, MES).
 
 ### `METAS` — legada — não usar
-Cadastro manual de meta da fase 1, aba "Metas" de `/gestao-cadastros` (SFs 74–78). Ainda é lido como `META_MES` pelas SFs `dashboardKpis` e `painelGestaoResumo`, o que contraria a RNT-009 (L-03). O sistema novo não a usa como meta. O destino da aba fica para a spec 010.
+Cadastro manual de meta da fase 1, aba "Metas" de `/gestao-cadastros` (SFs 74–78). Ainda é lido como `META_MES` pelas SFs `dashboardKpis` e `painelGestaoResumo`, o que contraria a RNT-009 (L-03). O sistema novo não a usa como meta. A tela Gestão Cadastros, onde ficava a aba, foi cancelada em 2026-11-03 (D4).
 
 | Coluna | Tipo | Nulo / default | Chave |
 |---|---|---|---|

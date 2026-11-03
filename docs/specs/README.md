@@ -32,11 +32,11 @@ quando o módulo entra em reconstrução.
 | [003](003-agenda-visitas/spec.md) | Agenda e visitas | `/agenda` (`/agenda-coordenador` cancelada em 2026-11-03) | em revisão |
 | [004](004-tarefas/spec.md) | Atividades | `/tarefas` | em revisão |
 | [005](005-dashboard/spec.md) | Dashboard | `/` | em revisão |
-| [006](006-acompanhamento-semanal/spec.md) | Acompanhamento semanal e conferência de vendas | `/acomp-semanal-vendedor`, `/acomp-semanal`, `/painel-validacao` (`/admin-acomp-semanal` cancelada em 2026-11-03) | em revisão |
+| [006](006-acompanhamento-semanal/spec.md) | Acompanhamento semanal | `/acomp-semanal-vendedor` (`/acomp-semanal`, `/painel-validacao` e `/admin-acomp-semanal` cancelados em 2026-11-03) | em revisão |
 | [007](007-analytics-metas/spec.md) | Analytics, comparativo e metas | `/analytics`, `/comparativo` | em revisão |
 | [008](008-alertas-prospeccao/spec.md) | Alertas, direcionamento semanal e prospecção | `/alertas`, `/direcionamento-semanal` | em revisão |
 | [009](009-mix-builder/spec.md) | Mix Builder | `/simulacao` | em revisão |
-| [010](010-gestao-diretoria/spec.md) | Gestão, coordenação e diretoria | `/painel-gestao`, `/gestao-cadastros`, `/gestao-bus-vendedores`, `/configuracao-escopo-usuarios`, `/governanca-rca`, `/gestao-coordenadores`, `/gestao-cargos-usuarios`, `/gestao-carteira`, `/ferias-vendedor`, `/gestao-acesso-executivas` (`/analise-diretoria`, `/faturamento` e `/gestao-metas` canceladas em 2026-11-03) | em revisão |
+| [010](010-gestao-diretoria/spec.md) | Gestão, coordenação e diretoria | `/gestao-bus-vendedores`, `/configuracao-escopo-usuarios`, `/governanca-rca`, `/gestao-coordenadores`, `/gestao-cargos-usuarios`, `/gestao-carteira`, `/ferias-vendedor`, `/gestao-acesso-executivas` (`/analise-diretoria`, `/faturamento` e `/gestao-metas` canceladas em 2026-11-03) | em revisão |
 | [011](011-solicitacoes-compras/spec.md) | Solicitações de compras | `/solicitacoes-compras` | **cancelada** (2026-10-30): registro do atual, só para aposentar |
 | [012](012-suporte-release-notes/spec.md) | Suporte, ajuda e notas de versão | `/ajuda`, `/suporte`, `/painel-desenvolvedor`, `/release-notes` | **cancelada** (2026-10-30): registro do atual, só para aposentar |
 

@@ -80,7 +80,8 @@ do sistema de fotos do Mix fica com a equipe técnica, fora das telas (spec 009)
 |---|---|---|
 | D1 | **Canceladas** as telas Agenda dos Vendedores, Análise Diretoria, Faturamento e Gestão de Metas. O coordenador vê a agenda da equipe na própria Agenda, pelo filtro de escopo | 000, 001, 003, 010 |
 | D2 | A meta da BU vem do planejamento estratégico, que é outro sistema, e já chega para o coordenador redistribuir. Este sistema não lança meta; os lançamentos manuais antigos (`METAS_BU`) não são lidos | 000 (RNT-009, modelo de dados), 007, 010 |
-| D3 | **Cancelada** a tela Acomp. Semanal Admin (conferência de atribuição da TI por vendedor e mês). A TI fica com o Painel de Validação; a sincronização manual continua na visão de gestão | 000, 001, 006 |
+| D3 | **Cancelada** a tela Acomp. Semanal Admin (conferência de atribuição da TI por vendedor e mês) | 000, 001, 006 |
+| D4 | **Canceladas** as telas Acomp. Semanal (visão de gestão), Painel de Gestão, Gestão Cadastros e Painel de Validação. Coordenação e diretoria acompanham a equipe pela visão do vendedor com o filtro de escopo; a carga de vendas do ERP passa a ser só automática, sem `Sincronizar agora`; Painel de Gestão sai das opções de página inicial | 000, 001, 006, 010 |
 
 ## C. Para conferir no Mitra (não são decisões)
 
@@ -90,4 +91,3 @@ Vêm de `000-visao-geral/modelo-de-dados.md`, seção Lacunas:
 - Qual dos dois DDLs do cadastro de papéis prevaleceu (L-04).
 - Collation das tabelas buscadas além de clientes (L-06).
 - Migrations: o `migrations.yaml` começa com `migrations: []` e não serve de baseline para um banco vazio (L-07 a L-09). Reportar ao sistema de migrations; **não editar**.
-- SQL das funções do Painel de Validação, que não está no repositório (spec 006).

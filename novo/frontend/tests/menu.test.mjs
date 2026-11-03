@@ -6,7 +6,7 @@ import { destinoAposLogin } from '../src/lib/sessao.ts';
 
 const rotulos = secao => secao.itens.map(i => i.rotulo);
 const porId = (menu, id) => menu.find(s => s.id === id);
-const CANCELADAS = /ajuda|suporte|painel dev|desenvolvedor|notas de vers|solicita|agenda dos vendedores|análise diretoria|faturamento|gestão de metas|semanal admin/i;
+const CANCELADAS = /ajuda|suporte|painel dev|desenvolvedor|notas de vers|solicita|agenda dos vendedores|análise diretoria|faturamento|gestão de metas|acomp\. semanal|painel de gestão|gestão cadastros|painel de validação/i;
 
 const gil = { papeis: ['DIRETORIA', 'COORDENADOR'], coordenadorAtivo: true, pagina: '/' };
 const ana = { papeis: ['VENDEDOR'], coordenadorAtivo: false, pagina: '/agenda' };
@@ -29,15 +29,14 @@ test('C-007 / RN-005: Diretoria + coordenador ativo veem as duas seções, Titul
     ['Dashboard', 'Agenda', 'Clientes', 'Atividades', 'Mix Builder', 'Analytics', 'Comparativo', 'Alertas']);
 });
 
-test('RN-005 (permissões): Gestão por papel, técnicos só para TI, telas canceladas nunca aparecem', () => {
+test('RN-005 (permissões): Gestão por papel, telas canceladas nunca aparecem', () => {
   const gestao = porId(montarMenu({ papeis: ['GESTOR'] }), 'gestao');
   assert.deepEqual(rotulos(gestao),
-    ['Acomp. Semanal', 'Painel de Gestão', 'Governança RCA', 'BUs e Vendedores', 'Escopo Usuários', 'Gestão Cadastros']);
+    ['Governança RCA', 'BUs e Vendedores', 'Escopo Usuários']);
 
   const ti = montarMenu({ papeis: ['ADMIN'] });
   const gestaoTi = rotulos(porId(ti, 'gestao'));
-  assert.equal(gestaoTi.length, 8);
-  assert.deepEqual(gestaoTi.slice(-1), ['Painel de Validação']);
+  assert.deepEqual(gestaoTi, ['Executivas de Venda', 'Governança RCA', 'BUs e Vendedores', 'Escopo Usuários']);
   assert.deepEqual(rotulos(porId(ti, 'diretoria')), ['Papéis de Usuários', 'Gestão Coordenadores', 'Titulares de Clientes']);
 
   for (const papeis of [['VENDEDOR'], ['COORDENADOR'], ['DIRETORIA'], ['GESTOR'], ['ADMIN']]) {
@@ -48,19 +47,20 @@ test('RN-005 (permissões): Gestão por papel, técnicos só para TI, telas canc
   assert.deepEqual(RODAPE_MENU, ['Sair']);
 });
 
-test('C-008 / RN-015: vendedora não abre o Painel de Validação, restrito a TI', () => {
-  assert.equal(podeAbrir('/painel-validacao', ana), false);
-  assert.equal(podeAbrir('/painel-validacao', { papeis: ['ADMIN'] }), true);
-  assert.equal(perfisPermitidos('/painel-validacao'), 'TI');
+test('C-008 / RN-015: vendedora não abre Papéis de Usuários, restrito a Diretoria e TI', () => {
+  assert.equal(podeAbrir('/gestao-cargos-usuarios', ana), false);
+  assert.equal(podeAbrir('/gestao-cargos-usuarios', { papeis: ['ADMIN'] }), true);
+  assert.equal(perfisPermitidos('/gestao-cargos-usuarios'), 'Diretoria e TI');
   assert.equal(perfisPermitidos('/gestao-titulares'), 'Coordenador, Diretoria e TI');
 });
 
-test('C-011 / RN-011: página inicial sem permissão cai no Dashboard e some das opções', () => {
+test('C-011 / RN-011: página inicial cancelada (Painel de Gestão) cai no Dashboard e some das opções', () => {
   const carla = { papeis: ['VENDEDOR'], pagina: '/painel-gestao' };
   assert.equal(destinoAposLogin(null, carla), '/');
   assert.deepEqual(opcoesPaginaInicial(carla).map(o => o.rotulo),
     ['Dashboard', 'Agenda', 'Clientes', 'Atividades', 'Mix Builder', 'Analytics']);
-  assert.equal(opcoesPaginaInicial({ papeis: ['GESTOR'] }).at(-1).rotulo, 'Painel de Gestão');
+  assert.equal(opcoesPaginaInicial({ papeis: ['GESTOR'] }).length, 6);
+  assert.equal(destinoAposLogin('/painel-validacao', { papeis: ['ADMIN'], pagina: '/' }), '/');
 });
 
 test('RN-011 (telas canceladas): Ajuda ou Solicitações gravadas como página inicial levam ao Dashboard', () => {
@@ -71,5 +71,5 @@ test('RN-011 (telas canceladas): Ajuda ou Solicitações gravadas como página i
   assert.equal(destinoAposLogin('/agenda-coordenador', { papeis: ['COORDENADOR'], coordenadorAtivo: true, pagina: '/' }), '/');
   const opcoes = opcoesPaginaInicial({ papeis: ['ADMIN', 'GESTOR', 'DIRETORIA'], coordenadorAtivo: true });
   assert.equal(opcoes.filter(o => CANCELADAS.test(o.rotulo) || CANCELADAS.test(o.valor)).length, 0);
-  assert.equal(opcoes.length, 7);
+  assert.equal(opcoes.length, 6);
 });

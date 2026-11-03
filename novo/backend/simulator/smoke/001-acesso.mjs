@@ -72,10 +72,10 @@ export default async function ({ teste, chamar, linhas, banco, execute, db, ID, 
     assert.equal((await sessao(ID.BRUNO)).EXIBICAO_TAREFAS, 'KANBAN');
   });
 
-  await teste('C-011 / RN-011: Painel de Gestao como pagina inicial so para GESTOR ou ADMIN', async () => {
+  await teste('C-011 / RN-011: Painel de Gestao (cancelado) e recusado como pagina inicial para qualquer papel', async () => {
     assert.equal(await salvar(ID.CARLA, { nome: 'Carla Mendes', paginaInicial: '/painel-gestao' }), 0);
-    assert.ok(await salvar(ID.PAULO, { nome: 'Paulo Reis', paginaInicial: '/painel-gestao' }) > 0);
-    assert.ok(await salvar(ID.TANIA, { nome: 'Tânia Lopes', paginaInicial: '/painel-gestao' }) > 0);
+    assert.equal(await salvar(ID.PAULO, { nome: 'Paulo Reis', paginaInicial: '/painel-gestao' }), 0);
+    assert.equal(await salvar(ID.TANIA, { nome: 'Tânia Lopes', paginaInicial: '/painel-gestao' }), 0);
   });
 
   await teste('RN-011: pagina inicial fora da lista (tela cancelada) e recusada', async () => {
