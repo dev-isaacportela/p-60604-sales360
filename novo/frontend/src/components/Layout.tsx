@@ -219,7 +219,8 @@ export function Layout({ children }: { children: ReactNode }) {
           </span>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        {/* relative: texto sr-only (absolute) fica preso aqui; sem isso estica o documento e surge uma 2ª barra de rolagem. */}
+        <main className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   )

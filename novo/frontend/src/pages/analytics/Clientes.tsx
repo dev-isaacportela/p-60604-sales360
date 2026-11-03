@@ -1,15 +1,16 @@
 // Aba Clientes do Analytics (spec 007, RF-007, RF-009, RF-022/023): análise
-// de carteira com lista de Inativos / Em risco, Top Clientes e evolução dos
-// clientes marcados no filtro.
+// de carteira com lista de Inativos / Em risco, Top Clientes (tabela larga,
+// com a participação em barra) e evolução dos clientes marcados no filtro.
 
 import { useState } from 'react'
 import { linhas } from '@/lib/mitra-api'
 import { fmtData, moeda } from '@/lib/formato'
 import { fmtPct, ordenar } from '@/lib/analytics'
-import { EmptyState, Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
+import { EmptyState, Pagination, Panel, PanelHeader, RowMeta, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
 import { useBloco } from '@/components/use-bloco'
+import { cn } from '@/lib/utils'
 import { FaixaIndicadores } from '../clientes/layout'
-import { BarrasH, ValorCard } from './graficos'
+import { ValorCard } from './graficos'
 import { EstadoBloco, ThOrdem, type Direcao } from './comum'
 import type { Blocos, Consulta, FiltrarPor } from './consulta'
 
@@ -35,6 +36,8 @@ export function Clientes({ consulta, params, ant, blocos, filtrarPor }: {
     TICKET: n(r.PEDIDOS) ? n(r.LIQUIDO) / n(r.PEDIDOS) : 0,
     PCT: n(r.TOTAL_LIQUIDO) ? n(r.LIQUIDO) / n(r.TOTAL_LIQUIDO) : 0,
   })), ordem.campo, ordem.direcao)
+  // Barra da participação: o maior cliente enche a barra.
+  const maxPct = Math.max(0.0001, ...top.map(r => r.PCT))
   const cliente = (r: Record<string, unknown>) => filtrarPor('CLIENTE', { value: String(r.CODCLI), label: String(r.CLIENTE ?? r.CODCLI) })
 
   return (
@@ -50,8 +53,7 @@ export function Clientes({ consulta, params, ant, blocos, filtrarPor }: {
       </EstadoBloco>
       {situacao ? <ListaCarteira params={{ ...params, ...ant }} situacao={situacao} /> : null}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Panel className="lg:col-span-2">
+      <Panel>
           <PanelHeader title="Top clientes" hint="Os 10 maiores pelo líquido. Clique no cliente para filtrar a análise." />
           <EstadoBloco erro={topClientes.erro} carregando={!topClientes.dados && !topClientes.erro} nome="o ranking de clientes">
             {!top.length ? <EmptyState title="Sem faturamento no período" /> : (
@@ -76,30 +78,26 @@ export function Clientes({ consulta, params, ant, blocos, filtrarPor }: {
                         </button>
                         <RowMeta>Cód. {String(r.CODCLI)}</RowMeta>
                       </Td>
-                      <Td numeric>{moeda(n(r.BRUTO))}</Td>
-                      <Td numeric>{moeda(n(r.DEVOLVIDO))}</Td>
-                      <Td numeric><RowTitle>{moeda(n(r.LIQUIDO))}</RowTitle></Td>
-                      <Td numeric>{n(r.PEDIDOS)}</Td>
-                      <Td numeric>{moeda(r.TICKET)}</Td>
-                      <Td numeric>{fmtPct(r.PCT)}</Td>
+                      <Td numeric className="whitespace-nowrap tabular-nums">{moeda(n(r.BRUTO))}</Td>
+                      <Td numeric className={cn('whitespace-nowrap tabular-nums', !n(r.DEVOLVIDO) && 'text-ink-secondary')}>{moeda(n(r.DEVOLVIDO))}</Td>
+                      <Td numeric className="whitespace-nowrap tabular-nums"><RowTitle>{moeda(n(r.LIQUIDO))}</RowTitle></Td>
+                      <Td numeric className="tabular-nums">{n(r.PEDIDOS)}</Td>
+                      <Td numeric className="whitespace-nowrap tabular-nums">{moeda(r.TICKET)}</Td>
+                      <Td numeric>
+                        <span className="inline-flex items-center justify-end gap-2 tabular-nums">
+                          <span aria-hidden className="h-1.5 w-20 rounded-full bg-muted">
+                            <span className="block h-1.5 rounded-full bg-primary" style={{ width: `${Math.min(1, r.PCT / maxPct) * 100}%` }} />
+                          </span>
+                          <span className="w-12">{fmtPct(r.PCT)}</span>
+                        </span>
+                      </Td>
                     </Tr>
                   ))}
                 </tbody>
               </Table>
             )}
           </EstadoBloco>
-        </Panel>
-        <Panel>
-          <PanelHeader title="Ranking de clientes" hint="Clique na barra para filtrar." />
-          <PanelBody>
-            <BarrasH
-              itens={(topClientes.dados ?? []).map(r => ({ chave: String(r.CODCLI), rotulo: String(r.CLIENTE ?? r.CODCLI), valor: n(r.LIQUIDO) }))}
-              formato={moeda}
-              escolher={chave => { const r = topClientes.dados?.find(x => String(x.CODCLI) === chave); if (r) cliente(r) }}
-            />
-          </PanelBody>
-        </Panel>
-      </div>
+      </Panel>
 
       <Panel>
         <PanelHeader title="Evolução do cliente" hint="Líquido por mês dos clientes marcados no filtro." />

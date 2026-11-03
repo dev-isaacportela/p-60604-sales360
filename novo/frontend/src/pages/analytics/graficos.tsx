@@ -1,10 +1,13 @@
 // Gráficos do Analytics (spec 007, D-707): barras horizontais em CSS e
-// evolução em barras SVG, sem biblioteca. Ranking: série única = data-1.
+// evolução em barras SVG, sem biblioteca. Barras cinza, a maior em verde.
 // Evolução: barra cinza, verde quando alcança a meta do ponto; a meta é uma
 // marca tracejada sobre cada barra (fim de semana sem meta fica sem marca).
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import { fmtPct } from '@/lib/analytics'
+import { Panel, PanelHeader, Table, Td, Th, Tr } from '@/components/page'
+import { EstadoBloco } from './comum'
 
 export interface Barra { chave: string; rotulo: string; valor: number; nota?: string }
 
@@ -22,12 +25,12 @@ export function BarrasH({ itens, formato, escolher, acao }: {
   if (!itens.length) return <p className="text-[12px] text-ink-secondary">Sem dados no período.</p>
   return (
     <ul className="flex flex-col gap-0.5">
-      {itens.map(i => {
+      {itens.map((i, n) => {
         const conteudo = (
           <>
             <span className="truncate text-ink-secondary" title={i.rotulo}>{i.rotulo}</span>
             <span className="h-2 rounded-full bg-muted">
-              <span className="block h-2 rounded-r-[4px] rounded-l-full bg-data-1" style={{ width: `${max > 0 ? (Math.max(0, i.valor) / max) * 100 : 0}%` }} />
+              <span className={cn('block h-2 rounded-r-[4px] rounded-l-full', n === 0 ? 'bg-primary' : 'bg-ink-muted/50')} style={{ width: `${max > 0 ? (Math.max(0, i.valor) / max) * 100 : 0}%` }} />
             </span>
             <span className="text-right font-semibold whitespace-nowrap text-ink">
               {formato(i.valor)}
@@ -164,4 +167,42 @@ export function Progresso({ fracao, rotulo }: { fracao: number; rotulo: string }
 /** Valor em R$ dentro da faixa de indicadores: menor que o número puro para caber em 5 colunas. */
 export function ValorCard({ children }: { children: React.ReactNode }) {
   return <span className="text-[20px]">{children}</span>
+}
+
+/** RF-005: ranking em tabela, com a participação entre os itens; clique filtra a análise (RF-023). */
+export function Ranking({ titulo, coluna, bloco, itens, formato, escolher }: {
+  titulo: string
+  coluna: string
+  bloco: { erro: boolean; dados: unknown }
+  itens: Barra[]
+  formato: (v: number) => string
+  escolher: (b: Barra) => void
+}) {
+  const total = itens.reduce((s, i) => s + Math.max(0, i.valor), 0)
+  return (
+    <Panel>
+      <PanelHeader title={titulo} hint="Clique num produto para filtrar a análise." />
+      <EstadoBloco erro={bloco.erro} carregando={!bloco.dados && !bloco.erro} nome="o ranking de produtos">
+        {!itens.length ? <p className="px-4 py-6 text-[13px] text-ink-secondary">Sem dados no período.</p> : (
+          <Table>
+            <thead><tr><Th className="w-10">#</Th><Th>Produto</Th><Th numeric>{coluna}</Th><Th numeric>% do top {itens.length}</Th></tr></thead>
+            <tbody>
+              {itens.map((i, p) => (
+                <Tr key={`${i.chave}-${p}`}>
+                  <Td className="text-ink-secondary tabular-nums">{p + 1}</Td>
+                  <Td>
+                    {i.chave ? (
+                      <button type="button" title={`Filtrar por ${i.rotulo}`} onClick={() => escolher(i)} className="text-left text-ink hover:underline">{i.rotulo}</button>
+                    ) : <span className="text-ink-secondary">{i.rotulo}</span>}
+                  </Td>
+                  <Td numeric className="font-semibold whitespace-nowrap text-ink tabular-nums">{formato(i.valor)}</Td>
+                  <Td numeric className="text-ink-secondary tabular-nums">{fmtPct(total ? Math.max(0, i.valor) / total : 0)}</Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </EstadoBloco>
+    </Panel>
+  )
 }

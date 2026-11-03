@@ -186,10 +186,10 @@ export function Metas({ hoje }: { hoje: string }) {
         <PanelBody>
           <FaixaIndicadores itens={[
             { rotulo: 'Meta geral', valor: <ValorCard>{moeda(metaGeral)}</ValorCard> },
-            { rotulo: 'Total distribuído', valor: <ValorCard>{moeda(distribuido)}</ValorCard> },
+            { rotulo: 'Total distribuído', valor: <ValorCard>{moeda(distribuido)}</ValorCard>, medidor: metaGeral > 0 ? { fracao: distribuido / metaGeral, tom: 'live', rotulo: `${fmtPct(distribuido / metaGeral)} da meta geral distribuída` } : undefined, nota: metaGeral > 0 ? `${fmtPct(distribuido / metaGeral)} da meta geral` : undefined },
             { rotulo: 'Saldo disponível', valor: <ValorCard>{moeda(metaGeral - distribuido)}</ValorCard> },
             { rotulo: 'Vendedores com meta', valor: `${comMeta}/${vendedores.length}` },
-            { rotulo: 'Status', valor: <ValorCard>{status}</ValorCard>, nota: `Status: ${status}` },
+            { rotulo: 'Status do rateio', valor: <ValorCard>{status}</ValorCard> },
           ]} />
         </PanelBody>
       </Panel>
@@ -223,7 +223,7 @@ export function Metas({ hoje }: { hoje: string }) {
         const daBu = vendedores.filter(v => chaveBu(v) === chaveBu(b))
         return (
           <Panel key={chaveBu(b)}>
-            <PanelHeader title={rotuloBu(b)} hint={`Meta da BU ${moeda(b.META)}`}>
+            <PanelHeader title={rotuloBu(b)} hint={`Meta da BU ${moeda(b.META)} · distribuído ${moeda(daBu.reduce((t, v) => t + metaNaTela(v, edicoes), 0))}`}>
               {!leitura ? (
                 <>
                   <Button size="sm" onClick={() => rateioRapido('IGUAL', b)} disabled={!daBu.length}>Ratear igual</Button>

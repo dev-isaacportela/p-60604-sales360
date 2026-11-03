@@ -10,7 +10,7 @@ import { cardsResumo, ehUtil, fmtPct, metaBatidaEm, moedaCurta, pontosEvolucao, 
 import { Pagination, Panel, PanelBody, PanelHeader, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
 import { useBloco } from '@/components/use-bloco'
 import { cn } from '@/lib/utils'
-import { Evolucao, Progresso, type Barra } from './graficos'
+import { Evolucao, Progresso, Ranking, type Barra } from './graficos'
 import { EstadoBloco } from './comum'
 import { barrasDe, nomeProduto, type Blocos, type Consulta, type FiltrarPor } from './consulta'
 
@@ -111,44 +111,6 @@ function Cartao({ rotulo, valor, children }: { rotulo: string; valor: string; ch
       <span className="font-title text-[24px] leading-tight font-bold tabular-nums text-ink">{valor}</span>
       <span className="flex flex-col gap-1.5 text-[12px] text-ink-secondary">{children}</span>
     </section>
-  )
-}
-
-/** RF-005: os 8 maiores, com a participação entre eles; clique filtra a análise (RF-023). */
-function Ranking({ titulo, coluna, bloco, itens, formato, escolher }: {
-  titulo: string
-  coluna: string
-  bloco: Blocos['produtos']
-  itens: Barra[]
-  formato: (v: number) => string
-  escolher: (b: Barra) => void
-}) {
-  const total = itens.reduce((s, i) => s + Math.max(0, i.valor), 0)
-  return (
-    <Panel>
-      <PanelHeader title={titulo} hint="Clique num produto para filtrar a análise." />
-      <EstadoBloco erro={bloco.erro} carregando={!bloco.dados && !bloco.erro} nome="o ranking de produtos">
-        {!itens.length ? <p className="px-4 py-6 text-[13px] text-ink-secondary">Sem dados no período.</p> : (
-          <Table>
-            <thead><tr><Th className="w-10">#</Th><Th>Produto</Th><Th numeric>{coluna}</Th><Th numeric>% do top 8</Th></tr></thead>
-            <tbody>
-              {itens.map((i, p) => (
-                <Tr key={`${i.chave}-${p}`}>
-                  <Td className="text-ink-secondary tabular-nums">{p + 1}</Td>
-                  <Td>
-                    {i.chave ? (
-                      <button type="button" title={`Filtrar por ${i.rotulo}`} onClick={() => escolher(i)} className="text-left text-ink hover:underline">{i.rotulo}</button>
-                    ) : <span className="text-ink-secondary">{i.rotulo}</span>}
-                  </Td>
-                  <Td numeric className="font-semibold whitespace-nowrap text-ink tabular-nums">{formato(i.valor)}</Td>
-                  <Td numeric className="text-ink-secondary tabular-nums">{fmtPct(total ? Math.max(0, i.valor) / total : 0)}</Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </EstadoBloco>
-    </Panel>
   )
 }
 
