@@ -312,11 +312,12 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
                   {lista.map(c => (
                     <Tr key={c.ID}>
                       <Td>
-                        <Actions>
+                        {/* Colunas fixas: o lápis fica no mesmo lugar com ou sem "manual". */}
+                        <span className="grid grid-cols-[1rem_3.5rem_auto] items-center gap-1">
                           <RowTitle>{c.CURVA}</RowTitle>
-                          {c.CURVA_MANUAL ? <Code>manual</Code> : null}
+                          <span>{c.CURVA_MANUAL ? <Code>manual</Code> : null}</span>
                           <IconButton label={`Fixar curva de ${c.NOME}`} onClick={() => setCurva(c)}><Pencil aria-hidden /></IconButton>
-                        </Actions>
+                        </span>
                       </Td>
                       <Td>
                         <RowTitle>{c.NOME}</RowTitle>
