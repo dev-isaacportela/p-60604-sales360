@@ -75,4 +75,6 @@ export const MAP_IDS = 'SERVER_FUNCTIONS';
 export const CHECK_INPUT = {
   hoje: '2026-10-30', agora: '2026-10-30T10:00:00',
   nome: 'Ana Souza', modoAgenda: 'SEMANA', exibicaoAtividades: 'LISTA', paginaInicial: '/',
+  // spec 009
+  busca: 'whey', buscaDigitos: '', clienteId: '9001', produtos: '9714,9715', offset: '0', mixId: '0',
 };
