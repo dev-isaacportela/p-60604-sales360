@@ -86,4 +86,7 @@ export const CHECK_INPUT = {
   status: '', prioridade: '', prazo: '', id: '0',
   // spec 008
   semana: '2026-10-26', desde: '2025-10-01', situacao: '', tipo: '', valorMin: '', alertaId: '0', prospectId: '0', etapa: '', faixa: '',
+  // spec 007
+  de: '2026-10-01', ate: '2026-10-31', deAnt: '2026-09-01', ateAnt: '2026-09-30', ramos: '', clientes: '', porDia: '1',
+  categoria: 'CLIENTE', metrica: 'FATURAMENTO', ano: '2026', mes: '10', coordenador: '', metas: '[]', ramosUf: '[]', ramosLimpar: '[]',
 };
