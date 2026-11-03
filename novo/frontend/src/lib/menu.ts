@@ -65,7 +65,6 @@ export const ROTAS: Rota[] = [
   { caminho: '/gestao-bus-vendedores', titulo: 'BUs e Vendedores', perfis: GESTAO },
   { caminho: '/configuracao-escopo-usuarios', titulo: 'Escopo Usuários', perfis: GESTAO },
   { caminho: '/gestao-cadastros', titulo: 'Gestão Cadastros', perfis: GESTAO },
-  { caminho: '/admin-acomp-semanal', titulo: 'Acomp. Semanal Admin', perfis: TI },
   { caminho: '/painel-validacao', titulo: 'Painel de Validação', perfis: TI },
   { caminho: '/configuracoes', titulo: 'Configurações', perfis: TODOS },
 ];
@@ -156,7 +155,7 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
       itens: filtrar([
         '/gestao-acesso-executivas', '/acomp-semanal', '/painel-gestao', '/governanca-rca',
         '/gestao-bus-vendedores', '/configuracao-escopo-usuarios', '/gestao-cadastros',
-        '/admin-acomp-semanal', '/painel-validacao',
+        '/painel-validacao',
       ]),
     },
     { id: 'final', titulo: '', itens: filtrar(['/configuracoes']) },

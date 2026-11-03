@@ -157,7 +157,7 @@ Valem RNFT-002, RNFT-003, RNFT-004, RNFT-006 e RNFT-007. Específicos:
   - **Principal (todos):** Dashboard, Agenda, Clientes, Atividades (contador), Mix Builder, Analytics, Comparativo, Alertas (contador). `Direcionamento Semanal` para coordenador ativo, DIRETORIA e ADMIN.
   - **Coordenador (coordenador com cadastro ativo):** Gestão de Carteira, Titulares de Clientes, Férias de Vendedores.
   - **Diretoria (DIRETORIA, ADMIN):** Papéis de Usuários, Gestão Coordenadores e Titulares de Clientes (só se o item não estiver na seção Coordenador).
-  - **Gestão:** Executivas de Venda (coordenador ativo, DIRETORIA, ADMIN); Acomp. Semanal, Painel de Gestão, Governança RCA, BUs e Vendedores, Escopo Usuários, Gestão Cadastros (GESTOR, ADMIN); Acomp. Semanal Admin, Painel de Validação (TI).
+  - **Gestão:** Executivas de Venda (coordenador ativo, DIRETORIA, ADMIN); Acomp. Semanal, Painel de Gestão, Governança RCA, BUs e Vendedores, Escopo Usuários, Gestão Cadastros (GESTOR, ADMIN); Painel de Validação (TI).
   - **Final:** Configurações. **Rodapé:** Sair.
   Ajuda, Suporte, Painel do desenvolvedor, Notas de versão e Solicitações de compras foram canceladas e não aparecem no menu, no rodapé nem como tela restrita; a janela de novidades da versão não abre ao entrar. Seção sem itens não aparece. Papéis acumulam (RNT-001): quem tem dois papéis vê as duas seções.
 - **RN-006 — Coordenador.** É coordenador quem tem cadastro de coordenador **ativo** ligado ao seu login (spec 010); o papel COORDENADOR sem esse cadastro não mostra a seção Coordenador do menu (RN-005), e quem abrir uma dessas telas pelo endereço vê a mensagem de acesso restrito.
@@ -185,7 +185,7 @@ Valem RNFT-002, RNFT-003, RNFT-004, RNFT-006 e RNFT-007. Específicos:
 | C-005 | Nova senha "abc12345" e confirmação "abc12346" → `As senhas não conferem`; sucesso → login com `Senha redefinida. Entre com a nova senha.` | regra de tela |
 | C-006 / RN-016 | Usuário bloqueado consulta a carteira → zero linhas e resposta "acesso bloqueado"; desbloqueado → 40 linhas | regra de negócio |
 | C-007 / RN-005 | Papéis {DIRETORIA, COORDENADOR ativo} → seções Principal, Coordenador (4 itens), Diretoria (5 itens, sem Titulares), Final; papéis {VENDEDOR} → só Principal (8 itens) e Final | regra de tela |
-| RN-005 (permissões) | Consulta de permissões devolve para GESTOR: Gestão = 6 itens; para TI: 2 itens técnicos (Acomp. Semanal Admin, Painel de Validação); para nenhum papel aparecem Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; seção Final = só Configurações e rodapé = só Sair | regra de negócio |
+| RN-005 (permissões) | Consulta de permissões devolve para GESTOR: Gestão = 6 itens; para TI: 1 item técnico (Painel de Validação); para nenhum papel aparecem Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; seção Final = só Configurações e rodapé = só Sair | regra de negócio |
 | C-008 / RN-015 | Vendedor consulta dados do Painel de Validação → "sem permissão" e zero linhas; tela mostra `Esta tela está disponível apenas para TI.` | regra de negócio |
 | RN-006 | Papel COORDENADOR sem cadastro ativo → permissão de coordenador = não; com cadastro ativo → sim | regra de negócio |
 | C-009 / RN-008 | 2 A Fazer + 1 Em andamento + 4 Concluídas → contador 3; após concluir uma → 2 | regra de negócio |
@@ -217,6 +217,7 @@ Verificação manual:
 - [ ] Busca global e sino na barra superior: saem da tela (decisão de 2026-10-30, spec 000). Busca de cliente fica em Clientes e alertas no menu `Alertas`.
 - [ ] Janela de novidades da versão ao entrar, Ajuda, Suporte, Painel do desenvolvedor e Notas de versão: cancelados em 2026-10-30 (spec 012). Solicitações de compras: cancelada em 2026-10-30 (spec 011).
 - [ ] Agenda dos Vendedores, Análise Diretoria, Faturamento e Gestão de Metas: canceladas em 2026-11-03 (specs 003 e 010). Endereço antigo dessas telas, ou página inicial gravada com uma delas, leva ao Dashboard (RN-011).
+- [ ] Acomp. Semanal Admin: cancelada em 2026-11-03 (spec 006). Endereço antigo da tela leva ao Dashboard, como as demais canceladas.
 - [ ] Autocadastro de conta ("Criar conta" com código de verificação): não existe; contas com senha são criadas pela gestão.
 - [ ] Filtro de escopo do topo das telas: regra RNT-003, implementado em cada módulo.
 - [ ] Login com outros provedores (Apple, SSO corporativo) e autenticação em dois fatores.
@@ -250,7 +251,7 @@ Verificação manual:
 | `Página inicial` oferece `Painel de Gestão` a todos | Só telas que o usuário pode abrir (RN-011) | `ConfiguracoesUsuarioPage.tsx:74-82` |
 | Salvar em duas partes; a segunda falha e a primeira fica gravada | Uma ação, tudo ou nada (RN-014) | manual seção 2; `ConfiguracoesUsuarioPage.tsx:407-435` |
 | Coordenador com papel DIRETORIA não vê a seção Coordenador; DIRETORIA não vê Análise, Faturamento e Metas | Menu = permissões, papéis acumulam (RN-005) | `Layout.tsx:118-134`; manual seção 1 |
-| Acomp. Semanal Admin e Painel de Validação liberados pelo e-mail de uma pessoa | Liberados pelo papel ADMIN (TI) (RN-005) | `Layout.tsx:76-79`; pendências item 5 |
+| Acomp. Semanal Admin e Painel de Validação liberados pelo e-mail de uma pessoa | Painel de Validação liberado pelo papel ADMIN (TI); Acomp. Semanal Admin cancelada (RN-005) | `Layout.tsx:76-79`; pendências item 5 |
 | Permissão de coordenador aceita cargo com grafia parecida ("CORDENADOR") ou o e-mail da TI | Coordenador = cadastro ativo (RN-006) | `backend/add-painel-coordenador-dashboard.mjs:249-252` |
 | Bloqueio de executiva só é checado pelo menu a cada 5 minutos; as telas continuam devolvendo dados | Bloqueio conferido no servidor em toda ação (RN-016) | `Layout.tsx:52-58` |
 | Erro do Google/Microsoft/e-mail mostra o texto técnico do provedor quando existe | Mensagens fixas (RN-002) | `LoginPage.tsx:64,90,113` |

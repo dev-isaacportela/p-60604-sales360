@@ -21,7 +21,7 @@ Qualquer pessoa abre o mês e vê, cliente a cliente e semana a semana, o fatura
 | Vendedor | Ver a própria carteira semana a semana, abrir o detalhe de um cliente e exportar a planilha | semanal |
 | Coordenador / Diretoria | O mesmo para a equipe ou para um vendedor (RNT-003/004) | semanal |
 | Gestão (GESTOR/ADMIN) | Acompanhar o status dos clientes por vendedor, ver a última sincronização com o ERP e forçar uma nova | diária |
-| TI | Conferir por que uma venda contou ou não para um vendedor e bater faturamento × devoluções | sob demanda |
+| TI | Bater faturamento × devoluções no Painel de Validação | sob demanda |
 
 ## Cenários
 
@@ -97,10 +97,7 @@ Datas de out/2026: semanas operacionais 01, 02–08, 09–15, 16–22, 23–29 e
 - **Quando** a segunda carga termina
 - **Então** existem 50 erros registrados, não 100: os 48 com 2 ocorrências e "aberto"; os 2 "resolvido". Oito dias depois, os 2 resolvidos não existem mais
 
-**C-015 — Conferência de atribuição (TI)**
-- **Dado que** no escopo de Ana em out/2026 o cliente A (da carteira) comprou R$ 1.000 e o cliente B (fora da carteira) R$ 500
-- **Quando** a TI busca Ana em Outubro/2026
-- **Então** vê "Total no escopo" R$ 1.500,00, "Conta para o vendedor" R$ 1.000,00 e "Clientes fora da carteira" 1, com B marcado "Não"
+**C-015 — cancelado em 2026-11-03** (conferência de atribuição da tela Acomp. Semanal Admin; ver Fora de escopo)
 
 **C-016 — Painel de Validação**
 - **Dado que** a Filial 2 vendeu R$ 100.000 em 80 pedidos em out/2026 e teve R$ 4.000 de devolução no mês
@@ -139,9 +136,9 @@ Datas de out/2026: semanas operacionais 01, 02–08, 09–15, 16–22, 23–29 e
 | RF-011 | O sistema DEVE carregar as vendas do ERP de hora em hora, das 8h às 19h, de segunda a sexta, validando cada item e consolidando por semana, e carregar as devoluções do ERP de hora em hora | C-012, C-014, C-019; devolução lançada no ERP aparece na matriz em até 1 hora | must |
 | RF-012 | O sistema DEVE registrar cada execução da carga com início, fim, status, contadores e a mensagem real de falha | Execução com falha mostra o motivo, nunca texto genérico de objeto | must |
 | RF-013 | O sistema DEVE manter um registro único por item e tipo de erro, com contador de ocorrências, situação aberto/resolvido e retenção de 7 dias para resolvidos | C-014 | must |
-| RF-014 | O sistema DEVE oferecer à TI a conferência de atribuição por vendedor e mês, com todas as vendas do escopo e a marcação "na carteira" | C-015; paginada (RNFT-001) | must |
+| RF-014 | Cancelado em 2026-11-03: a tela Acomp. Semanal Admin não é reconstruída (ver Fora de escopo) | — | — |
 | RF-015 | O sistema DEVE oferecer à TI o Painel de Validação: resumo, composição bruto/devolução/líquido, total por ramo com clientes, detalhes paginados de vendas e devoluções e exportação | C-016 | must |
-| RF-016 | O sistema DEVE liberar a visão de gestão só para GESTOR/ADMIN e as duas telas técnicas só para o papel ADMIN (TI) (RNT-002) | C-017; bloqueio de gestão mostra "Este módulo está disponível apenas para perfis de gestão." | must |
+| RF-016 | O sistema DEVE liberar a visão de gestão só para GESTOR/ADMIN e o Painel de Validação só para o papel ADMIN (TI) (RNT-002) | C-017; bloqueio de gestão mostra "Este módulo está disponível apenas para perfis de gestão." | must |
 | RF-017 | O sistema PODE mostrar à TI a lista de erros de ingestão abertos, com tipo, item e ocorrências | Lista filtrável por tipo de erro | could |
 
 ## Requisitos não-funcionais
@@ -180,7 +177,7 @@ Datas de out/2026: semanas operacionais 01, 02–08, 09–15, 16–22, 23–29 e
 - **RN-015 — Erros de ingestão.** Existe um registro por item + tipo de erro. Na carga em que o erro aparece, o registro é criado, ou reaberto com +1 ocorrência. Erro aberto que não aparece numa carga vira "resolvido" com data. Resolvido há mais de 7 dias é apagado.
 - **RN-016 — Execuções.** Só uma carga roda por vez: um pedido de carga com outra em andamento há menos de 30 min é recusado com "Já existe uma sincronização em andamento desde hh:mm.". Execução em andamento há mais de 30 min é fechada como falha, com a mensagem "Execução interrompida sem finalizar (tempo limite ou queda do processo)", pela execução seguinte. O status aparece em português: Em andamento, Concluída, Com falha. Sem nenhuma execução registrada, a tela diz "A sincronização com o ERP ainda não tem execução registrada."
 - **RN-017 — Quem sincroniza.** A carga roda pela rotina automática. Manualmente, só gestão (GESTOR/ADMIN) e TI, pelo `Sincronizar agora`. Nenhuma outra tela dispara a carga (ver spec 008, Prospecção).
-- **RN-018 — Conferência de atribuição.** Para um vendedor e um mês, a TI vê todas as vendas da filial/departamento/seção do escopo dele, inclusive de clientes fora da carteira. A lista é agrupada por cliente × semana × RCA do ERP e tem a coluna "Na carteira?". Card "Total no escopo" = soma de tudo; "Conta para o vendedor" = soma dos clientes na carteira; "Clientes fora da carteira" = clientes distintos marcados "Não". Os valores são brutos, e o rótulo diz isso.
+- **RN-018 — cancelada em 2026-11-03** (conferência de atribuição; ver Fora de escopo).
 - **RN-019 — Painel de Validação.** Filtros: Filial, Departamento, Ramo de Atividade, Vendedor, Mês, Ano (padrão: mês e ano correntes) e Cliente (código ou nome). Os filtros só valem ao clicar em `Buscar`. Bruto = vendas do mês por data de saída; devolvido = devoluções do mês por data de devolução, com o mesmo recorte; líquido = bruto − devolvido; % devolução = devolvido ÷ bruto; ticket médio = líquido ÷ pedidos. A coluna "Vendedor BU" lista todos os vendedores cujo escopo cobre a linha. Os detalhes têm 50 por página, com ordenação no servidor. `Exportar vendas` e `Exportar devoluções` geram CSV com ";" de todas as linhas do filtro, com vírgula decimal e datas dd/mm/aaaa.
 
 ## Testes
@@ -206,9 +203,8 @@ Datas de out/2026: semanas operacionais 01, 02–08, 09–15, 16–22, 23–29 e
 | C-012 | Fonte com 10.000 itens e 50 sem cliente → válidos 9.950, erros 50, status Concluída | regra de negócio |
 | C-013 / RN-016 | Execução em andamento iniciada 10:00: pedido às 10:10 é recusado; às 10:31 a de 10:00 vira falha com a mensagem padrão e a nova começa | regra de negócio |
 | C-014 / RN-015 | Duas cargas: 48 erros com 2 ocorrências e abertos, 2 resolvidos; resolvido há 8 dias é apagado, há 6 dias fica | regra de negócio |
-| C-015 / RN-018 | A (carteira) 1.000 + B (fora) 500 → 1.500 / 1.000 / 1 | regra de negócio |
 | C-016 / RN-019 | Vendas de 100.000 em 80 pedidos e devoluções de 4.000 → líquido 96.000, 4,0%, ticket 1.200 | regra de negócio |
-| C-017 / RF-016 | Consulta das telas técnicas por usuário sem papel ADMIN devolve "sem permissão" e zero linhas; por GESTOR sem ADMIN, idem | regra de negócio |
+| C-017 / RF-016 | Consulta do Painel de Validação por usuário sem papel ADMIN devolve "sem permissão" e zero linhas; por GESTOR sem ADMIN, idem | regra de negócio |
 | RN-009 | Curva cadastrada B → B; sem curva e valor médio 15.000 → A; 6.999,99 → C | regra de negócio |
 | RF-011 (devoluções) | A rotina de devoluções está agendada de hora em hora; devolução incluída na fonte é deduzida da matriz na execução seguinte | regra de negócio |
 | RN-010 | Ana 1.000 e Bruno 500 no mesmo cliente, semana 2; anteriores 1.000 e 0 → linha "Equipe" 1.500 e B/W +50,0% | regra de negócio |
@@ -248,12 +244,10 @@ Verificação manual:
 | Duas cargas podem rodar ao mesmo tempo | Uma por vez (RN-016) | anexo, A-12 |
 | Status da carga em inglês e mensagens sem acento ("Sincronizacao concluida") | Português (RN-016, RNFT-007) | anexo, A-15 |
 | A tela de Prospecção dispara a carga do ERP para qualquer usuário | Só gestão e TI (RN-017) | manual seção 8, "Sincronização das vendas" |
-| Telas técnicas liberadas pelo e-mail ti@benenutri.com, também no servidor | Papel ADMIN (TI) (RNT-002) | pendências, item 5 |
+| Painel de Validação liberado pelo e-mail ti@benenutri.com, também no servidor | Papel ADMIN (TI) (RNT-002) | pendências, item 5 |
 | Visão global liberada também pelo mesmo e-mail | Só por papel (RNT-002) | anexo, A-01 |
-| Cards "Total geral" e "Total via BU" da conferência são o mesmo número | "Total no escopo" × "Conta para o vendedor" (RN-018) | anexo, A-13 |
 | "Vendedor BU" do Painel de Validação mostra o vendedor de menor id quando a BU tem vários | Lista todos (RN-019) | anexo, A-14 |
 | Painel de Validação: bruto estimado como líquido + devolvido e ano padrão fixo em 2026 | Bruto, devolução e líquido calculados do mesmo recorte; ano corrente (RN-019) | manual seção 12 |
-| A conferência da TI não é paginada e tem ano fixo em 2026 | Paginada (RNFT-001) e com ano corrente | anexo, A-13 |
 | Erros de ingestão regravados a cada execução (~95 milhões de registros) | Registro único com contador e retenção (RN-015) | `tasks.md` da raiz |
 | A visão do vendedor não mostra quando as vendas foram atualizadas | Mostra (RF-010, RNT-015) | 000, RF-006 |
 
@@ -267,6 +261,7 @@ Verificação manual:
 - [ ] Meta semanal de faturamento: a matriz não mostra meta.
 - [ ] Editar ou corrigir itens de venda pela tela: a correção é sempre no ERP.
 - [ ] Planilha exportada da visão de gestão (só a visão do vendedor exporta).
+- [ ] Tela Acomp. Semanal Admin (conferência de atribuição por vendedor e mês: RF-014, RN-018, C-015): cancelada em 2026-11-03, não é reconstruída. A TI segue com o Painel de Validação; a sincronização manual continua na visão de gestão (RN-017).
 
 ## Pendências
 
@@ -289,7 +284,7 @@ Verificação manual:
 
 ## Anexo — Rastreabilidade de origem
 
-**Rotas atuais cobertas:** `/acomp-semanal-vendedor` (visão do vendedor, sem filtro de escopo), `/comparativo` visão `Semanal` (a mesma visão, com filtro de escopo; a página é da spec 007), `/acomp-semanal` (gestão), `/admin-acomp-semanal`, `/painel-validacao`. A aba Semanal citada no manual não existe mais no `/analytics`.
+**Rotas atuais cobertas:** `/acomp-semanal-vendedor` (visão do vendedor, sem filtro de escopo), `/comparativo` visão `Semanal` (a mesma visão, com filtro de escopo; a página é da spec 007), `/acomp-semanal` (gestão), `/painel-validacao`. `/admin-acomp-semanal` foi cancelada (2026-11-03) e não é reconstruída. A aba Semanal citada no manual não existe mais no `/analytics`.
 
 **Páginas atuais:** `frontend/src/pages/AcompanhamentoSemanalVendedorPage.tsx`, `AcompanhamentoSemanalPage.tsx`, `AdminAcompanhamentoSemanalPage.tsx`, `PainelValidacaoPage.tsx`, `ComparativoPage.tsx` (embute a visão do vendedor); `components/DetalheClienteInline.tsx`; `lib/excel-export.ts`, `lib/operational-week.ts`; menu em `components/Layout.tsx:78,137-139`.
 
@@ -301,7 +296,7 @@ Verificação manual:
 | RF-007, RN-012 | 104 + 110 chamada por cliente × semana em `AcompanhamentoSemanalVendedorPage.tsx:567-712` | — |
 | RF-009, RN-016 | `acompanhamentoSemanalStatusSync` · 106 | `ACOMP_SEMANAL_SYNC_LOG` |
 | RF-011..013, RN-013..017 | `acompanhamentoSemanalSincronizarManual` · 107 (`backend/acompanhamento-semanal-sincronizar-manual-escopo.sf.js`; snapshots `sf-versions/20261005120000` e `20261005130000`; data loader `VENDAS_DASHBOARD_TOTVS_RCA`, staging `IMP_VENDAS_DASHBOARD_TOTVS_RCA`) | `PEDIDOS_SEMANAIS_SYNC_RAW`, `PEDIDOS_SEMANAIS_SYNC`, `PERFIL_COMPRA_CLIENTE`, `ACOMP_SEMANAL_SYNC_LOG`, `ACOMP_SEMANAL_SYNC_ERRO_ATUAL` (`ACOMP_SEMANAL_SYNC_ERRO` desativada, não ler); `CLIENTES`, `BU`, `SECAO` |
-| RF-014, RN-018 | `adminAcompSemanalListar` · 146 (`sf-versions/20260821151600/sf-146-*.sql`); lista de vendedores `adminListarVendedores` · 145 | `PEDIDOS_SEMANAIS_SYNC_RAW`, `BU_VENDEDOR`, `EQUIPE_CLIENTE` |
+| RF-014, RN-018 (cancelados) | **aposentar sem substituto:** `adminAcompSemanalListar` · 146 (`sf-versions/20260821151600/sf-146-*.sql`). A lista de vendedores `adminListarVendedores` · 145 também serve telas da spec 010; aposentar só quando a 010 deixar de usá-la | `PEDIDOS_SEMANAIS_SYNC_RAW`, `BU_VENDEDOR`, `EQUIPE_CLIENTE` |
 | RF-015, RN-019 | `validacaoFiltros` · 147, `validacaoResumo` · 148, `validacaoDetalhe` · 149 (SQL dessas três **não está no repositório**; conferir no projeto remoto), `validacaoDevolucoesResumo` · 150, `validacaoDevolucoesDetalhe` · 151 (`backend/add-painel-validacao-devolucoes.mjs`) | `PEDIDOS_SEMANAIS_SYNC_RAW`, `IMP_DEVOLUCOES_TOTVS`, `BU_VENDEDOR`, `RCA_TOTVS` |
 | RF-016 | `painelGestaoPermissao` · 29 (gestão); telas técnicas por e-mail fixo em `Layout.tsx:78`, `AdminAcompanhamentoSemanalPage.tsx:7`, `PainelValidacaoPage.tsx` (checkAccess) e no SQL das SFs 146, 150, 151 | `USUARIO_CARGO` |
 | Compartilhadas (outras specs) | `dadosUsuarioLogado` · 28, `painelGestaoVendedores` · 30, `listarRamosClientesTotvs` · 142, `painelCoordenadorMetasBuRecebidas` · 195 (usada só para montar as opções de Filial/Departamento da visão de gestão; a reconstrução usa o escopo do usuário) | — |
@@ -320,7 +315,7 @@ Verificação manual:
 - A-10 — `AcompanhamentoSemanalPage.tsx` não passa `anoFiltrado` ao detalhe; `clienteExpandidoId` é por cliente; as colunas de sazonalidade são os 12 meses até hoje (`DetalheClienteInline.tsx`).
 - A-11 — exportação: `DELTA_QTD_SEMANA` é diferença absoluta, exportada como `percent`; laço `for` por linha × semana chamando a SF 110.
 - A-12 — SF 107: `staleRawBefore`/`staleAggBefore` contados antes da carga; não há trava contra execuções simultâneas.
-- A-13 — `AdminAcompanhamentoSemanalPage.tsx`: `totalAtribuido = total`; `ano` inicial `'2026'`; sem paginação.
+- A-13 — (tela cancelada) `AdminAcompanhamentoSemanalPage.tsx`: `totalAtribuido = total`; `ano` inicial `'2026'`; sem paginação.
 - A-14 — SFs 150/151: `BU_SCOPE` usa `MIN(TARGET_USER_ID)`; ano padrão 2026 no SQL e em `PainelValidacaoPage.tsx`.
 - A-15 — `AcompanhamentoSemanalPage.tsx`: `Status: {syncStatus.STATUS}` (SUCCESS/FAILED/RUNNING) e toasts "Sincronizacao concluida. Validos: …".
 - A-16 — SF 107: o item é gravado pela chave pedido + produto + filial em `PEDIDOS_SEMANAIS_SYNC_RAW`; a segunda linha do ERP com a mesma chave sobrescreve a primeira (conferir no SQL da 107).

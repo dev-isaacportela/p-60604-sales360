@@ -209,7 +209,7 @@ Verificação manual:
 | Painel de Gestão e Faturamento mostram bruto sem dizer; Dashboard, Analytics e Diretoria mostram líquido | Líquido é o padrão; bruto só com rótulo (RNT-008) | manual de suporte, "Por que os números diferem entre os painéis" |
 | Substituto de férias não herda a carteira no acompanhamento semanal | Herda em todas as áreas (RNT-007/010) | pendências, item 12 |
 | Dois cadastros de férias (Configurações do titular e Férias de Vendedores) com efeitos diferentes; férias sobrepostas aceitas | Cadastro único, sem sobreposição (RNT-010) | manual de suporte, seção 13 |
-| Duas telas técnicas liberadas pelo e-mail de uma pessoa | Liberação por papel ADMIN (TI) (RNT-002) | pendências, item 5 |
+| Duas telas técnicas liberadas pelo e-mail de uma pessoa | Painel de Validação liberado por papel ADMIN (TI); Acomp. Semanal Admin cancelada em 2026-11-03 (RNT-002) | pendências, item 5 |
 | Salvar papel de quem é GESTOR/ADMIN apaga esse papel | Papéis acumulam (RNT-001) | manual de suporte, seção 13 |
 | Diretoria não vê no menu telas que tem permissão de abrir | Menu = permissões (spec 001) | manual de suporte, seção 1 |
 | Lista "Vendedor específico" ignora o coordenador escolhido | Lista sempre recortada pelo coordenador (RNT-003) | manual de suporte, seção 1 |

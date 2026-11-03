@@ -45,7 +45,6 @@ const ICONES: Record<string, LucideIcon> = {
   '/gestao-bus-vendedores': Network,
   '/configuracao-escopo-usuarios': SlidersHorizontal,
   '/gestao-cadastros': FileCheck,
-  '/admin-acomp-semanal': FileSpreadsheet,
   '/painel-validacao': ShieldCheck,
   '/configuracoes': Settings,
 }

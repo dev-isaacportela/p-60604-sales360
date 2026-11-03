@@ -32,7 +32,7 @@ quando o módulo entra em reconstrução.
 | [003](003-agenda-visitas/spec.md) | Agenda e visitas | `/agenda` (`/agenda-coordenador` cancelada em 2026-11-03) | em revisão |
 | [004](004-tarefas/spec.md) | Atividades | `/tarefas` | em revisão |
 | [005](005-dashboard/spec.md) | Dashboard | `/` | em revisão |
-| [006](006-acompanhamento-semanal/spec.md) | Acompanhamento semanal e conferência de vendas | `/acomp-semanal-vendedor`, `/acomp-semanal`, `/admin-acomp-semanal`, `/painel-validacao` | em revisão |
+| [006](006-acompanhamento-semanal/spec.md) | Acompanhamento semanal e conferência de vendas | `/acomp-semanal-vendedor`, `/acomp-semanal`, `/painel-validacao` (`/admin-acomp-semanal` cancelada em 2026-11-03) | em revisão |
 | [007](007-analytics-metas/spec.md) | Analytics, comparativo e metas | `/analytics`, `/comparativo` | em revisão |
 | [008](008-alertas-prospeccao/spec.md) | Alertas, direcionamento semanal e prospecção | `/alertas`, `/direcionamento-semanal` | em revisão |
 | [009](009-mix-builder/spec.md) | Mix Builder | `/simulacao` | em revisão |

@@ -80,6 +80,7 @@ do sistema de fotos do Mix fica com a equipe técnica, fora das telas (spec 009)
 |---|---|---|
 | D1 | **Canceladas** as telas Agenda dos Vendedores, Análise Diretoria, Faturamento e Gestão de Metas. O coordenador vê a agenda da equipe na própria Agenda, pelo filtro de escopo | 000, 001, 003, 010 |
 | D2 | A meta da BU vem do planejamento estratégico, que é outro sistema, e já chega para o coordenador redistribuir. Este sistema não lança meta; os lançamentos manuais antigos (`METAS_BU`) não são lidos | 000 (RNT-009, modelo de dados), 007, 010 |
+| D3 | **Cancelada** a tela Acomp. Semanal Admin (conferência de atribuição da TI por vendedor e mês). A TI fica com o Painel de Validação; a sincronização manual continua na visão de gestão | 000, 001, 006 |
 
 ## C. Para conferir no Mitra (não são decisões)
 

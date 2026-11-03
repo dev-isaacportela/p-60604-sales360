@@ -6,7 +6,7 @@ import { destinoAposLogin } from '../src/lib/sessao.ts';
 
 const rotulos = secao => secao.itens.map(i => i.rotulo);
 const porId = (menu, id) => menu.find(s => s.id === id);
-const CANCELADAS = /ajuda|suporte|painel dev|desenvolvedor|notas de vers|solicita|agenda dos vendedores|análise diretoria|faturamento|gestão de metas/i;
+const CANCELADAS = /ajuda|suporte|painel dev|desenvolvedor|notas de vers|solicita|agenda dos vendedores|análise diretoria|faturamento|gestão de metas|semanal admin/i;
 
 const gil = { papeis: ['DIRETORIA', 'COORDENADOR'], coordenadorAtivo: true, pagina: '/' };
 const ana = { papeis: ['VENDEDOR'], coordenadorAtivo: false, pagina: '/agenda' };
@@ -36,8 +36,8 @@ test('RN-005 (permissões): Gestão por papel, técnicos só para TI, telas canc
 
   const ti = montarMenu({ papeis: ['ADMIN'] });
   const gestaoTi = rotulos(porId(ti, 'gestao'));
-  assert.equal(gestaoTi.length, 9);
-  assert.deepEqual(gestaoTi.slice(-2), ['Acomp. Semanal Admin', 'Painel de Validação']);
+  assert.equal(gestaoTi.length, 8);
+  assert.deepEqual(gestaoTi.slice(-1), ['Painel de Validação']);
   assert.deepEqual(rotulos(porId(ti, 'diretoria')), ['Papéis de Usuários', 'Gestão Coordenadores', 'Titulares de Clientes']);
 
   for (const papeis of [['VENDEDOR'], ['COORDENADOR'], ['DIRETORIA'], ['GESTOR'], ['ADMIN']]) {
@@ -67,6 +67,7 @@ test('RN-011 (telas canceladas): Ajuda ou Solicitações gravadas como página i
   assert.equal(destinoAposLogin(null, { papeis: ['VENDEDOR'], pagina: '/ajuda' }), '/');
   assert.equal(destinoAposLogin(null, { papeis: ['ADMIN'], pagina: '/solicitacoes-compras' }), '/');
   assert.equal(destinoAposLogin('/analise-diretoria', { papeis: ['DIRETORIA'], pagina: '/' }), '/');
+  assert.equal(destinoAposLogin('/admin-acomp-semanal', { papeis: ['ADMIN'], pagina: '/' }), '/');
   assert.equal(destinoAposLogin('/agenda-coordenador', { papeis: ['COORDENADOR'], coordenadorAtivo: true, pagina: '/' }), '/');
   const opcoes = opcoesPaginaInicial({ papeis: ['ADMIN', 'GESTOR', 'DIRETORIA'], coordenadorAtivo: true });
   assert.equal(opcoes.filter(o => CANCELADAS.test(o.rotulo) || CANCELADAS.test(o.valor)).length, 0);
