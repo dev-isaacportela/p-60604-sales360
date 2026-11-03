@@ -31,7 +31,7 @@ export function resumoEscopos(pedidos: number, vinculados: number): string {
 
 type Acao =
   | 'desvincularEscopo' | 'removerRca' | 'inativarCoordenador' | 'ativarCoordenador'
-  | 'removerBuCoordenador' | 'encerrarFerias' | 'desativarAcesso' | 'reativarAcesso';
+  | 'removerBuCoordenador' | 'encerrarFerias' | 'desativarAcesso' | 'reativarAcesso' | 'transferirCarteira';
 
 const CONFIRMACOES: Record<Acao, { titulo: string; texto: (alvo: string) => string; botao: string; perigo: boolean }> = {
   desvincularEscopo: { titulo: 'Desvincular escopo', texto: a => `Desvincular o escopo ${a}? A pessoa deixa de atuar nele.`, botao: 'Desvincular', perigo: true },
@@ -42,6 +42,7 @@ const CONFIRMACOES: Record<Acao, { titulo: string; texto: (alvo: string) => stri
   encerrarFerias: { titulo: 'Encerrar férias', texto: a => `Encerrar as férias de ${a}? Férias em andamento terminam hoje; férias futuras são canceladas.`, botao: 'Encerrar', perigo: true },
   desativarAcesso: { titulo: 'Desativar acesso', texto: a => `Desativar o acesso de ${a}? Ela é desconectada na próxima ação e não consegue entrar. Carteira e histórico continuam.`, botao: 'Desativar acesso', perigo: true },
   reativarAcesso: { titulo: 'Reativar acesso', texto: a => `Reativar o acesso de ${a}? Ela pode entrar de novo na hora.`, botao: 'Reativar acesso', perigo: false },
+  transferirCarteira: { titulo: 'Transferir toda carteira', texto: a => `Transferir toda a carteira ${a}? Os clientes que o destino já tem ficam com a origem.`, botao: 'Transferir carteira', perigo: true },
 };
 
 export const ACOES_CONFIRMADAS = Object.keys(CONFIRMACOES) as Acao[];

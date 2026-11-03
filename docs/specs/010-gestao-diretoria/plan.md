@@ -12,7 +12,7 @@ A spec 010 é construída em três etapas, cada uma com o seu plano e o seu
 | Etapa | O quê | Por quê separado |
 |---|---|---|
 | **1 (este plano)** | Usuários (papéis, RCA, escopo e acesso de executivas), Gestão Coordenadores, Férias de Vendedores | só depende da 001 |
-| **2** | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, construída em paralelo |
+| **2** (plano no fim deste arquivo, aprovado em 2026-11-03) | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, já na main |
 | **3** (aprovada em 2026-11-03) | Rotinas automáticas: RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003 | nada roda nem se verifica nesta máquina: integração com o planejamento estratégico e Data Loader do ERP só existem no sandbox, e a rotina de clientes grava `CLIENTES`, dado da 002 |
 
 O **RF-009** (`Gerar novos alertas`) era um botão do Painel de Gestão e saiu
@@ -289,3 +289,113 @@ RN-023, RN-024.
 ## Complexity Tracking
 
 Vazio.
+
+## Etapa 2 — Gestão de Carteira (aprovada em 2026-11-03)
+
+**Escopo:** RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004, e a
+confirmação de `Transferir toda carteira` da RN-025. Tela `/gestao-carteira`,
+só para coordenador com cadastro ativo (RN-001; a rota já está em `ROTAS` com
+esse perfil). A diretoria não abre esta tela.
+
+### Reuso da spec 002 (sem editar arquivo dela)
+
+- `lib/002-carteira.mjs`: `escopoAlvo` nos modos `TEAM` (toda a equipe) e
+  `SELLER` (um vendedor), que já recortam pelas BUs do coordenador ativo e
+  exigem RCA (RNT-004 → RN-017); `carteiraVisivel` (vínculo × linha de escopo
+  do dono, sem Pessoa Física, sem combinação de outro titular); `cod`, `num`,
+  `ramoDe`, `nomeCliente`, `nomeUsuario`, `semAcento`, `naoPessoaFisica`,
+  `responsavelNoEscopo` ("cliente disponível" da 002, RN-019).
+- SF `s360ClientesRamos` da 002 para o filtro Ramo (já no mapa do frontend).
+- Nenhuma tabela nova: `EQUIPE_CLIENTE` (vínculo: cliente + vendedor + filial
+  + seção, chave única), `BU_VENDEDOR`, `COORDENADORES_BU`, `CLIENTES`,
+  `IMP_CLIENTES_TOTVS`, todas já declaradas.
+
+### Contratos (SFs SQL, prefixo `s360GestaoCarteira`, em `add-010-gestao.mjs`)
+
+Recorte comum: `escopoAlvo` com `modo` = `TEAM` quando `vendedorId` é 0 e
+`SELLER` senão; quem não é coordenador ativo recebe 0 linhas.
+
+| Nome | Entrada | Saída | Atende |
+|---|---|---|---|
+| `s360GestaoCarteiraVendedores` | `hoje` | equipe com os escopos dentro das BUs do coordenador: `VENDEDOR_ID`, `NOME`, `COD_RCA`, `CODFILIAL`, `FILIAL`, `CODEPTO`, `BU`, `ID_SECAO`, `SECAO` (uma linha por escopo) | RF-028, C-020 |
+| `s360GestaoCarteiraListar` | `vendedorId` (0 = equipe), `ramo` ('' = todos), `busca` (código, nome ou CNPJ), `limite`, `offset`, `hoje` | uma linha por vínculo exibido: `VINCULO_ID`, `ID_CLIENTE`, `CLIENTE`, `VENDEDOR_ID`, `VENDEDOR`, `COD_RCA`, `RAMO`, `CIDADE`, `UF`, `STATUS`, `CODFILIAL`, `FILIAL`, `CODEPTO`, `BU`, `ID_SECAO`, `SECAO`, `TOTAL`; 50 por página | RF-028, RN-017 |
+| `s360GestaoCarteiraTransferir` | `vinculoId`, `codepto`, `destinoId`, `hoje` | linhas afetadas (`UPDATE` só de `ID_VENDEDOR`: o vínculo mantém filial e seção) | RF-029, RN-018 |
+| `s360GestaoCarteiraMotivo` | idem | `MOTIVO`: `FORA_DA_EQUIPE`, `SEM_ESCOPO`, `JA_TEM`; a tela monta a mensagem da spec | C-018, RN-018 |
+| `s360GestaoCarteiraPrevia` | `origemId`, `destinoId`, `hoje` | `TOTAL`, `JA_TEM`, `SEM_ESCOPO`, `ESCOPO_FALTANDO` (primeira filial · departamento sem escopo do destino) | C-019, RN-018 |
+| `s360GestaoCarteiraTransferirToda` | `origemId`, `destinoId`, `hoje` | linhas afetadas; um `UPDATE` só (tudo ou nada); 0 se algum vínculo cair em `SEM_ESCOPO` | C-019, RN-018, RNF-004 |
+| `s360GestaoCarteiraDisponiveis` | `vendedorId`, `codFilial`, `codepto`, `idSecao`, `busca`, `hoje` | até 8 clientes disponíveis no escopo escolhido: `ID`, `CLIENTE`, `CNPJ`, `CIDADE`, `UF` | RN-019 |
+| `s360GestaoCarteiraAdicionar` | `clienteId`, `vendedorId`, `codFilial`, `codepto`, `idSecao`, `agora`, `hoje` | linhas afetadas (`INSERT` no escopo pedido; escopo vazio ou de fora = 0) | RF-029, C-020, RN-019 |
+
+Regras no SQL:
+- **Transferir** exige origem e destino na equipe (modo `TEAM`), destino com
+  escopo ativo na filial + departamento do vínculo (+ seção, se o escopo do
+  destino define seção) e destino sem o mesmo cliente na mesma filial e seção.
+  A checagem de duplicata lê `EQUIPE_CLIENTE` por uma derivada `DISTINCT`
+  (erro 1093 do MySQL, como na etapa 1) e evita a chave única.
+- **Transferir toda carteira** move de uma vez os vínculos da origem dentro das
+  BUs do coordenador; os que o destino já tem ficam com a origem (C-019: Ana
+  fica com 3). Se algum vínculo não tem escopo do destino, nada é transferido
+  e a tela mostra "Nada foi alterado: <destino> não atua em <filial ·
+  departamento>." (D-010-8).
+- **Adicionar** segue a `s360DisponivelAdicionar` da 002, trocando
+  `:VAR_USER` pelo vendedor da equipe: sem Pessoa Física, sem responsável no
+  escopo, um escopo escolhido. A busca de disponíveis é `LIKE` sem acento no
+  nome e igualdade no código ou CNPJ, `LIMIT 8` (RNT-014).
+
+### Superfície
+
+| Tela / rota | Responsabilidade | Novos |
+|---|---|---|
+| `/gestao-carteira` | filtros Vendedor, Ramo e busca; tabela com Código, Cliente, Vendedor/RCA, Ramo, Cidade/UF, Status, Escopo, 50 por página; `Transferir cliente` por linha (escolhe o destino); `Transferir toda carteira` com o vendedor filtrado (prévia + confirmação RN-025 com os números); `Adicionar à carteira` (vendedor, escopo quando há mais de um, busca até 8) | `GestaoCarteiraPage` |
+
+Regra pura em `src/lib/gestao-carteira.ts`: `mensagemTransferencia(motivo,
+destino, escopo)` (C-018, RN-018), `resumoTransferencia(transferidos, jaTinha,
+destino)` ("37 clientes transferidos. 3 já estavam com Bruno."),
+`escoposDoVendedor(linhas, id)` e `precisaEscolherEscopo` (C-020). A
+confirmação `transferirCarteira` entra em `confirmacao()` de `lib/gestao.ts`.
+
+### Arquivos compartilhados
+
+| Arquivo | Mudança |
+|---|---|
+| `novo/frontend/src/lib/server-functions.ts` | 8 entradas `gestaoCarteira*`, ids 1041–1048 |
+| `novo/backend/simulator/config.mjs` | `CHECK_INPUT` só se faltar chave (`ramo`, `origemId`, `destinoId`, `vinculoId`); conferir antes |
+| arquivos da 002 | nenhuma edição; reuso por `import` |
+
+### Simulador
+
+- **Seed** (`seeds/010-gestao.mjs`), tudo novo e isolado: BU 15 "Ortopedia"
+  (id fixo 10015) com seções 10011 e 10012, para nenhuma outra spec ver estes
+  dados; coordenadora nova, Célia Rocha (supervisor 10049), com F1·15 e F2·15;
+  vendedores novos por `ctx.usuario`:
+
+  | Usuário | Para | Dados |
+  |---|---|---|
+  | Lara Pinto | C-018, C-019 | escopo F1·15·10011; 40 clientes (10101–10140) |
+  | Mauro Teles | C-018, C-019 | escopo F1·15·10011; 3 desses clientes (10101–10103) |
+  | Otto Brito | RN-018 | escopo só F2·15 |
+  | Zilda Faria | C-020 | escopos F1·15·10011 e F2·15·10011 |
+  | Wagner Lopes | RN-017 | escopo só F3·15 (fora das BUs de Célia) |
+  | — | RN-019 | clientes disponíveis 10150–10160 (11, para testar o limite de 8) e um Pessoa Física (10161) |
+
+- **Smoke** (`smoke/010-gestao.mjs`): C-018, C-019, C-020, RN-017, RN-018
+  (sem escopo → 0 e nada muda; carteira inteira com um vínculo sem escopo →
+  0), RN-019 (Pessoa Física fora; no máximo 8), RNF-004 (2.000 vínculos no
+  banco descartável, cronometrado, < 10 s) e a linha da Gestão de Carteira na
+  matriz RN-001 (Célia vê; Ana, Paulo e Rita veem 0).
+- **Tela** (`tests/gestao-carteira.test.mjs`): mensagens do C-018, C-019 e
+  RN-018; C-020 (dois escopos pedem escolha, um não pede); texto da
+  confirmação `transferirCarteira`.
+
+### Decisões da etapa 2
+
+| # | Decisão | Alternativa descartada | Por quê |
+|---|---|---|---|
+| D-010-8 | `Transferir toda carteira`: se algum vínculo da origem cai fora dos escopos do destino, **nada** é transferido, com a mensagem da RN-018; duplicatas não bloqueiam e ficam com a origem | transferir o que der e deixar o resto | a RN-018 diz "tudo ou nada"; parcial deixaria a carteira dividida sem aviso claro |
+| D-010-9 | A lista mostra um vínculo por linha (cliente × filial × seção × vendedor), com a coluna Escopo | uma linha por cliente | a transferência age num vínculo (o que mantém filial e seção); o mesmo cliente em duas filiais são duas linhas |
+| D-010-10 | Prévia (`s360GestaoCarteiraPrevia`) antes da confirmação | só o `UPDATE` | sem transação, a contagem de "já estavam" tem de vir antes; a prévia também mostra o bloqueio sem chegar a gravar |
+
+Riscos: `UPDATE` com 2.000 vínculos e subconsultas por linha (RNF-004) —
+medir no smoke e, se passar de 10 s, trocar as subconsultas por `JOIN` na
+derivada; `IMP_CLIENTES_TOTVS` sem ramo para alguns clientes → "Sem ramo"
+(`ramoDe` da 002).

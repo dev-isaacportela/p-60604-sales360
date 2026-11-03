@@ -22,6 +22,9 @@ import {
 } from 'mitra-sdk';
 import { SEM_BLOQUEIO, temPapel } from './lib/guardas.mjs';
 import {
+  cod, num, nomeCliente, nomeUsuario, semAcento, ramoDe, naoPessoaFisica, escopoAlvo, responsavelNoEscopo,
+} from './lib/002-carteira.mjs';
+import {
   GESTAO, DIRETORIA, nome, agora, numerico, naEquipe,
   SEM_BLOQUEIO_DERIVADO, temPapelDerivado,
 } from './lib/010-gestao.mjs';
@@ -72,6 +75,60 @@ const executivaVisivel = (alvo) => `(${alvo} <> :VAR_USER
           EXISTS (SELECT 1 FROM BU_VENDEDOR XB WHERE XB.VENDEDOR_ID = ${alvo} AND XB.ATIVO = 1)
           OR EXISTS (SELECT 1 FROM VENDEDOR_RCA XR WHERE XR.USER_ID = ${alvo})))
        OR ${naEquipe(alvo)}))`;
+
+/* ─────────────── Gestao de Carteira (coordenador ativo; etapa 2) ─────────────── */
+
+// Recorte da 002 (RNT-004 → RN-017): TEAM = toda a equipe do coordenador
+// ativo; SELLER = um vendedor dela. `vendedor` e expressao SQL; '' ou 0 = TEAM.
+const EQUIPE = (vendedor = "''") => ({
+  modo: `(CASE WHEN COALESCE(NULLIF(TRIM(CAST(${vendedor} AS CHAR)), ''), '0') = '0' THEN 'TEAM' ELSE 'SELLER' END)`,
+  coordenador: "''", vendedor, filial: "''", depto: "''", secao: "''", hoje: "'{{hoje}}'",
+});
+
+// Vinculos (EQUIPE_CLIENTE) da equipe, um por vinculo e departamento do escopo
+// do dono que os cobre (D-010-9): mesma filial, e secao igual, escopo sem
+// secao do departamento da secao, ou vinculo sem secao. DISTINCT materializa a
+// derivada (MySQL 1093 nos UPDATE sobre EQUIPE_CLIENTE).
+const vinculos = (vendedor) => `SELECT DISTINCT EC_G.ID AS VINCULO_ID, EC_G.ID_CLIENTE, EC_G.ID_VENDEDOR AS VENDEDOR_ID,
+    TRIM(CAST(EC_G.CODFILIAL AS CHAR)) AS CODFILIAL, A_G.CODEPTO, EC_G.ID_SECAO
+  FROM EQUIPE_CLIENTE EC_G
+  JOIN (${escopoAlvo(EQUIPE(vendedor))}) A_G ON A_G.VENDEDOR_ID = EC_G.ID_VENDEDOR
+    AND ${cod('A_G.CODFILIAL')} = ${cod('EC_G.CODFILIAL')}
+    AND (EC_G.ID_SECAO IS NULL OR A_G.ID_SECAO = EC_G.ID_SECAO
+      OR (A_G.ID_SECAO IS NULL AND EC_G.ID_SECAO IN (
+        SELECT S_G.ID FROM SECAO S_G JOIN BU B_G ON B_G.ID = S_G.ID_BU WHERE ${cod('B_G.CODIGO')} = ${cod('A_G.CODEPTO')})))
+  WHERE ${naoPessoaFisica('EC_G.ID_CLIENTE')}`;
+
+// RN-018: `destino` tem escopo ativo na equipe na filial + departamento do
+// vinculo `v` (+ secao, quando o escopo do destino define secao).
+const destinoAtua = (destino, filial, depto, secao) => `EXISTS (
+      SELECT 1 FROM (${escopoAlvo(EQUIPE())}) D_G
+      WHERE D_G.VENDEDOR_ID = ${destino}
+        AND ${cod('D_G.CODFILIAL')} = ${cod(filial)}
+        AND ${cod('D_G.CODEPTO')} = ${cod(depto)}
+        AND (D_G.ID_SECAO IS NULL OR D_G.ID_SECAO = ${secao}))`;
+
+// RN-018: o destino ja tem o cliente na mesma filial e secao (nao duplica).
+const destinoJaTem = (destino, cliente, filial, secao) => `EXISTS (
+      SELECT 1 FROM (SELECT DISTINCT X_G.ID_CLIENTE, X_G.ID_VENDEDOR, X_G.CODFILIAL, X_G.ID_SECAO FROM EQUIPE_CLIENTE X_G) J_G
+      WHERE J_G.ID_CLIENTE = ${cliente} AND J_G.ID_VENDEDOR = ${destino}
+        AND ${cod('J_G.CODFILIAL')} = ${cod(filial)}
+        AND COALESCE(J_G.ID_SECAO, 0) = COALESCE(${secao}, 0))`;
+
+// "Filial 1 · Brasilia · Nutricao" para a mensagem da RN-018.
+const nomeEscopo = (filial, depto) => `CONCAT(COALESCE((SELECT MAX(F_N.NOME_FILIAL) FROM FILIAL F_N WHERE ${cod('F_N.CODFILIAL')} = ${cod(filial)}), CONCAT('Filial ', ${filial})),
+    ' · ', COALESCE((SELECT MAX(B_N.NOME) FROM BU B_N WHERE ${cod('B_N.CODIGO')} = ${cod(depto)}), ${depto}))`;
+
+// Busca de cliente (RNT-014): codigo exato, CNPJ por trecho, nome sem acento.
+const buscaCliente = (c) => `('{{busca}}' = '' OR CAST(${c}.ID AS CHAR) = TRIM('{{busca}}')
+       OR (TRIM('{{busca}}') <> '' AND COALESCE(${c}.CNPJ, '') LIKE CONCAT('%', TRIM('{{busca}}'), '%'))
+       OR ${semAcento(nomeCliente(c))} LIKE CONCAT('%', ${semAcento("TRIM('{{busca}}')")}, '%'))`;
+
+// Escopo escolhido de um vendedor da equipe (C-020): sem secao = escopo sem secao.
+const escopoEscolhido = (a) => `${cod(`${a}.CODFILIAL`)} = ${cod("'{{codFilial}}'")}
+    AND ${cod(`${a}.CODEPTO`)} = ${cod("'{{codepto}}'")}
+    AND ((${num('idSecao')} IS NULL AND ${a}.ID_SECAO IS NULL) OR ${a}.ID_SECAO = ${num('idSecao')})
+    AND ${a}.VENDEDOR_ID = ${cod("'{{vendedorId}}'")}`;
 
 /* ─────────────── definicoes ─────────────── */
 
@@ -557,6 +614,122 @@ WHERE USER_ID = {{userId}}
   AND '{{agora}}' <> ''
   AND ${executivaVisivel('USUARIO_BLOQUEIO.USER_ID')}
   AND ${SEM_BLOQUEIO_DERIVADO}`,
+  },
+
+  // ── Gestao de Carteira (RN-017 a RN-019; coordenador ativo) ──
+  {
+    name: 's360GestaoCarteiraVendedores',
+    type: 'SQL',
+    description: 'Equipe do coordenador ativo com os escopos dentro das BUs dele, uma linha por escopo (RF-028, C-020). Params: hoje.',
+    code: `SELECT A.VENDEDOR_ID, ${nomeUsuario('U')} AS NOME, VR.COD_RCA, A.CODFILIAL, F.NOME_FILIAL AS FILIAL,
+  A.CODEPTO, B.NOME AS BU, A.ID_SECAO, S.NOME_SECAO AS SECAO
+FROM (${escopoAlvo(EQUIPE())}) A
+JOIN INT_USER U ON U.ID = A.VENDEDOR_ID
+LEFT JOIN VENDEDOR_RCA VR ON VR.USER_ID = A.VENDEDOR_ID
+LEFT JOIN FILIAL F ON ${cod('F.CODFILIAL')} = ${cod('A.CODFILIAL')}
+LEFT JOIN BU B ON ${cod('B.CODIGO')} = ${cod('A.CODEPTO')}
+LEFT JOIN SECAO S ON S.ID = A.ID_SECAO
+ORDER BY NOME, A.CODFILIAL, A.CODEPTO, A.ID_SECAO`,
+  },
+  {
+    name: 's360GestaoCarteiraListar',
+    type: 'SQL',
+    description: 'Carteira da equipe, um vinculo por linha (RF-028, RN-017, D-010-9), busca por codigo, CNPJ ou nome, filtro de vendedor e ramo, paginada (TOTAL). Params: vendedorId (0 = equipe), ramo, busca, limite, offset, hoje.',
+    code: `SELECT V.VINCULO_ID, V.ID_CLIENTE, ${nomeCliente('C')} AS CLIENTE, V.VENDEDOR_ID, ${nomeUsuario('U')} AS VENDEDOR, VR.COD_RCA,
+  ${ramoDe('V.ID_CLIENTE')} AS RAMO, C.CIDADE, C.UF, C.STATUS,
+  V.CODFILIAL, F.NOME_FILIAL AS FILIAL, V.CODEPTO, B.NOME AS BU, V.ID_SECAO, S.NOME_SECAO AS SECAO,
+  COUNT(*) OVER () AS TOTAL
+FROM (${vinculos("'{{vendedorId}}'")}) V
+JOIN CLIENTES C ON C.ID = V.ID_CLIENTE
+JOIN INT_USER U ON U.ID = V.VENDEDOR_ID
+LEFT JOIN VENDEDOR_RCA VR ON VR.USER_ID = V.VENDEDOR_ID
+LEFT JOIN FILIAL F ON ${cod('F.CODFILIAL')} = ${cod('V.CODFILIAL')}
+LEFT JOIN BU B ON ${cod('B.CODIGO')} = ${cod('V.CODEPTO')}
+LEFT JOIN SECAO S ON S.ID = V.ID_SECAO
+WHERE ('{{ramo}}' = '' OR ${ramoDe('V.ID_CLIENTE')} = '{{ramo}}')
+  AND ${buscaCliente('C')}
+ORDER BY VENDEDOR, CLIENTE, V.CODFILIAL, V.ID_SECAO
+${PAGINA}`,
+  },
+  {
+    name: 's360GestaoCarteiraTransferir',
+    type: 'SQL',
+    description: 'Transfere um vinculo para outro vendedor da equipe (RN-018): mantem filial e secao; destino com escopo ali e sem o mesmo cliente na mesma filial e secao. Params: vinculoId, codepto, destinoId, hoje. Devolve affectedRows; 0 = ver s360GestaoCarteiraMotivo.',
+    code: `UPDATE EQUIPE_CLIENTE
+SET ID_VENDEDOR = {{destinoId}}
+WHERE ID = {{vinculoId}}
+  AND ID_VENDEDOR <> {{destinoId}}
+  AND ID IN (SELECT V.VINCULO_ID FROM (${vinculos("''")}) V WHERE ${cod('V.CODEPTO')} = ${cod("'{{codepto}}'")})
+  AND ${destinoAtua('{{destinoId}}', 'EQUIPE_CLIENTE.CODFILIAL', "'{{codepto}}'", 'EQUIPE_CLIENTE.ID_SECAO')}
+  AND NOT ${destinoJaTem('{{destinoId}}', 'EQUIPE_CLIENTE.ID_CLIENTE', 'EQUIPE_CLIENTE.CODFILIAL', 'EQUIPE_CLIENTE.ID_SECAO')}`,
+  },
+  {
+    name: 's360GestaoCarteiraMotivo',
+    type: 'SQL',
+    description: 'Por que a transferencia foi recusada (C-018, RN-018): FORA_DA_EQUIPE, JA_TEM, SEM_ESCOPO ou OK, com ESCOPO (filial · departamento). Params: vinculoId, codepto, destinoId, hoje.',
+    code: `SELECT CASE
+    WHEN NOT EXISTS (SELECT 1 FROM (${vinculos("''")}) V WHERE V.VINCULO_ID = {{vinculoId}}) THEN 'FORA_DA_EQUIPE'
+    WHEN NOT EXISTS (SELECT 1 FROM (${escopoAlvo(EQUIPE())}) D WHERE D.VENDEDOR_ID = {{destinoId}}) THEN 'FORA_DA_EQUIPE'
+    WHEN ${destinoJaTem('{{destinoId}}', 'EC.ID_CLIENTE', 'EC.CODFILIAL', 'EC.ID_SECAO')} THEN 'JA_TEM'
+    WHEN NOT ${destinoAtua('{{destinoId}}', 'EC.CODFILIAL', "'{{codepto}}'", 'EC.ID_SECAO')} THEN 'SEM_ESCOPO'
+    ELSE 'OK' END AS MOTIVO,
+  ${nomeEscopo('EC.CODFILIAL', "'{{codepto}}'")} AS ESCOPO
+FROM EQUIPE_CLIENTE EC
+WHERE EC.ID = {{vinculoId}}
+  AND ${SEM_BLOQUEIO}`,
+  },
+  {
+    name: 's360GestaoCarteiraPrevia',
+    type: 'SQL',
+    description: 'Previa de Transferir toda carteira (C-019, RN-018, D-010-10): vinculos da origem, quantos o destino ja tem e quantos caem fora dos escopos do destino (o primeiro em ESCOPO_FALTANDO). Params: origemId, destinoId, hoje.',
+    code: `SELECT COUNT(DISTINCT V.VINCULO_ID) AS TOTAL,
+  COUNT(DISTINCT CASE WHEN ${destinoJaTem('{{destinoId}}', 'V.ID_CLIENTE', 'V.CODFILIAL', 'V.ID_SECAO')} THEN V.VINCULO_ID END) AS JA_TEM,
+  COUNT(DISTINCT CASE WHEN NOT ${destinoAtua('{{destinoId}}', 'V.CODFILIAL', 'V.CODEPTO', 'V.ID_SECAO')} THEN V.VINCULO_ID END) AS SEM_ESCOPO,
+  MIN(CASE WHEN NOT ${destinoAtua('{{destinoId}}', 'V.CODFILIAL', 'V.CODEPTO', 'V.ID_SECAO')} THEN ${nomeEscopo('V.CODFILIAL', 'V.CODEPTO')} END) AS ESCOPO_FALTANDO
+FROM (${vinculos("'{{origemId}}'")}) V
+WHERE {{origemId}} <> {{destinoId}}`,
+  },
+  {
+    // Um UPDATE so: tudo ou nada (RN-018, RNF-004). Os que o destino ja tem ficam com a origem (C-019).
+    name: 's360GestaoCarteiraTransferirToda',
+    type: 'SQL',
+    description: 'Transfere todos os vinculos da origem (nas BUs do coordenador) para o destino; duplicados ficam com a origem; se algum vinculo cai fora dos escopos do destino, nada muda (D-010-8). Params: origemId, destinoId, hoje. Devolve affectedRows.',
+    code: `UPDATE EQUIPE_CLIENTE
+SET ID_VENDEDOR = {{destinoId}}
+WHERE ID_VENDEDOR = {{origemId}}
+  AND {{origemId}} <> {{destinoId}}
+  AND ID IN (SELECT V.VINCULO_ID FROM (${vinculos("'{{origemId}}'")}) V)
+  AND NOT ${destinoJaTem('{{destinoId}}', 'EQUIPE_CLIENTE.ID_CLIENTE', 'EQUIPE_CLIENTE.CODFILIAL', 'EQUIPE_CLIENTE.ID_SECAO')}
+  AND NOT EXISTS (SELECT 1 FROM (${vinculos("'{{origemId}}'")}) V2
+                  WHERE NOT ${destinoAtua('{{destinoId}}', 'V2.CODFILIAL', 'V2.CODEPTO', 'V2.ID_SECAO')})`,
+  },
+  {
+    name: 's360GestaoCarteiraDisponiveis',
+    type: 'SQL',
+    description: 'Ate 8 clientes disponiveis (regras da 002: sem Pessoa Fisica, sem responsavel no escopo) para um vendedor da equipe num escopo dele (RN-019, RNT-014). Params: vendedorId, codFilial, codepto, idSecao (vazio = sem secao), busca, hoje.',
+    code: `SELECT C.ID, ${nomeCliente('C')} AS CLIENTE, C.CNPJ, C.CIDADE, C.UF
+FROM CLIENTES C
+JOIN (${escopoAlvo(EQUIPE("'{{vendedorId}}'"))}) A ON ${escopoEscolhido('A')}
+WHERE TRIM('{{busca}}') <> ''
+  AND ${buscaCliente('C')}
+  AND ${naoPessoaFisica('C.ID')}
+  AND NOT ${responsavelNoEscopo('C.ID', 'A.CODFILIAL', 'A.CODEPTO', 'A.ID_SECAO')}
+ORDER BY CLIENTE
+LIMIT 8`,
+  },
+  {
+    name: 's360GestaoCarteiraAdicionar',
+    type: 'SQL',
+    description: 'Adiciona um cliente disponivel a carteira de um vendedor da equipe no escopo escolhido (RF-029, C-020, RN-019). Params: clienteId, vendedorId, codFilial, codepto, idSecao, agora, hoje. Devolve affectedRows; escopo vazio ou de fora = 0.',
+    code: `INSERT INTO EQUIPE_CLIENTE (ID_CLIENTE, ID_VENDEDOR, CRIADO_EM, CODFILIAL, ID_SECAO)
+SELECT C.ID, A.VENDEDOR_ID, ${agora}, A.CODFILIAL, A.ID_SECAO
+FROM CLIENTES C
+JOIN (${escopoAlvo(EQUIPE("'{{vendedorId}}'"))}) A ON ${escopoEscolhido('A')}
+WHERE C.ID = ${num('clienteId')}
+  AND ${naoPessoaFisica('C.ID')}
+  AND NOT ${responsavelNoEscopo('C.ID', 'A.CODFILIAL', 'A.CODEPTO', 'A.ID_SECAO')}
+  AND '{{agora}}' <> ''
+LIMIT 1`,
   },
 ];
 

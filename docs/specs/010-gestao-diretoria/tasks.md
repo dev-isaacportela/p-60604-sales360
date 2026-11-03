@@ -8,8 +8,8 @@
 > `[P]` = paralelizável (arquivos distintos, sem dependência entre si).
 > `[sandbox]` = só pode rodar no sandbox da plataforma (nunca desta máquina).
 >
-> **Etapa 2 (depois da spec 002):** Gestão de Carteira — RF-028, RF-029,
-> RN-017 a RN-019, C-018 a C-020, RNF-004. **Etapa 3 (proposta):** rotinas —
+> **Etapa 2:** Gestão de Carteira — RF-028, RF-029, RN-017 a RN-019, C-018 a
+> C-020, RNF-004; tasks T-200 a T-209 no fim deste arquivo. **Etapa 3 (proposta):** rotinas —
 > RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003. **RF-009** saiu com o Painel
 > de Gestão (D4).
 
@@ -94,7 +94,29 @@ T-100 + T-101 → T-102 → T-103 → T-104 (exige T-001…T-003)
 | RF-023…RF-025 / C-014, C-015, RN-014 | T-012, T-038 | T-082 |
 | RF-026 / C-016, RN-015 | T-012, T-039 | T-083, T-087 |
 | RF-027 / C-017, RN-016 | T-012, T-038, T-040 | T-083, T-086, T-089 |
-| RF-028, RF-029 | etapa 2 | etapa 2 |
+| RF-028, RF-029 | etapa 2 (T-200…T-209) | etapa 2 |
 | RF-030 / C-021, C-022, RN-020 | T-012, T-041 | T-084, T-088 |
 | RF-031, RF-032 / C-023, C-024, RN-021, RN-022 | T-012, T-042 | T-085, T-087 |
 | RF-033, RF-034 | etapa 3 | etapa 3 |
+
+## Etapa 2 — Gestão de Carteira (aprovada em 2026-11-03)
+
+- [x] **T-200** — `add-010-gestao.mjs`: 8 SFs `s360GestaoCarteira*` do plan (etapa 2), reusando `lib/002-carteira.mjs` por `import`
+- [x] **T-201** — `simulator/config.mjs`: chaves de `CHECK_INPUT` que faltarem (conferir antes)
+- [x] **T-202** — `seeds/010-gestao.mjs`: BU 15, seções 10011/10012, Célia (sup 10049) com F1·15 e F2·15, Lara, Mauro, Otto, Zilda e Wagner por `ctx.usuario`, clientes 10101–10161
+- [x] **T-203** `[P]` — `src/lib/gestao-carteira.ts`: `mensagemTransferencia`, `resumoTransferencia`, `escoposDoVendedor`, `precisaEscolherEscopo`; `transferirCarteira` em `confirmacao()` de `lib/gestao.ts`
+- [x] **T-204** — `server-functions.ts`: 8 entradas `gestaoCarteira*`, ids 1041–1048
+- [x] **T-205** — `GestaoCarteiraPage` (`/gestao-carteira`)
+- [x] **T-206** — smoke: C-018, C-019, C-020, RN-017, RN-018, RN-019, RNF-004 e a linha da Gestão de Carteira na matriz RN-001
+- [x] **T-207** `[P]` — `tests/gestao-carteira.test.mjs`: C-018, C-019, C-020, RN-018, RN-025 (`transferirCarteira`)
+- [x] **T-208** — `npm test` no backend e no frontend, `npm run build`; tela no simulador como Célia (transferir, transferir toda, adicionar com dois escopos)
+- [ ] **T-209** `[sandbox]` — publicar `add-010-gestao.mjs` de novo (junto com a T-104) e conferir o RNF-004 com volume de produção
+
+Rastreabilidade da etapa 2:
+
+| Requisito / cenário | Tasks | Teste |
+|---|---|---|
+| RF-028 / RN-017 | T-200, T-205 | T-206 |
+| RF-029 / C-018, C-019, C-020, RN-018, RN-019 | T-200, T-203, T-205 | T-206, T-207 |
+| RN-025 (`Transferir toda carteira`) | T-203, T-205 | T-207 |
+| RNF-004 | T-200 | T-206, T-209 |

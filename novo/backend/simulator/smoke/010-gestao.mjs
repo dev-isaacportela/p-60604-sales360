@@ -1,4 +1,4 @@
-// Smoke da spec 010 — gestão, coordenação e diretoria (etapa 1).
+// Smoke da spec 010 — gestão, coordenação e diretoria (etapas 1 e 2).
 // Rodado por ../smoke.mjs num banco descartável só deste arquivo.
 
 import { definitions } from '../../add-010-gestao.mjs';
@@ -7,7 +7,8 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
   const id = (email) => Number(banco(`SELECT ID FROM INT_USER WHERE DESCR = '${email}@benenutri.local'`)[0].ID);
   const P = Object.fromEntries(['nina.alves', 'olga.pires', 'pedro.sales',
     'quesia.lemos', 'carlos.viana', 'davi.moura', 'rui.barros', 'sara.nunes', 'tereza.lima', 'ulisses.reis', 'vitor.gomes',
-    'xavier.melo', 'yara.dias', 'joana.prates', 'renata.costa'].map((e) => [e.split('.')[0].toUpperCase(), id(e)]));
+    'xavier.melo', 'yara.dias', 'joana.prates', 'renata.costa',
+    'celia.rocha', 'lara.pinto', 'mauro.teles', 'otto.brito', 'zilda.faria', 'wagner.lopes'].map((e) => [e.split('.')[0].toUpperCase(), id(e)]));
   const GESTOR = ID.PAULO; // GESTOR pelo legado (spec 001)
   const DIRETORIA = ID.GIL;
   const HOJE = '2026-10-30';
@@ -250,5 +251,107 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     assert.equal((await linhas('s360PapelListar', PAGINA, ID.RITA)).length, 0);
     // Bloqueado não lê nada (RN-016 da 001).
     assert.equal((await linhas('s360PapelListar', PAGINA, ID.FABIO)).length, 0);
+  });
+
+  /* ── Gestão de Carteira (etapa 2; Célia coordena F1·15 e F2·15) ── */
+
+  const CARTEIRA = { vendedorId: 0, ramo: '', busca: '', limite: 50, offset: 0, hoje: HOJE };
+  const carteira = (vendedorId, extra = {}) => linhas('s360GestaoCarteiraListar', { ...CARTEIRA, vendedorId, ...extra }, P.CELIA);
+  const vinculo = (cliente, vendedor) => banco(`SELECT * FROM EQUIPE_CLIENTE WHERE ID_CLIENTE = ${cliente} AND ID_VENDEDOR = ${vendedor}`)[0];
+  const deVendedor = (vendedor) => Number(banco(`SELECT COUNT(*) AS N FROM EQUIPE_CLIENTE WHERE ID_VENDEDOR = ${vendedor}`)[0].N);
+  const transferir = (cliente, origem, destinoId) => ({ vinculoId: vinculo(cliente, origem).ID, codepto: '15', destinoId, hoje: HOJE });
+  const toda = (origemId, destinoId) => ({ origemId, destinoId, hoje: HOJE });
+  const noEscopo = (vendedorId, codFilial, extra = {}) => ({ vendedorId, codFilial, codepto: '15', idSecao: '10011', hoje: HOJE, agora: AGORA, ...extra });
+
+  await teste('RN-017: Célia vê só a equipe nas suas BUs; Wagner (só F3) fica de fora', async () => {
+    const equipe = await carteira(0);
+    assert.equal(Number(equipe[0].TOTAL), 44); // Lara 40 + Mauro 3 + Otto 1
+    assert.ok(equipe.every((l) => l.VENDEDOR_ID !== P.WAGNER));
+    assert.equal((await carteira(P.WAGNER)).length, 0);
+    const vendedores = await linhas('s360GestaoCarteiraVendedores', { hoje: HOJE }, P.CELIA);
+    assert.deepEqual([...new Set(vendedores.map((v) => v.VENDEDOR_ID))].sort(), [P.LARA, P.MAURO, P.OTTO, P.ZILDA].sort());
+    assert.equal(vendedores.filter((v) => v.VENDEDOR_ID === P.ZILDA).length, 2);
+    assert.equal(Number((await carteira(P.LARA, { ramo: 'HOSPITAL' }))[0].TOTAL), 20);
+    assert.equal((await carteira(P.LARA, { busca: 'ortopedica 10105' })).length, 1);
+  });
+
+  await teste('C-019: 40 clientes, 3 que o destino já tem → 37 transferidos, 3 ficam com a origem', async () => {
+    const previa = (await linhas('s360GestaoCarteiraPrevia', toda(P.LARA, P.MAURO), P.CELIA))[0];
+    assert.deepEqual([previa.TOTAL, previa.JA_TEM, previa.SEM_ESCOPO].map(Number), [40, 3, 0]);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.LARA, P.MAURO), P.CELIA), 37);
+    assert.equal(deVendedor(P.LARA), 3);
+    assert.equal(deVendedor(P.MAURO), 40);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.LARA, P.MAURO), P.CELIA), 0);
+  });
+
+  await teste('C-018 / RN-018: destino que já tem o cliente ou não atua ali → 0 e o motivo; válido mantém filial e seção', async () => {
+    const jaTem = transferir(10101, P.LARA, P.MAURO);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferir', jaTem, P.CELIA), 0);
+    assert.equal((await linhas('s360GestaoCarteiraMotivo', jaTem, P.CELIA))[0].MOTIVO, 'JA_TEM');
+    const semEscopo = transferir(10101, P.LARA, P.OTTO);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferir', semEscopo, P.CELIA), 0);
+    const motivo = (await linhas('s360GestaoCarteiraMotivo', semEscopo, P.CELIA))[0];
+    assert.equal(motivo.MOTIVO, 'SEM_ESCOPO');
+    assert.match(motivo.ESCOPO, /Ortopedia/);
+    assert.equal(vinculo(10101, P.LARA).ID_VENDEDOR, P.LARA);
+    const fora = transferir(10101, P.LARA, P.WAGNER);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferir', fora, P.CELIA), 0);
+    assert.equal((await linhas('s360GestaoCarteiraMotivo', fora, P.CELIA))[0].MOTIVO, 'FORA_DA_EQUIPE');
+    assert.equal(await afetadas('s360GestaoCarteiraTransferir', transferir(10104, P.MAURO, P.ZILDA), P.CELIA), 1);
+    const movido = vinculo(10104, P.ZILDA);
+    assert.deepEqual([String(movido.CODFILIAL), movido.ID_SECAO], ['1', 10011]);
+  });
+
+  await teste('C-020: Zilda tem dois escopos → sem escolha é recusado; com escolha grava 1 vínculo', async () => {
+    assert.equal(await afetadas('s360GestaoCarteiraAdicionar', noEscopo(P.ZILDA, '', { codepto: '', idSecao: '', clienteId: 10150 }), P.CELIA), 0);
+    assert.equal(await afetadas('s360GestaoCarteiraAdicionar', noEscopo(P.ZILDA, '2', { clienteId: 10150 }), P.CELIA), 1);
+    const novo = vinculo(10150, P.ZILDA);
+    assert.deepEqual([String(novo.CODFILIAL), novo.ID_SECAO], ['2', 10011]);
+    assert.equal(await afetadas('s360GestaoCarteiraAdicionar', noEscopo(P.ZILDA, '2', { clienteId: 10150 }), P.CELIA), 0);
+    assert.equal(await afetadas('s360GestaoCarteiraAdicionar', noEscopo(P.WAGNER, '3', { idSecao: '', clienteId: 10151 }), P.CELIA), 0);
+  });
+
+  await teste('RN-018: carteira inteira com um vínculo fora dos escopos do destino → nada transferido', async () => {
+    // Zilda: 10104 em F1 e 10150 em F2; Otto só atua em F2.
+    const previa = (await linhas('s360GestaoCarteiraPrevia', toda(P.ZILDA, P.OTTO), P.CELIA))[0];
+    assert.deepEqual([previa.TOTAL, previa.SEM_ESCOPO].map(Number), [2, 1]);
+    assert.match(previa.ESCOPO_FALTANDO, /Ortopedia/);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.ZILDA, P.OTTO), P.CELIA), 0);
+    assert.equal(deVendedor(P.ZILDA), 2);
+  });
+
+  await teste('RN-019: disponíveis sem Pessoa Física, sem cliente com responsável, no máximo 8', async () => {
+    const busca = (b) => linhas('s360GestaoCarteiraDisponiveis', noEscopo(P.LARA, '1', { busca: b }), P.CELIA);
+    const clinicas = await busca('Clinica Ortese');
+    assert.equal(clinicas.length, 8);
+    assert.ok(clinicas.every((c) => c.ID !== 10161));
+    assert.equal((await busca('10161')).length, 0);
+    assert.equal((await busca('10101')).length, 0);
+    assert.equal((await busca('10155')).length, 1);
+    assert.equal((await busca('')).length, 0);
+  });
+
+  await teste('RN-001: Gestão de Carteira só para coordenador ativo', async () => {
+    assert.ok((await carteira(0)).length > 0);
+    for (const quem of [ID.ANA, GESTOR, DIRETORIA, ID.RITA]) {
+      assert.equal((await linhas('s360GestaoCarteiraListar', CARTEIRA, quem)).length, 0, `listar como ${quem}`);
+      assert.equal((await linhas('s360GestaoCarteiraVendedores', { hoje: HOJE }, quem)).length, 0, `vendedores como ${quem}`);
+    }
+    // Outro coordenador ativo (Carlos, F1·1) vê a equipe dele, não a da Célia.
+    assert.ok((await linhas('s360GestaoCarteiraListar', CARTEIRA, P.CARLOS)).every((l) => String(l.CODEPTO) !== '15'));
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.MAURO, P.ZILDA), P.CARLOS), 0);
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.MAURO, P.ZILDA), GESTOR), 0);
+    assert.equal(await afetadas('s360GestaoCarteiraAdicionar', noEscopo(P.LARA, '1', { clienteId: 10152 }), ID.ANA), 0);
+  });
+
+  await teste('RNF-004: carteira inteira com 2.000 vínculos em menos de 10 s', async () => {
+    db.exec(`WITH RECURSIVE N(I) AS (SELECT 1 UNION ALL SELECT I + 1 FROM N WHERE I < 2000)
+      INSERT INTO EQUIPE_CLIENTE (ID_CLIENTE, ID_VENDEDOR, CRIADO_EM, CODFILIAL, ID_SECAO)
+      SELECT 10900000 + I, ${P.LARA}, '${AGORA}', '1', 10011 FROM N`);
+    const inicio = Date.now();
+    assert.equal(await afetadas('s360GestaoCarteiraTransferirToda', toda(P.LARA, P.ZILDA), P.CELIA), 2003);
+    const ms = Date.now() - inicio;
+    assert.ok(ms < 10000, `${ms} ms`);
+    assert.equal(deVendedor(P.LARA), 0);
   });
 }
