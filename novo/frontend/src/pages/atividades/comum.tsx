@@ -3,10 +3,59 @@
 // nem lixeira (RN-001/002).
 
 import type * as React from 'react'
-import { Trash2 } from 'lucide-react'
+import { CalendarDays, ChevronDown, Trash2 } from 'lucide-react'
 import { fmtData } from '@/lib/formato'
 import { STATUS, TOM_PRIORIDADE, atrasada, rotuloPrioridade, rotuloStatus } from '@/lib/atividades'
-import { Dash, IconButton, SelectMenu, Status } from '@/components/page'
+import { Button, Dash, IconButton, Input, LabelledField, SelectMenu, Status } from '@/components/page'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+
+/** Ponto da prioridade: Alta vermelho, Média amarelo, Baixa verde (spec 004). */
+export const PONTO_PRIORIDADE: Record<string, string> = { ALTA: 'bg-destructive', MEDIA: 'bg-attention', BAIXA: 'bg-primary' }
+
+const PILULA = 'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] transition-colors'
+const pilula = (ativa: boolean) => cn(PILULA, ativa ? 'border-ink bg-ink font-semibold text-card' : 'border-rule-table bg-card text-ink hover:bg-secondary')
+
+/** Filtro de uma escolha em botões (o ativo fica escuro); `ponto` = classe da bolinha. */
+export function Pilulas({ rotulo, opcoes, valor, mudar }: {
+  rotulo: string
+  opcoes: { value: string; label: string; ponto?: string }[]
+  valor: string
+  mudar: (v: string) => void
+}) {
+  return (
+    <div role="group" aria-label={rotulo} className="flex flex-wrap items-center gap-1.5">
+      <span className="mr-0.5 text-[12px] text-ink-secondary">{rotulo}</span>
+      {opcoes.map(o => (
+        <button key={o.value} type="button" aria-pressed={valor === o.value} onClick={() => mudar(o.value)} className={pilula(valor === o.value)}>
+          {o.ponto ? <span aria-hidden className={cn('size-2 rounded-full', o.ponto)} /> : null}
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Prazo exato num botão só, que abre a data. */
+export function FiltroPrazo({ valor, mudar }: { valor: string; mudar: (v: string) => void }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" aria-label={valor ? `Prazo ${fmtData(valor)}. Alterar` : 'Filtrar por prazo'} className={pilula(!!valor)}>
+          <CalendarDays aria-hidden className="size-3.5" />
+          {valor ? `Prazo ${fmtData(valor)}` : 'Qualquer prazo'}
+          <ChevronDown aria-hidden className="size-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="flex w-60 flex-col gap-3">
+        <LabelledField label="Prazo exato">
+          <Input type="date" value={valor} onChange={e => mudar(e.target.value)} />
+        </LabelledField>
+        {valor ? <Button size="sm" onClick={() => mudar('')}>Qualquer prazo</Button> : null}
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Linha = Record<string, any>

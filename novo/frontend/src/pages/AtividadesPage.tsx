@@ -13,8 +13,9 @@ import {
   FILTROS_VAZIOS, MSG, PRIORIDADES, STATUS, confirmacaoExclusao, mensagemRecusa, mensagemStatus, visaoInicial,
 } from '@/lib/atividades'
 import {
-  Actions, Alert, Button, Field, InfoTile, Input, LabelledField, PageHeader, Panel, SelectMenu, Stack, Toolbar,
+  Actions, Alert, Button, IconButton, InfoTile, PageHeader, Panel, Stack, TextLink, Toolbar,
 } from '@/components/page'
+import { cn } from '@/lib/utils'
 import { FiltroEscopo, useEscopo } from '@/components/FiltroEscopo'
 import { Confirmacao } from '@/components/Confirmacao'
 import type { PedidoConfirmacao } from '@/components/Confirmacao'
@@ -24,7 +25,7 @@ import { useSessao } from '@/components/sessao-contexto'
 import { JanelaAtividade } from './atividades/JanelaAtividade'
 import { Kanban } from './atividades/Kanban'
 import { Lista } from './atividades/Lista'
-import { GradeCards } from './atividades/comum'
+import { FiltroPrazo, GradeCards, PONTO_PRIORIDADE, Pilulas } from './atividades/comum'
 import type { AcoesAtividade, Linha } from './atividades/comum'
 
 const TODOS = { value: '', label: 'Todos' }
@@ -131,25 +132,27 @@ export default function AtividadesPage() {
         <InfoTile label="Concluídas">{n('CONCLUIDAS')}</InfoTile>
       </GradeCards>
       <Panel>
-        <Toolbar>
-          <Field label="Status" className="w-40">
-            <SelectMenu label="Status" value={filtros.status} options={[TODOS, ...STATUS]} onChange={v => mudar('status', v)} />
-          </Field>
-          <Field label="Prioridade" className="w-40">
-            <SelectMenu label="Prioridade" value={filtros.prioridade} options={[{ value: '', label: 'Todas' }, ...PRIORIDADES]} onChange={v => mudar('prioridade', v)} />
-          </Field>
-          <LabelledField label="Prazo exato" className="w-44">
-            <Input type="date" value={filtros.prazo} onChange={e => mudar('prazo', e.target.value)} />
-          </LabelledField>
-          <Actions>
-            <Button variant="ghost" onClick={() => setFiltros(FILTROS_VAZIOS)} disabled={!temFiltro}>Limpar filtros</Button>
-            <Button onClick={() => setRecarga(r => r + 1)}><RefreshCw aria-hidden />Atualizar</Button>
-          </Actions>
-          <div className="ml-auto">
-            <Actions>
-              <Button size="sm" variant={visao === 'LISTA' ? 'primary' : 'secondary'} aria-pressed={visao === 'LISTA'} onClick={() => setVisao('LISTA')}>Lista</Button>
-              <Button size="sm" variant={visao === 'KANBAN' ? 'primary' : 'secondary'} aria-pressed={visao === 'KANBAN'} onClick={() => setVisao('KANBAN')}>Kanban</Button>
-            </Actions>
+        {/* Uma linha só: status e prioridade em botões, prazo num botão, visão e atualizar à direita. */}
+        <Toolbar className="items-center gap-x-5 gap-y-2.5">
+          <Pilulas rotulo="Status" opcoes={[TODOS, ...STATUS]} valor={filtros.status} mudar={v => mudar('status', v)} />
+          <Pilulas rotulo="Prioridade" opcoes={[{ value: '', label: 'Todas' }, ...PRIORIDADES.map(p => ({ ...p, ponto: PONTO_PRIORIDADE[p.value] }))]} valor={filtros.prioridade} mudar={v => mudar('prioridade', v)} />
+          <FiltroPrazo valor={filtros.prazo} mudar={v => mudar('prazo', v)} />
+          {temFiltro ? <TextLink onClick={() => setFiltros(FILTROS_VAZIOS)}>Limpar filtros</TextLink> : null}
+          <div className="ml-auto flex items-center gap-2">
+            <div role="group" aria-label="Visão" className="inline-flex rounded-full border border-rule-table p-0.5">
+              {([['LISTA', 'Lista'], ['KANBAN', 'Kanban']] as const).map(([v, rotulo]) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={visao === v}
+                  onClick={() => setVisao(v)}
+                  className={cn('min-h-8 rounded-full px-3.5 text-[13px] transition-colors', visao === v ? 'bg-primary font-semibold text-primary-foreground' : 'text-ink-secondary hover:text-ink')}
+                >
+                  {rotulo}
+                </button>
+              ))}
+            </div>
+            <IconButton label="Atualizar" onClick={() => setRecarga(r => r + 1)}><RefreshCw aria-hidden /></IconButton>
           </div>
         </Toolbar>
       </Panel>

@@ -650,7 +650,7 @@ export function Stat({ children }: { children: React.ReactNode }) {
 /** Separador entre contagens. */
 export function MetaDot() {
   return (
-    <span className="text-ink-muted" aria-hidden>
+    <span className="mx-1.5 text-ink-muted" aria-hidden>
       ·
     </span>
   );
@@ -687,7 +687,8 @@ export function Board({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn('grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4', BOARD_HEIGHT[height])}>
+    // As colunas dividem a largura toda, quantas forem (3 fases ou 4), sem sobra à direita.
+    <div className={cn('grid gap-3 p-4 sm:grid-cols-[repeat(auto-fit,minmax(15rem,1fr))]', BOARD_HEIGHT[height])}>
       {children}
     </div>
   );
