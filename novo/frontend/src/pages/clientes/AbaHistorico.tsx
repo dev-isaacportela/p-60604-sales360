@@ -1,7 +1,7 @@
 // Histórico do Cliente (RF-010, RN-017): ficha do cliente escolhido com o
-// resumo do período, linha do tempo por mês (filtro por tipo e período) e,
-// ao lado, os pedidos faturados e as visitas da última semana. O seletor de
-// cliente usa a busca inteligente da carteira; sem cliente, vale a carteira inteira.
+// resumo do período e a linha do tempo por mês, pedidos faturados inclusos
+// (filtro por tipo e período). O seletor de cliente usa a busca inteligente
+// da carteira; sem cliente, vale a carteira inteira.
 
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -27,12 +27,6 @@ type Linha = Record<string, any>
 const POR_PAGINA = 20
 const FILTROS = { ramo: '', tipo: '', de: '', ate: '' }
 const LIMITE_TEXTO = 140
-
-function seteDiasAntes(hoje: string) {
-  const d = new Date(`${hoje}T12:00:00Z`)
-  d.setUTCDate(d.getUTCDate() - 7)
-  return d.toISOString().slice(0, 10)
-}
 
 const diasEntre = (de: string, ate: string) => Math.round((Date.parse(`${ate}T12:00:00Z`) - Date.parse(`${String(de).slice(0, 10)}T12:00:00Z`)) / 86400000)
 
@@ -174,7 +168,6 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
   const [achados, setAchados] = useState<Linha[]>([])
   const [filtros, setFiltros] = useState(FILTROS)
   const [ramos, setRamos] = useState<{ value: string; label: string }[]>([])
-  const [semana, setSemana] = useState<Linha[] | null>(null)
   const [visita, setVisita] = useState<Linha | null>(null)
   const [itens, setItens] = useState<{ titulo: string; descricao?: string; carregar: () => Promise<Linha[]> } | null>(null)
   const [relato, setRelato] = useState<Linha | null>(null)
@@ -185,10 +178,7 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
     linhas('clientesRamos')
       .then(rs => setRamos(rs.map(r => ({ value: String(r.RAMO), label: String(r.RAMO) }))))
       .catch(falha => console.error('s360ClientesRamos', falha))
-    linhas('historicoVisitasSemana', { desde: seteDiasAntes(hoje), hoje })
-      .then(setSemana)
-      .catch(falha => console.error('s360HistoricoVisitasSemana', falha))
-  }, [hoje])
+  }, [])
 
   // Seletor: busca inteligente na carteira exibida, 10 resultados.
   useEffect(() => {
@@ -310,7 +300,6 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
         </Panel>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
         <Panel>
           <div className="flex flex-col gap-2.5 border-b border-rule-row px-5 pt-4 pb-3.5">
             <div className="flex items-baseline justify-between gap-3">
@@ -395,27 +384,6 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
           )}
           {estTempo && estTempo !== 'carregando' ? <Paginas pagina={tempo.pagina} setPagina={tempo.setPagina} total={estTempo.total} unit="registros" /> : null}
         </Panel>
-
-        <div className="flex flex-col gap-4">
-          <Panel>
-            <PanelHeader title="Suas visitas da última semana" hint={cliente ? 'Todos os seus clientes, não só este.' : undefined} />
-            {semana && semana.length ? (
-              <div>
-                {semana.map(v => (
-                  <div key={v.ID} className="flex items-baseline justify-between gap-3 border-b border-rule-row px-4 py-2.5 text-[13px] last:border-b-0">
-                    <span className="min-w-0 truncate"><span className="text-ink-secondary tabular-nums">{fmtData(v.DATA).slice(0, 5)}</span> <span className="text-ink">{v.CLIENTE}</span></span>
-                    <span className={cn('shrink-0 text-[12px]', Number(v.RELATO_OK) === 1 ? 'text-ink-secondary' : 'font-semibold text-ink')}>
-                      {Number(v.RELATO_OK) === 1 ? 'Relato ok' : 'Pendente'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <PanelBody><p className="text-[13px] text-ink-secondary">{semana ? 'Nenhuma visita nos últimos 7 dias.' : 'Carregando…'}</p></PanelBody>
-            )}
-          </Panel>
-        </div>
-      </div>
 
       <Dialog open={!!visita} onOpenChange={a => { if (!a) setVisita(null) }}>
         <DialogContent>
