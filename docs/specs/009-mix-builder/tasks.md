@@ -15,30 +15,30 @@
 
 ## Backend
 
-- [ ] **T-910** — `novo/backend/schema-producao/009-mix.mjs`: `PRODUCT_MIX`, `PRODUCT_MIX_ITEMS`, `PRODUTOS_CUSTOS`, `CUSTO_PADRAO_PRODUTO`, `CUSTO_ESPECIAL_PRODUTO`, `CUSTO_ESPECIAL_CLIENTES_BIG`, `MIX_CUSTOS_SYNC`, `MIX_PRODUTO_FOTO`, copiados de `modelo-de-dados.md`
-- [ ] **T-911** — `novo/backend/lib/009-carteira.mjs`: `clienteNaCarteira(coluna)` (carteira própria + titulares com férias ativas em `{{hoje}}`), com comentário `ponytail:` para trocar pelo `lib/002-carteira.mjs`
-- [ ] **T-912** — `novo/backend/add-009-mix.mjs`: `definitions` das 10 SFs do plan (`ITENS_VALIDOS`, totais pelo servidor, dono, política vigente, busca sem acento); publica só em `isEntrypoint()`; `package.json` ganha `publish:009`
-- [ ] **T-913** — `simulator/mysql-dialect.mjs`: `JSON_TABLE`, `CONVERT … COLLATE utf8mb4_0900_ai_ci` → `MITRA_SEM_ACENTO`, `LAST_INSERT_ID()`; `simulator/runtime.mjs`: várias instruções com soma de `affectedRows`
-- [ ] **T-914** — `simulator/config.mjs`: chaves novas no `CHECK_INPUT` (`busca`, `buscaDigitos`, `clienteId`, `produtos`, `offset`, `mixId`)
-- [ ] **T-915** — `simulator/seeds/009-mix.mjs`: clientes 9001–9005 e 9101–9900, carteira, produtos, custos, políticas, fotos, sync e os 28 mixes da tabela de seed do plan
-- [ ] **T-916** — `npm run sim:check` sem `FALHOU`
+- [x] **T-910** — `novo/backend/schema-producao/009-mix.mjs`: `PRODUCT_MIX`, `PRODUCT_MIX_ITEMS`, `PRODUTOS_CUSTOS`, `CUSTO_PADRAO_PRODUTO`, `CUSTO_ESPECIAL_PRODUTO`, `CUSTO_ESPECIAL_CLIENTES_BIG`, `MIX_CUSTOS_SYNC`, `MIX_PRODUTO_FOTO`, copiados de `modelo-de-dados.md`
+- [x] **T-911** — `novo/backend/lib/009-carteira.mjs`: `clienteNaCarteira(coluna)` (carteira própria + titulares com férias ativas em `{{hoje}}`), com comentário `ponytail:` para trocar pelo `lib/002-carteira.mjs`
+- [x] **T-912** — `novo/backend/add-009-mix.mjs`: `definitions` das 10 SFs do plan (`ITENS_VALIDOS`, totais pelo servidor, dono, política vigente, busca sem acento); publica só em `isEntrypoint()`; `package.json` ganha `publish:009`
+- [x] **T-913** — `simulator/mysql-dialect.mjs`: `JSON_TABLE`, `CONVERT … COLLATE utf8mb4_0900_ai_ci` → `MITRA_SEM_ACENTO`, `LAST_INSERT_ID()`; `simulator/runtime.mjs`: várias instruções com soma de `affectedRows`
+- [x] **T-914** — `simulator/config.mjs`: chaves novas no `CHECK_INPUT` (`busca`, `buscaDigitos`, `clienteId`, `produtos`, `offset`, `mixId`)
+- [x] **T-915** — `simulator/seeds/009-mix.mjs`: clientes 9001–9005 e 9101–9900, carteira, produtos, custos, políticas, fotos, sync e os 28 mixes da tabela de seed do plan
+- [x] **T-916** — `npm run sim:check` sem `FALHOU`
 
 ## Frontend
 
-- [ ] **T-920** — `src/lib/server-functions.ts`: 10 entradas `mix*` em ordem alfabética, ids 901–910
-- [ ] **T-921** — `src/lib/mix.ts`: as funções da tabela do plan (só regra pura, sem React)
-- [ ] **T-922** — `src/pages/SimulacaoPage.tsx` (`.rota = '/simulacao'`): abas `Construtor` e `Meus Mix`, seletor de cliente com busca, catálogo com foto, itens (tabela e cartões), comparativo, filtro/ordenação, totais, aviso de custos, salvar/atualizar, duplicar, excluir, enviar, visualizar, PDF e CSV, seguindo `docs/design.md` (`/benenutri:design`, modo Construir)
+- [x] **T-920** — `src/lib/server-functions.ts`: 10 entradas `mix*` em ordem alfabética, ids 901–910
+- [x] **T-921** — `src/lib/mix.ts`: as funções da tabela do plan (só regra pura, sem React)
+- [x] **T-922** — `src/pages/SimulacaoPage.tsx` (`.rota = '/simulacao'`): abas `Construtor` e `Meus Mix`, seletor de cliente com busca, catálogo com foto, itens (tabela e cartões), comparativo, filtro/ordenação, totais, aviso de custos, salvar/atualizar, duplicar, excluir, enviar, visualizar, PDF e CSV, seguindo `docs/design.md` (`/benenutri:design`, modo Construir) — *a skill não estava disponível nesta sessão; seguida a norma de `docs/design.md` (sem toast: avisos em `Alert`; sem cor literal: a proposta impressa usa cores de sistema `Canvas`/`CanvasText`/`GrayText`)*
 
 ## Testes
 
-- [ ] **T-930** — `smoke/009-mix.mjs`: C-001, C-003, C-004, RN-008 (geral), RN-007, C-009, C-010, C-011, C-012, C-017, C-018, RN-013, RN-014, C-019 e dialeto (linhas "smoke" do plan)
-- [ ] **T-931** `[P]` — `tests/mix.test.mjs`: C-001, C-002, RN-008 (escolha), C-005, C-006, C-007, RN-006, RN-001, RN-002/004, C-008, C-011, C-013, C-014, C-015, C-016, C-017, C-019, RNT-011 (linhas "tests" do plan)
+- [x] **T-930** — `smoke/009-mix.mjs`: C-001, C-003, C-004, RN-008 (geral), RN-007, C-009, C-010, C-011, C-012, C-017, C-018, RN-013, RN-014, C-019 e dialeto (linhas "smoke" do plan)
+- [x] **T-931** `[P]` — `tests/mix.test.mjs`: C-001, C-002, RN-008 (escolha), C-005, C-006, C-007, RN-006, RN-001, RN-002/004, C-008, C-011, C-013, C-014, C-015, C-016, C-017, C-019, RNT-011 (linhas "tests" do plan)
 
 ## Verificação
 
-- [ ] **T-940** — `cd novo/backend && npm test` verde
-- [ ] **T-941** — `cd novo/frontend && npm test` verde; `npm run build` e `npm run lint` limpos
-- [ ] **T-942** — No simulador (porta própria): Ana monta, salva, duplica, envia, imprime e exporta o mix de C-007; Bruno em 05/11 vê 9001 no seletor e nenhum mix de Ana
+- [x] **T-940** — `cd novo/backend && npm test` verde
+- [x] **T-941** — `cd novo/frontend && npm test` verde; `npm run build` e `npm run lint` limpos — *o lint só tem os avisos que já existiam em `components/ui/`*
+- [ ] **T-942** — No simulador (porta própria): Ana monta, salva, duplica, envia, imprime e exporta o mix de C-007; Bruno em 05/11 vê 9001 no seletor e nenhum mix de Ana — *parcial em 03/11 (portas 3109/5180): Ana escolheu cliente (busca "mercado" e "emporio" sem acento), incluiu 9714 com especial (R$ 60,00 · Rede Sul), incluiu 9001 (aviso e etiqueta de custo zero), mudou a quantidade e trocou para 9002 (9714 voltou a R$ 70,00 com a mensagem da RN-010); falta salvar, Meus Mix, duplicar, enviar, PDF e CSV na tela e o Bruno em 05/11 (o simulador usa a data real; as regras estão no smoke)*
 - [ ] **T-943** — Verificação manual da spec: tabela em 1.366 px e cartões em 360 px; tema escuro; PDF em A4 com logo nítido e cabeçalho repetido; nenhuma tela mostra a chave de fotos
 - [ ] **T-944** `[sandbox]` — Publicar `add-009-mix.mjs`, depois `add-000-perfil-acesso.mjs` e `sync:function-map` (exige T-901, T-902)
 
