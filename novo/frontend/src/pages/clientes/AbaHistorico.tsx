@@ -1,23 +1,32 @@
-// Histórico do Cliente (RF-010, RN-017): linha do tempo e pedidos, cada um
-// com a sua página, detalhe de visita, pedido e mix, e as visitas da última
-// semana. O seletor de cliente usa a busca inteligente da carteira.
+// Histórico do Cliente (RF-010, RN-017): ficha do cliente escolhido com o
+// resumo do período, linha do tempo por mês (filtro por tipo e período) e,
+// ao lado, os pedidos faturados e as visitas da última semana. O seletor de
+// cliente usa a busca inteligente da carteira; sem cliente, vale a carteira inteira.
 
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { CalendarDays, ChevronDown } from 'lucide-react'
 import { acao, linhas } from '@/lib/mitra-api'
 import { fmtData, hojeBrasilia, moeda } from '@/lib/formato'
-import { TIPOS_HISTORICO, rotuloTipoHistorico, ultimaPagina } from '@/lib/carteira'
+import { somarDias } from '@/lib/agenda'
 import {
-  Actions, Alert, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle,
-  EmptyState, Field, IconButton, Input, LabelledField, Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle,
-  SearchInput, SelectMenu, Stack, Status, Table, Td, TextLink, Th, Toolbar, Tr,
+  TIPOS_HISTORICO, haDias, porMes, rotuloPeriodoHistorico, rotuloStatus, rotuloTemperatura, rotuloTipoHistorico, ultimaPagina,
+} from '@/lib/carteira'
+import {
+  Alert, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+  EmptyState, Field, Input, LabelledField, Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle,
+  SearchInput, SelectMenu, Stack, Table, Td, TextLink, Th, Toolbar, Tr,
 } from '@/components/page'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { RegistrarRelato } from './dialogos'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Linha = Record<string, any>
 
 const POR_PAGINA = 20
 const FILTROS = { ramo: '', tipo: '', de: '', ate: '' }
+const LIMITE_TEXTO = 140
 
 function seteDiasAntes(hoje: string) {
   const d = new Date(`${hoje}T12:00:00Z`)
@@ -25,8 +34,10 @@ function seteDiasAntes(hoje: string) {
   return d.toISOString().slice(0, 10)
 }
 
-/** Carrega uma listagem paginada do histórico; `null` = falhou. */
-function usePaginado(chave: 'historicoLinhaTempo' | 'historicoPedidos', input: Record<string, string> | null) {
+const diasEntre = (de: string, ate: string) => Math.round((Date.parse(`${ate}T12:00:00Z`) - Date.parse(`${String(de).slice(0, 10)}T12:00:00Z`)) / 86400000)
+
+/** Carrega uma listagem paginada do histórico; `null` = falhou. `versao` recarrega. */
+function usePaginado(chave: 'historicoLinhaTempo' | 'historicoPedidos', input: Record<string, string> | null, versao: number) {
   const [pagina, setPagina] = useState(1)
   const [estado, setEstado] = useState<{ linhas: Linha[]; total: number } | null | 'carregando'>('carregando')
   const base = input ? JSON.stringify(input) : ''
@@ -44,20 +55,20 @@ function usePaginado(chave: 'historicoLinhaTempo' | 'historicoPedidos', input: R
         if (vivo) setEstado(null)
       })
     return () => { vivo = false }
-  }, [chave, base, pagina])
+  }, [chave, base, pagina, versao])
 
   return { pagina, setPagina, estado }
 }
 
-function Paginas({ pagina, setPagina, total, unit, busy }: { pagina: number; setPagina: (p: number) => void; total: number; unit: string; busy: boolean }) {
-  if (!total) return null
+function Paginas({ pagina, setPagina, total, unit }: { pagina: number; setPagina: (p: number) => void; total: number; unit: string }) {
+  if (total <= POR_PAGINA) return null
   return (
     <Pagination
       page={pagina}
       lastPage={ultimaPagina(total, POR_PAGINA)}
       total={total}
       unit={unit}
-      busy={busy}
+      busy={false}
       onPrevious={() => setPagina(pagina - 1)}
       onNext={() => setPagina(pagina + 1)}
     />
@@ -113,9 +124,52 @@ function Itens({ titulo, descricao, carregar, fechar }: {
   )
 }
 
+/** Faixa de números no pé da ficha: rótulo, valor e uma explicação curta. */
+function Resumo({ itens }: { itens: [string, ReactNode, string][] }) {
+  return (
+    <dl className="grid grid-cols-2 gap-3 rounded-b-2xl bg-secondary px-5 py-3.5 md:grid-cols-4">
+      {itens.map(([rotulo, valor, dica]) => (
+        <div key={rotulo} className="flex min-w-0 flex-col gap-0.5">
+          <dt className="text-[12px] text-ink-secondary">{rotulo}</dt>
+          <dd className="font-title text-[17px] font-bold whitespace-nowrap text-ink tabular-nums">{valor}</dd>
+          <dd className="text-[12px] text-ink-secondary">{dica}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function Periodo({ de, ate, hoje, mudar }: { de: string; ate: string; hoje: string; mudar: (campo: 'de' | 'ate', valor: string) => void }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Período: ${rotuloPeriodoHistorico(de, ate)}. Alterar`}
+          className="flex min-h-9 items-center gap-2 rounded-full border border-rule-table bg-card px-3.5 text-[13px] text-ink transition-colors hover:bg-secondary"
+        >
+          <CalendarDays aria-hidden className="size-3.5 text-ink-secondary" />
+          {rotuloPeriodoHistorico(de, ate)}
+          <ChevronDown aria-hidden className="size-3.5 text-ink-secondary" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="flex w-64 flex-col gap-3">
+        <LabelledField label="De">
+          <Input type="date" value={de} max={ate || hoje} onChange={e => mudar('de', e.target.value)} />
+        </LabelledField>
+        <LabelledField label="Até">
+          <Input type="date" value={ate} min={de} max={hoje} onChange={e => mudar('ate', e.target.value)} />
+        </LabelledField>
+        {de || ate ? <Button size="sm" onClick={() => { mudar('de', ''); mudar('ate', '') }}>Todo o período</Button> : null}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string, string>; clienteInicial: string }) {
   const hoje = hojeBrasilia()
   const [cliente, setCliente] = useState<{ id: string; nome: string } | null>(clienteInicial ? { id: clienteInicial, nome: `Cliente ${clienteInicial}` } : null)
+  const [ficha, setFicha] = useState<Linha | null>(null)
   const [textoBusca, setTextoBusca] = useState('')
   const [achados, setAchados] = useState<Linha[]>([])
   const [filtros, setFiltros] = useState(FILTROS)
@@ -123,6 +177,9 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
   const [semana, setSemana] = useState<Linha[] | null>(null)
   const [visita, setVisita] = useState<Linha | null>(null)
   const [itens, setItens] = useState<{ titulo: string; descricao?: string; carregar: () => Promise<Linha[]> } | null>(null)
+  const [relato, setRelato] = useState<Linha | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
+  const [versao, setVersao] = useState(0)
 
   useEffect(() => {
     linhas('clientesRamos')
@@ -144,17 +201,26 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
     return () => clearTimeout(t)
   }, [textoBusca, escopo])
 
-  const input = { ...escopo, clienteId: cliente?.id ?? '', ramo: filtros.ramo, de: filtros.de, ate: filtros.ate }
-  const tempo = usePaginado('historicoLinhaTempo', { ...input, tipo: filtros.tipo })
-  const pedidos = usePaginado('historicoPedidos', input)
-
-  // O nome do cliente que veio pelo endereço chega na primeira linha.
-  const primeira = tempo.estado && tempo.estado !== 'carregando' ? tempo.estado.linhas[0] : null
+  // Ficha: a linha da carteira do cliente escolhido (curva, temperatura, status, dias sem visita).
+  const clienteId = cliente?.id ?? ''
   useEffect(() => {
-    if (cliente && primeira?.CLIENTE && cliente.nome.startsWith('Cliente ') && String(primeira.CLIENTE_ID) === cliente.id) {
-      setCliente({ id: cliente.id, nome: primeira.CLIENTE })
-    }
-  }, [primeira, cliente])
+    setFicha(null)
+    if (!clienteId) return
+    let vivo = true
+    acao('carteiraCarregar', { ...escopo, busca: clienteId, ramo: '', status: '', ordem: 'NOME_AZ', pendentes: '0', pagina: '1', porPagina: '10' })
+      .then(r => { if (vivo) setFicha((r.linhas ?? []).find((l: Linha) => String(l.ID) === clienteId) ?? null) })
+      .catch(falha => console.error('s360CarteiraCarregar (ficha)', falha))
+    return () => { vivo = false }
+  }, [clienteId, escopo])
+
+  const input = { ...escopo, clienteId, ramo: cliente ? '' : filtros.ramo, de: filtros.de, ate: filtros.ate }
+  const tempo = usePaginado('historicoLinhaTempo', { ...input, tipo: filtros.tipo }, versao)
+  // Os pedidos entram na linha do tempo; esta consulta só dá o resumo da ficha (total do filtro e o mais recente).
+  const pedidos = usePaginado('historicoPedidos', cliente ? input : null, versao)
+
+  // O nome do cliente que veio pelo endereço chega na ficha ou na primeira linha.
+  const primeira = tempo.estado && tempo.estado !== 'carregando' ? tempo.estado.linhas[0] : null
+  const nome = ficha?.NOME ?? (cliente?.nome.startsWith('Cliente ') && String(primeira?.CLIENTE_ID) === clienteId ? primeira?.CLIENTE : cliente?.nome)
 
   const mudar = (campo: keyof typeof FILTROS, valor: string) => setFiltros(f => ({ ...f, [campo]: valor }))
 
@@ -167,7 +233,9 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
   }
 
   function abrirEvento(e: Linha) {
-    if (e.TIPO === 'MIX') {
+    if (e.TIPO === 'PEDIDO') {
+      abrirPedido({ NUMPED: e.REF_ID, CLIENTE_ID: e.CLIENTE_ID, CLIENTE: e.CLIENTE, DATA: e.DATA })
+    } else if (e.TIPO === 'MIX') {
       setItens({
         titulo: e.TITULO || 'Mix de produtos',
         descricao: `${e.CLIENTE} · ${fmtData(e.DATA)} · ${moeda(e.VALOR)}`,
@@ -180,125 +248,174 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
 
   const estTempo = tempo.estado
   const estPedidos = pedidos.estado
+  const listaPedidos = estPedidos && estPedidos !== 'carregando' ? estPedidos : null
+  const totalPedidos = listaPedidos?.total ?? 0
+  const valorTotal = Number(listaPedidos?.linhas[0]?.VALOR_TOTAL ?? 0)
+  const ultimoPedido = listaPedidos?.linhas[0] ?? null
+  const diasVisita = ficha?.DIAS_SEM_VISITA
+  const lugar = ficha?.CIDADE ? `${ficha.CIDADE}${ficha.UF ? `/${ficha.UF}` : ''}` : ''
 
   return (
     <Stack>
-      <Panel>
-        <PanelHeader title="Cliente" hint="Sem cliente escolhido, o histórico mostra a carteira exibida inteira." />
-        <Toolbar>
-          {cliente ? (
-            <Actions>
-              <RowTitle>{cliente.nome}</RowTitle>
-              <Code prefix="#">{cliente.id}</Code>
-              <IconButton label="Trocar cliente" onClick={() => setCliente(null)}><X aria-hidden /></IconButton>
-            </Actions>
-          ) : (
+      {aviso ? <Alert tone="success">{aviso}</Alert> : null}
+
+      {cliente ? (
+        <Panel className="flex flex-col">
+          <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4">
+            <div className="flex min-w-0 flex-col gap-1">
+              <h2 className="font-title text-[22px] font-bold text-ink">{nome}</h2>
+              <p className="text-[13px] text-ink-secondary">
+                {[`#${cliente.id}`, lugar, ficha?.RAMO, ficha?.CURVA ? `Curva ${ficha.CURVA}` : '', ficha?.TEMPERATURA ? rotuloTemperatura(ficha.TEMPERATURA) : '', ficha?.STATUS ? rotuloStatus(ficha.STATUS) : '']
+                  .filter(Boolean).join(' · ')}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => { setCliente(null); setFiltros(FILTROS) }}>Trocar cliente</Button>
+              {ficha ? <Button variant="primary" onClick={() => { setAviso(null); setRelato(ficha) }}>Registrar relato</Button> : null}
+            </div>
+          </div>
+          <Resumo itens={[
+            ['Última visita', diasVisita == null ? <Dash /> : fmtData(somarDias(hoje, -Number(diasVisita))), haDias(diasVisita) || 'sem visita registrada'],
+            ['Último pedido', ultimoPedido ? fmtData(ultimoPedido.DATA) : <Dash />, ultimoPedido ? haDias(diasEntre(ultimoPedido.DATA, hoje)) : 'nenhum no período'],
+            ['Faturado no período', listaPedidos ? moeda(valorTotal) : <Dash />, `em ${totalPedidos} pedido${totalPedidos === 1 ? '' : 's'}`],
+            ['Ticket médio', totalPedidos ? moeda(valorTotal / totalPedidos) : <Dash />, 'por pedido no período'],
+          ]} />
+        </Panel>
+      ) : (
+        <Panel>
+          <PanelHeader title="Cliente" hint="Sem cliente escolhido, o histórico mostra a carteira exibida inteira." />
+          <Toolbar>
             <Field label="Buscar cliente">
               <SearchInput placeholder="Nome, CNPJ ou código" value={textoBusca} onChange={e => setTextoBusca(e.target.value)} />
             </Field>
+            <Field label="Ramo">
+              <SelectMenu label="Ramo" value={filtros.ramo} options={[{ value: '', label: 'Todos os ramos' }, ...ramos]} onChange={v => mudar('ramo', v)} />
+            </Field>
+          </Toolbar>
+          {achados.length ? (
+            <div className="border-t border-rule-row">
+              {achados.map(a => (
+                <button
+                  key={a.ID}
+                  type="button"
+                  onClick={() => { setCliente({ id: String(a.ID), nome: a.NOME }); setTextoBusca('') }}
+                  className="flex w-full items-center justify-between gap-3 border-b border-rule-row px-4 py-2.5 text-left text-[13px] transition-colors last:border-b-0 hover:bg-secondary"
+                >
+                  <span className="truncate"><RowTitle>{a.NOME}</RowTitle> <Code prefix="#">{a.ID}</Code></span>
+                  <span className="shrink-0 text-[12px] text-ink-secondary">{[a.CIDADE, a.RAMO].filter(Boolean).join(' · ')}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </Panel>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+        <Panel>
+          <div className="flex flex-col gap-2.5 border-b border-rule-row px-5 pt-4 pb-3.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="font-title text-[15px] font-bold text-ink">Linha do tempo</h3>
+              {estTempo && estTempo !== 'carregando' ? (
+                <span className="text-[12px] text-ink-secondary">{estTempo.total === 1 ? '1 registro' : `${estTempo.total} registros`}</span>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div role="group" aria-label="Tipo de registro" className="flex flex-wrap gap-1.5">
+                {TIPOS_HISTORICO.map(t => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    aria-pressed={filtros.tipo === t.value}
+                    onClick={() => mudar('tipo', t.value)}
+                    className={cn(
+                      'min-h-9 rounded-full border px-3.5 text-[13px] transition-colors',
+                      filtros.tipo === t.value ? 'border-ink bg-ink font-semibold text-card' : 'border-rule-table bg-card text-ink hover:bg-secondary',
+                    )}
+                  >
+                    {t.value ? t.label : 'Tudo'}
+                  </button>
+                ))}
+              </div>
+              <Periodo de={filtros.de} ate={filtros.ate} hoje={hoje} mudar={mudar} />
+            </div>
+          </div>
+          {estTempo === null ? (
+            <PanelBody><Alert tone="error">Não foi possível carregar a linha do tempo.</Alert></PanelBody>
+          ) : estTempo === 'carregando' ? (
+            <PanelBody><span className="text-[13px] text-ink-secondary" aria-live="polite">Carregando…</span></PanelBody>
+          ) : !estTempo.linhas.length ? (
+            <EmptyState title="Nada no histórico" hint="Mude o cliente, o tipo ou o período." />
+          ) : (
+            <div className="px-5 pb-3">
+              {porMes(estTempo.linhas).map((g, gi) => (
+                <section key={g.mes}>
+                  <h4 className="pt-3 pb-0.5 pl-[88px] text-[12px] font-semibold text-ink-secondary">{g.mes}</h4>
+                  <ol>
+                    {g.itens.map((e, i) => {
+                      const texto = String(e.TEXTO ?? '')
+                      const pedido = e.TIPO === 'PEDIDO'
+                      const link = pedido ? 'Ver detalhes' : e.TIPO === 'MIX' ? 'Ver mix' : e.TIPO === 'VISITA' || texto.length > LIMITE_TEXTO ? 'Ver relato completo' : ''
+                      const resumo = pedido ? `${e.ITENS} ${Number(e.ITENS) === 1 ? 'item' : 'itens'}` : texto.length > LIMITE_TEXTO ? `${texto.slice(0, LIMITE_TEXTO)}…` : texto
+                      const tipo = rotuloTipoHistorico(e.TIPO)
+                      // Título que já diz o tipo ("Visita", "Pedido #…") não repete o tipo ao lado.
+                      const extra = [e.TITULO && e.TITULO !== tipo && !pedido ? tipo : '', cliente ? '' : e.CLIENTE].filter(Boolean).join(' · ')
+                      return (
+                        <li key={`${e.TIPO}-${e.REF_ID}`} className="grid grid-cols-[64px_12px_minmax(0,1fr)] gap-x-3">
+                          <div className="flex flex-col gap-0.5 pt-3.5">
+                            <span className="font-semibold text-ink tabular-nums">{fmtData(e.DATA).slice(0, 5)}</span>
+                            {e.HORA ? <span className="text-[12px] text-ink-secondary tabular-nums">{String(e.HORA).slice(0, 5)}</span> : null}
+                          </div>
+                          <div aria-hidden className="flex flex-col items-center">
+                            <span className={cn('h-[19px] w-px', i === 0 ? 'bg-transparent' : 'bg-rule-table')} />
+                            <span className={cn('size-2.5 rounded-full', gi === 0 && i === 0 ? 'bg-primary' : 'bg-ink-muted')} />
+                            <span className={cn('w-px flex-1', i === g.itens.length - 1 ? 'bg-transparent' : 'bg-rule-table')} />
+                          </div>
+                          <div className={cn('flex flex-wrap justify-between gap-x-4 gap-y-1 py-3', i < g.itens.length - 1 && 'border-b border-rule-row')}>
+                            <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5 text-[13px]">
+                              <span>
+                                <RowTitle>{e.TITULO || tipo}</RowTitle>
+                                {extra ? <span className="text-ink-secondary"> · {extra}</span> : null}
+                              </span>
+                              {resumo ? <span className="text-ink-secondary">{resumo}</span> : null}
+                            </div>
+                            {link ? (
+                              <span className="flex flex-col items-end gap-0.5 self-start">
+                                {pedido ? <span className="text-[13px] font-semibold whitespace-nowrap text-ink tabular-nums">{moeda(e.VALOR)}</span> : null}
+                                <TextLink className="text-[13px] whitespace-nowrap" onClick={() => abrirEvento(e)}>{link}</TextLink>
+                              </span>
+                            ) : null}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </section>
+              ))}
+            </div>
           )}
-        </Toolbar>
-        {!cliente && achados.length ? (
-          <PanelBody>
-            {achados.map(a => (
-              <TextLink key={a.ID} onClick={() => { setCliente({ id: String(a.ID), nome: a.NOME }); setTextoBusca('') }}>
-                {a.NOME} <Code prefix="#">{a.ID}</Code>
-              </TextLink>
-            ))}
-          </PanelBody>
-        ) : null}
-        <Toolbar>
-          <Field label="Ramo">
-            <SelectMenu label="Ramo" value={filtros.ramo} options={[{ value: '', label: 'Todos os ramos' }, ...ramos]} onChange={v => mudar('ramo', v)} />
-          </Field>
-          <Field label="Tipo">
-            <SelectMenu label="Tipo" value={filtros.tipo} options={TIPOS_HISTORICO} onChange={v => mudar('tipo', v)} />
-          </Field>
-          <LabelledField label="De">
-            <Input type="date" value={filtros.de} max={filtros.ate || hoje} onChange={e => mudar('de', e.target.value)} />
-          </LabelledField>
-          <LabelledField label="Até">
-            <Input type="date" value={filtros.ate} min={filtros.de} max={hoje} onChange={e => mudar('ate', e.target.value)} />
-          </LabelledField>
-          {filtros.ramo || filtros.tipo || filtros.de || filtros.ate ? <Button onClick={() => setFiltros(FILTROS)}>Limpar filtros</Button> : null}
-        </Toolbar>
-      </Panel>
+          {estTempo && estTempo !== 'carregando' ? <Paginas pagina={tempo.pagina} setPagina={tempo.setPagina} total={estTempo.total} unit="registros" /> : null}
+        </Panel>
 
-      <Panel>
-        <PanelHeader title="Linha do tempo" hint="Visitas e atividades concluídas, relatos avulsos e mixes enviados." />
-        {estTempo === null ? (
-          <PanelBody><Alert tone="error">Não foi possível carregar a linha do tempo.</Alert></PanelBody>
-        ) : estTempo !== 'carregando' && !estTempo.linhas.length ? (
-          <EmptyState title="Nada no histórico" hint="Mude o cliente, o tipo ou o período." />
-        ) : estTempo !== 'carregando' ? (
-          <Table>
-            <thead><tr><Th>Data</Th><Th>Tipo</Th><Th>Cliente</Th><Th>Registro</Th></tr></thead>
-            <tbody>
-              {estTempo.linhas.map(e => (
-                <Tr key={`${e.TIPO}-${e.REF_ID}`}>
-                  <Td>{fmtData(e.DATA)}{e.HORA ? <RowMeta>{String(e.HORA).slice(0, 5)}</RowMeta> : null}</Td>
-                  <Td>{rotuloTipoHistorico(e.TIPO)}</Td>
-                  <Td>{e.CLIENTE}</Td>
-                  <Td>
-                    <TextLink onClick={() => abrirEvento(e)}>{e.TITULO || rotuloTipoHistorico(e.TIPO)}</TextLink>
-                    {e.TEXTO ? <RowMeta>{String(e.TEXTO).slice(0, 140)}</RowMeta> : null}
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        ) : null}
-        {estTempo && estTempo !== 'carregando' ? (
-          <Paginas pagina={tempo.pagina} setPagina={tempo.setPagina} total={estTempo.total} unit="registros" busy={false} />
-        ) : null}
-      </Panel>
-
-      <Panel>
-        <PanelHeader title="Pedidos faturados" />
-        {estPedidos === null ? (
-          <PanelBody><Alert tone="error">Não foi possível carregar os pedidos.</Alert></PanelBody>
-        ) : estPedidos !== 'carregando' && !estPedidos.linhas.length ? (
-          <EmptyState title="Nenhum pedido no período" />
-        ) : estPedidos !== 'carregando' ? (
-          <Table>
-            <thead><tr><Th>Pedido</Th><Th>Data</Th><Th>Cliente</Th><Th numeric>Itens</Th><Th numeric>Valor</Th></tr></thead>
-            <tbody>
-              {estPedidos.linhas.map(p => (
-                <Tr key={`${p.NUMPED}-${p.CLIENTE_ID}`}>
-                  <Td><TextLink onClick={() => abrirPedido(p)}>{p.NUMPED}</TextLink></Td>
-                  <Td>{fmtData(p.DATA)}</Td>
-                  <Td>{p.CLIENTE}</Td>
-                  <Td numeric>{p.ITENS}</Td>
-                  <Td numeric>{moeda(p.VALOR)}</Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        ) : null}
-        {estPedidos && estPedidos !== 'carregando' ? (
-          <Paginas pagina={pedidos.pagina} setPagina={pedidos.setPagina} total={estPedidos.total} unit="pedidos" busy={false} />
-        ) : null}
-      </Panel>
-
-      <Panel>
-        <PanelHeader title="Suas visitas da última semana" />
-        {semana && semana.length ? (
-          <Table>
-            <thead><tr><Th>Data</Th><Th>Cliente</Th><Th>Relato</Th></tr></thead>
-            <tbody>
-              {semana.map(v => (
-                <Tr key={v.ID}>
-                  <Td>{fmtData(v.DATA)}</Td>
-                  <Td>{v.CLIENTE}</Td>
-                  <Td>{Number(v.RELATO_OK) === 1 ? <Status tone="live">Registrado</Status> : <Status tone="attention">Pendente</Status>}</Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        ) : (
-          <EmptyState title="Nenhuma visita nos últimos 7 dias" />
-        )}
-      </Panel>
+        <div className="flex flex-col gap-4">
+          <Panel>
+            <PanelHeader title="Suas visitas da última semana" hint={cliente ? 'Todos os seus clientes, não só este.' : undefined} />
+            {semana && semana.length ? (
+              <div>
+                {semana.map(v => (
+                  <div key={v.ID} className="flex items-baseline justify-between gap-3 border-b border-rule-row px-4 py-2.5 text-[13px] last:border-b-0">
+                    <span className="min-w-0 truncate"><span className="text-ink-secondary tabular-nums">{fmtData(v.DATA).slice(0, 5)}</span> <span className="text-ink">{v.CLIENTE}</span></span>
+                    <span className={cn('shrink-0 text-[12px]', Number(v.RELATO_OK) === 1 ? 'text-ink-secondary' : 'font-semibold text-ink')}>
+                      {Number(v.RELATO_OK) === 1 ? 'Relato ok' : 'Pendente'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <PanelBody><p className="text-[13px] text-ink-secondary">{semana ? 'Nenhuma visita nos últimos 7 dias.' : 'Carregando…'}</p></PanelBody>
+            )}
+          </Panel>
+        </div>
+      </div>
 
       <Dialog open={!!visita} onOpenChange={a => { if (!a) setVisita(null) }}>
         <DialogContent>
@@ -317,6 +434,7 @@ export function AbaHistorico({ escopo, clienteInicial }: { escopo: Record<string
       </Dialog>
 
       <Itens titulo={itens?.titulo ?? ''} descricao={itens?.descricao} carregar={itens?.carregar ?? null} fechar={() => setItens(null)} />
+      <RegistrarRelato cliente={relato} fechar={() => setRelato(null)} salvo={texto => { setRelato(null); setAviso(texto); setVersao(v => v + 1) }} />
     </Stack>
   )
 }

@@ -102,3 +102,16 @@ test('RN-010: período da receita do mês vai do dia 1 até hoje', async () => {
   assert.equal(periodoDoMes('2026-10-01'), 'de 1º de outubro');
   assert.equal(periodoDoMes(''), 'do mês');
 });
+
+test('RN-017: linha do tempo por mês, rótulo do período e "há N dias"', async () => {
+  const { porMes, rotuloPeriodoHistorico, haDias } = await import('../src/lib/carteira.ts');
+  const g = porMes([{ DATA: '2026-11-02' }, { DATA: '2026-10-24' }, { DATA: '2026-10-09' }]);
+  assert.deepEqual(g.map(x => [x.mes, x.itens.length]), [['Novembro de 2026', 1], ['Outubro de 2026', 2]]);
+  assert.equal(rotuloPeriodoHistorico('', ''), 'Todo o período');
+  assert.equal(rotuloPeriodoHistorico('2026-08-05', '2026-11-03'), '05/08/2026 a 03/11/2026');
+  assert.equal(rotuloPeriodoHistorico('2026-08-05', ''), 'Desde 05/08/2026');
+  assert.equal(haDias(0), 'hoje');
+  assert.equal(haDias(1), 'há 1 dia');
+  assert.equal(haDias(13), 'há 13 dias');
+  assert.equal(haDias(null), '');
+});

@@ -252,10 +252,42 @@ export const TIPOS_HISTORICO = [
   { value: 'ATIVIDADE', label: 'Atividade' },
   { value: 'RELATO', label: 'Relato avulso' },
   { value: 'MIX', label: 'Mix de produtos' },
+  { value: 'PEDIDO', label: 'Pedido faturado' },
 ];
 
 export function rotuloTipoHistorico(tipo: string): string {
   return TIPOS_HISTORICO.find(t => t.value === tipo)?.label ?? tipo;
+}
+
+/** Linha do tempo agrupada por mês, na ordem que chegou: `Outubro de 2026`. */
+export function porMes<T extends { DATA?: unknown }>(linhas: T[]): { mes: string; itens: T[] }[] {
+  const grupos: { chave: string; mes: string; itens: T[] }[] = [];
+  for (const l of linhas) {
+    const chave = String(l.DATA ?? '').slice(0, 7);
+    if (grupos.at(-1)?.chave !== chave) {
+      const nome = MESES[Number(chave.slice(5, 7)) - 1] ?? '';
+      grupos.push({ chave, mes: nome ? `${nome[0].toUpperCase()}${nome.slice(1)} de ${chave.slice(0, 4)}` : 'Sem data', itens: [] });
+    }
+    grupos.at(-1)!.itens.push(l);
+  }
+  return grupos.map(({ mes, itens }) => ({ mes, itens }));
+}
+
+const ddmmaaaa = (iso: string) => iso.split('-').reverse().join('/');
+
+/** Rótulo do botão de período do histórico. */
+export function rotuloPeriodoHistorico(de: string, ate: string): string {
+  if (de && ate) return `${ddmmaaaa(de)} a ${ddmmaaaa(ate)}`;
+  if (de) return `Desde ${ddmmaaaa(de)}`;
+  if (ate) return `Até ${ddmmaaaa(ate)}`;
+  return 'Todo o período';
+}
+
+/** `0` → `hoje`, `1` → `há 1 dia`, `13` → `há 13 dias`; sem valor, vazio. */
+export function haDias(dias: number | null | undefined): string {
+  if (dias === null || dias === undefined || !Number.isFinite(Number(dias))) return '';
+  const n = Number(dias);
+  return n <= 0 ? 'hoje' : n === 1 ? 'há 1 dia' : `há ${n} dias`;
 }
 
 /* ── Legenda (RF-016) ── */

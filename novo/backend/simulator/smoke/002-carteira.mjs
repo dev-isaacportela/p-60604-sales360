@@ -170,10 +170,15 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, toSqlite,
   /* ─────────────── historico e ficha ─────────────── */
 
   await teste('C-015 / RN-017: linha do tempo e pedidos de X', async () => {
-    const tl = await linhas('s360HistoricoLinhaTempo', { ...ESCOPO, clienteId: String(CLIENTE.X), ramo: '', tipo: '', de: '', ate: '', pagina: '1' }, ANA);
-    assert.equal(Number(tl[0].TOTAL), 7);
+    const linhaTempo = (pagina, tipo = '') => linhas('s360HistoricoLinhaTempo', { ...ESCOPO, clienteId: String(CLIENTE.X), ramo: '', tipo, de: '', ate: '', pagina }, ANA);
+    const p1tl = await linhaTempo('1');
+    assert.equal(Number(p1tl[0].TOTAL), 37, '7 registros + 30 pedidos faturados');
+    const tl = [...p1tl, ...(await linhaTempo('2'))];
     const porTipo = tl.reduce((acc, l) => ({ ...acc, [l.TIPO]: (acc[l.TIPO] || 0) + 1 }), {});
-    assert.deepEqual(porTipo, { VISITA: 3, ATIVIDADE: 2, RELATO: 1, MIX: 1 });
+    assert.deepEqual(porTipo, { VISITA: 3, ATIVIDADE: 2, RELATO: 1, MIX: 1, PEDIDO: 30 });
+    const soPedidos = await linhaTempo('1', 'PEDIDO');
+    assert.equal(Number(soPedidos[0].TOTAL), 30);
+    assert.ok(soPedidos.every((l) => Number(l.ITENS) > 0 && Number(l.VALOR) > 0 && String(l.TITULO).startsWith('Pedido #')));
     assert.ok(tl.every((l, i) => !i || tl[i - 1].DATA >= l.DATA), 'mais recente primeiro');
     assert.deepEqual(tl.filter((l) => l.TIPO === 'MIX').map((l) => l.REF_ID), [2001], 'mix so salvo fica fora');
     const pedidos = (pagina) => linhas('s360HistoricoPedidos', { ...ESCOPO, clienteId: String(CLIENTE.X), ramo: '', de: '', ate: '', pagina }, ANA);
@@ -202,6 +207,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, toSqlite,
     assert.equal((await pedidos('3')).length, 5);
     const outubro = await pedidos('1', '2026-10-01', '2026-10-31');
     assert.equal(Number(outubro[0].TOTAL), 25);
+    assert.equal(Number(outubro[0].VALOR_TOTAL), 2500, 'faturado do periodo soma os 25, nao so a pagina');
     assert.equal(outubro.length, 20);
     assert.equal((await pedidos('2', '2026-10-01', '2026-10-31')).length, 5);
     const ramo = await linhas('s360HistoricoLinhaTempo', { ...ESCOPO, clienteId: '', ramo: 'CLINICA', tipo: '', de: '', ate: '', pagina: '1' }, ANA);
