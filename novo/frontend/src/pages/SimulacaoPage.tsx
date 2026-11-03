@@ -17,8 +17,8 @@ import {
 } from '@/lib/mix'
 import type { FaixaMargem, Item, OpcaoCusto, Ordem, Preferencia, Produto } from '@/lib/mix'
 import {
-  Actions, Alert, Badge, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-  EmptyState, Field, FormRow, IconButton, Input, LabelledField, PageHeader, Panel, PanelBody, PanelHeader, RowMeta, RowTitle,
+  Alert, Badge, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  EmptyState, Field, IconButton, Input, LabelledField, PageHeader, Panel, PanelBody, PanelHeader, RowMeta, RowTitle,
   SearchInput, SelectMenu, Stack, Status, Table, Tabs, TabsContent, TabsList, TabsTrigger, Td, Th, Toolbar, Tr,
 } from '@/components/page'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -290,6 +290,7 @@ export default function SimulacaoPage() {
   const comControles = itens.length > LIMITE_CONTROLES
   const visiveis = comControles ? filtrarOrdenar(itens, filtro, ordem) : itens
   const ultimaPagina = Math.max(1, Math.ceil(total / POR_PAGINA))
+  const rotuloSalvar = ocupado ? 'Aguarde…' : editando ? 'Atualizar Mix' : 'Salvar Mix'
 
   return (
     <>
@@ -322,70 +323,98 @@ export default function SimulacaoPage() {
               {foraDaCarteira && <Alert tone="warn">{AVISO_FORA_CARTEIRA}</Alert>}
 
               <Panel>
-                <PanelHeader title="Proposta" hint="O cliente define quais custos especiais valem para o mix." />
                 <PanelBody>
-                  <FormRow>
-                    <Field label="Cliente" obrigatorio>
-                      <SeletorCliente valor={cliente} onEscolher={escolherCliente} disabled={ocupado} />
-                    </Field>
-                    <LabelledField label="Nome do mix" obrigatorio>
-                      <Input value={nome} maxLength={220} onChange={e => setNome(e.target.value)} placeholder="Ex.: Campanha Verão" />
-                    </LabelledField>
-                    <LabelledField label="Descrição">
-                      <Input value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Aparece na proposta" />
-                    </LabelledField>
-                  </FormRow>
-                  <Field label="Custo ao incluir" hint="Especial usa o menor custo negociado vigente; sem nenhum, o padrão.">
-                    <div className="flex gap-2" role="group" aria-label="Custo ao incluir">
-                      {(['PADRAO', 'ESPECIAL'] as const).map(p => (
-                        <Button key={p} size="sm" variant={preferencia === p ? 'primary' : 'secondary'} aria-pressed={preferencia === p} onClick={() => setPreferencia(p)}>
-                          {p === 'PADRAO' ? 'Custo padrão' : 'Custo especial'}
-                        </Button>
-                      ))}
+                  <div className="flex flex-wrap items-end gap-4">
+                    <div className="min-w-0 flex-[1_1_260px]">
+                      <Field label="Cliente" obrigatorio>
+                        <SeletorCliente valor={cliente} onEscolher={escolherCliente} disabled={ocupado} />
+                      </Field>
                     </div>
-                  </Field>
-                  <Catalogo liberado={!!cliente && !foraDaCarteira} ocupado={ocupado} onIncluir={incluir} />
+                    <div className="min-w-0 flex-[1_1_220px]">
+                      <LabelledField label="Nome do mix" obrigatorio>
+                        <Input value={nome} maxLength={220} onChange={e => setNome(e.target.value)} placeholder="Ex.: Campanha Verão" />
+                      </LabelledField>
+                    </div>
+                    <div className="min-w-0 flex-[2_1_260px]">
+                      <LabelledField label="Descrição">
+                        <Input value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Aparece na proposta" />
+                      </LabelledField>
+                    </div>
+                    <Field label="Custo ao incluir">
+                      <div className="flex gap-1 rounded-xl bg-muted p-1" role="group" aria-label="Custo ao incluir" title="Especial usa o menor custo negociado vigente; sem nenhum, o padrão.">
+                        {(['PADRAO', 'ESPECIAL'] as const).map(p => (
+                          <button
+                            key={p}
+                            type="button"
+                            aria-pressed={preferencia === p}
+                            onClick={() => setPreferencia(p)}
+                            className={cn('h-7 rounded-lg px-3 text-[13px] font-semibold', preferencia === p ? 'bg-card text-accent-foreground shadow-sm' : 'text-ink-secondary hover:text-ink')}
+                          >
+                            {p === 'PADRAO' ? 'Padrão' : 'Especial'}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+                  </div>
                 </PanelBody>
               </Panel>
 
-              <Panel>
-                <PanelHeader title="Itens do mix" hint={`${t.itens} ${t.itens === 1 ? 'produto' : 'produtos'} · ${t.unidades} unidades`}>
-                  <Button size="sm" variant={comparativo ? 'primary' : 'secondary'} aria-pressed={comparativo} onClick={() => setComparativo(c => !c)}>Comparativo</Button>
-                  <MenuExportar desabilitado={!itens.length} onCsv={exportar} />
-                  <Button size="sm" disabled={!itens.length} onClick={() => imprimir(null)}><Printer aria-hidden />Imprimir/PDF</Button>
-                </PanelHeader>
-                {comControles && (
-                  <Toolbar>
-                    <SearchInput placeholder="Filtrar itens..." value={filtro} onChange={e => setFiltro(e.target.value)} />
-                    <SelectMenu label="Ordenar itens" value={ordem} options={ORDENS} onChange={v => setOrdem(v as Ordem)} className="sm:w-56" />
-                  </Toolbar>
-                )}
-                {itens.length === 0 ? (
-                  <EmptyState title="Nenhum produto no mix" hint={cliente ? 'Busque no catálogo acima e inclua os produtos da proposta.' : 'Escolha o cliente para liberar o catálogo.'} />
-                ) : (
-                  <ItensMix
-                    itens={visiveis}
-                    opcoes={opcoes}
-                    comparativo={comparativo}
-                    onQtd={(c, q) => mudar(c, i => ({ ...i, qtd: Math.max(1, Math.round(q)) }))}
-                    onMargem={(c, m) => mudar(c, i => mudarMargem(i, m))}
-                    onPreco={(c, p) => mudar(c, i => mudarPreco(i, p))}
-                    onConcorrente={(c, p) => mudar(c, i => ({ ...i, precoConcorrente: Math.max(0, p) }))}
-                    onCusto={(c, o) => mudar(c, i => trocarCusto(i, o))}
-                    onRemover={c => setItens(atual => atual.filter(i => i.codprod !== c))}
-                  />
-                )}
-                <Rodape t={t} />
-              </Panel>
+              <div className="flex flex-wrap items-start gap-4">
+                <Panel className="min-w-0 flex-[999_1_640px]">
+                  <div className="flex flex-wrap items-start gap-3 border-b border-rule-row px-4 py-3">
+                    <div className="min-w-0 flex-[1_1_320px]">
+                      <Catalogo liberado={!!cliente && !foraDaCarteira} ocupado={ocupado} onIncluir={incluir} />
+                    </div>
+                    <Button size="sm" variant={comparativo ? 'primary' : 'secondary'} aria-pressed={comparativo} onClick={() => setComparativo(c => !c)}>Comparativo</Button>
+                  </div>
+                  {comControles && (
+                    <Toolbar>
+                      <SearchInput placeholder="Filtrar itens..." value={filtro} onChange={e => setFiltro(e.target.value)} />
+                      <SelectMenu label="Ordenar itens" value={ordem} options={ORDENS} onChange={v => setOrdem(v as Ordem)} className="sm:w-56" />
+                    </Toolbar>
+                  )}
+                  {itens.length === 0 ? (
+                    <EmptyState title="Nenhum produto no mix" hint={cliente ? 'Busque acima e inclua os produtos da proposta.' : 'Escolha o cliente para liberar o catálogo.'} />
+                  ) : (
+                    <ItensMix
+                      itens={visiveis}
+                      opcoes={opcoes}
+                      comparativo={comparativo}
+                      onQtd={(c, q) => mudar(c, i => ({ ...i, qtd: Math.max(1, Math.round(q)) }))}
+                      onMargem={(c, m) => mudar(c, i => mudarMargem(i, m))}
+                      onPreco={(c, p) => mudar(c, i => mudarPreco(i, p))}
+                      onConcorrente={(c, p) => mudar(c, i => ({ ...i, precoConcorrente: Math.max(0, p) }))}
+                      onCusto={(c, o) => mudar(c, i => trocarCusto(i, o))}
+                      onRemover={c => setItens(atual => atual.filter(i => i.codprod !== c))}
+                    />
+                  )}
+                </Panel>
 
-              <Actions>
-                <span title={motivo ?? undefined}>
-                  <Button variant="primary" disabled={!!motivo || ocupado} onClick={salvar}>
-                    {ocupado ? 'Aguarde…' : editando ? 'Atualizar Mix' : 'Salvar Mix'}
-                  </Button>
+                <aside aria-label="Resumo do mix" className="flex min-w-0 flex-[1_1_300px] flex-col gap-3 lg:sticky lg:top-4 lg:max-w-[340px]">
+                  <ResumoMix t={t} />
+                  <div className="hidden flex-col gap-1 lg:flex">
+                    <span title={motivo ?? undefined}>
+                      <Button variant="primary" wide disabled={!!motivo || ocupado} onClick={salvar}>{rotuloSalvar}</Button>
+                    </span>
+                    {motivo && <span className="text-[12px] text-ink-secondary">{motivo}</span>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" disabled={!itens.length} onClick={() => imprimir(null)}><Printer aria-hidden />Imprimir/PDF</Button>
+                    <MenuExportar desabilitado={!itens.length} onCsv={exportar} />
+                  </div>
+                </aside>
+              </div>
+
+              {/* Celular: total e salvar sempre à mão (layout C/E). */}
+              <div className="sticky bottom-2 z-20 flex items-center gap-3 rounded-2xl border border-rule-table bg-card px-4 py-3 shadow-lg lg:hidden">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-title text-[18px] font-extrabold text-ink">{moeda(t.venda)}</span>
+                  {t.itens > 0 && <span className="text-[13px]"><Status tone={TOM_FAIXA[faixaMargem(t.margem)]}>{pct(t.margem)} · {faixaMargem(t.margem)}</Status></span>}
                 </span>
-                {motivo && <span className="text-[12px] text-ink-secondary">{motivo}</span>}
-              </Actions>
+                <span title={motivo ?? undefined}>
+                  <Button variant="primary" disabled={!!motivo || ocupado} onClick={salvar}>{rotuloSalvar}</Button>
+                </span>
+              </div>
             </Stack>
           </TabsContent>
 
@@ -519,11 +548,11 @@ function Catalogo({ liberado, ocupado, onIncluir }: { liberado: boolean; ocupado
   }, [liberado, termo])
 
   return (
-    <Field label="Catálogo" hint={liberado ? 'Nome, código, código de fábrica ou código auxiliar.' : undefined}>
+    <Field label="Adicionar produto">
       <SearchInput
         value={busca}
         disabled={!liberado}
-        placeholder={liberado ? 'Buscar produto' : 'Selecione um cliente para liberar o catálogo de custos'}
+        placeholder={liberado ? 'Nome, código, código de fábrica ou auxiliar' : 'Selecione um cliente para liberar o catálogo de custos'}
         onChange={e => setBusca(e.target.value)}
       />
       {falhou && <Alert tone="error">Não foi possível buscar no catálogo agora.</Alert>}
@@ -651,7 +680,7 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
           <thead>
             <tr>
               <Th>Produto</Th><Th>Custo</Th><Th numeric>Qtd</Th><Th numeric>Margem %</Th><Th numeric>Preço</Th>
-              <Th numeric>CMV</Th><Th numeric>Mark up</Th><Th>Faixa</Th><Th numeric>Subtotal</Th>
+              <Th>Faixa</Th><Th numeric>Subtotal</Th>
               {comparativo && <><Th numeric>Preço Conc.</Th><Th numeric>CMV Conc.</Th></>}
               {onRemover && <Th><span className="sr-only">Ações</span></Th>}
             </tr>
@@ -666,7 +695,7 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
                       <Foto url={item.foto} nome={item.nome} />
                       <span className="min-w-0">
                         <RowTitle>{item.nome}</RowTitle>
-                        <RowMeta><Code>{item.codprod}</Code></RowMeta>
+                        <RowMeta><Code>{item.codprod}</Code> · CMV {pct(x.c.cmv)} · Mark up {pct(x.c.markup)}</RowMeta>
                         {x.etiqueta}
                       </span>
                     </span>
@@ -675,8 +704,6 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
                   <Td numeric>{x.qtd}</Td>
                   <Td numeric>{x.margem}</Td>
                   <Td numeric>{x.preco}</Td>
-                  <Td numeric>{pct(x.c.cmv)}</Td>
-                  <Td numeric>{pct(x.c.markup)}</Td>
                   <Td><Status tone={TOM_FAIXA[x.faixa]}>{x.faixa}</Status></Td>
                   <Td numeric><span className="font-semibold">{moeda(x.c.subtotal)}</span></Td>
                   {comparativo && <><Td numeric>{x.conc}</Td><Td numeric>{x.cmvConc}</Td></>}
@@ -739,6 +766,53 @@ function Rodape({ t }: { t: ReturnType<typeof totais> }) {
       <Par rotulo="Mark up Médio">{pct(t.markup)}</Par>
       <Par rotulo="Margem Bruta Média">{t.itens ? <Status tone={TOM_FAIXA[faixa]}>{pct(t.margem)} · {faixa}</Status> : <Dash />}</Par>
     </dl>
+  )
+}
+
+/** RF-007 no layout C: venda em destaque e régua da margem (faixas 20% e 30%, escala até 50%). */
+function ResumoMix({ t }: { t: ReturnType<typeof totais> }) {
+  const faixa = faixaMargem(t.margem)
+  const tom = TOM_FAIXA[faixa]
+  const barra = { live: 'bg-primary', attention: 'bg-attention', alert: 'bg-destructive' }[tom]
+  const texto = { live: 'text-primary', attention: 'text-attention', alert: 'text-destructive' }[tom]
+  const largura = `${Math.min(Math.max(t.margem, 0), 50) * 2}%`
+  const rotulo = 'text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase'
+  return (
+    <section className="rounded-2xl border border-rule-table bg-card p-5">
+      <p className={rotulo}>Venda total</p>
+      <p className="mt-1 font-title text-[32px] leading-tight font-extrabold text-ink">{moeda(t.venda)}</p>
+      <p className="mt-0.5 mb-4 text-[12px] text-ink-secondary">
+        {t.itens} {t.itens === 1 ? 'produto' : 'produtos'} · {t.unidades} unidades · preço médio {moeda(t.precoMedio)}
+      </p>
+      <p className={rotulo}>Margem bruta média</p>
+      {t.itens ? (
+        <>
+          <p className="mt-1 mb-2 flex items-baseline gap-2">
+            <span className={cn('font-title text-[22px] font-bold', texto)}>{pct(t.margem)}</span>
+            <span className="text-[13px]"><Status tone={tom}>{faixa}</Status></span>
+          </p>
+          <div aria-hidden className="relative h-2 rounded-full bg-muted">
+            <div className={cn('absolute inset-y-0 left-0 rounded-full', barra)} style={{ width: largura }} />
+            <div className="absolute -top-[3px] left-[40%] h-3.5 w-px bg-ink-muted" />
+            <div className="absolute -top-[3px] left-[60%] h-3.5 w-px bg-ink-muted" />
+          </div>
+          <div aria-hidden className="relative mt-1 mb-3 h-4 text-[11px] text-ink-secondary">
+            <span className="absolute left-0">0%</span>
+            <span className="absolute left-[40%] -translate-x-1/2">20%</span>
+            <span className="absolute left-[60%] -translate-x-1/2">30%</span>
+            <span className="absolute right-0">50%</span>
+          </div>
+        </>
+      ) : <p className="mt-1 mb-3"><Dash /></p>}
+      <dl className="divide-y divide-rule-row text-[13px]">
+        {([['Custo total', moeda(t.custo)], ['CMV', pct(t.cmv)], ['Mark up médio', pct(t.markup)]] as const).map(([k, v]) => (
+          <div key={k} className="flex justify-between gap-2 py-2">
+            <dt className="text-ink-secondary">{k}</dt>
+            <dd className="text-ink">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   )
 }
 
