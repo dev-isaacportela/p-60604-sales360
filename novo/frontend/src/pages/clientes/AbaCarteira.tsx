@@ -64,13 +64,14 @@ function Atividade({ c, curta }: { c: Linha; curta?: boolean }) {
   )
 }
 
-/** Sino, Queda e cobertura, na mesma linha do código do cliente. */
+/** Sino, Queda, cobertura e curva manual, na mesma linha do código do cliente. */
 function Selos({ c }: { c: Linha }) {
   return (
     <>
       {c.ALERTA ? <Status tone="alert"><Bell aria-label="Alerta não lido" className="size-3" />Alerta</Status> : null}
       {c.QUEDA ? <Status tone="attention">Queda</Status> : null}
       {c.COBERTURA ? <Status tone="off">Cobertura</Status> : null}
+      {c.CURVA_MANUAL ? <Status tone="off">Curva manual</Status> : null}
     </>
   )
 }
@@ -312,10 +313,9 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
                   {lista.map(c => (
                     <Tr key={c.ID}>
                       <Td>
-                        {/* Colunas fixas: o lápis fica no mesmo lugar com ou sem "manual". */}
-                        <span className="grid grid-cols-[1rem_3.5rem_auto] items-center gap-1">
+                        {/* Curva manual vai nos selos do cliente; aqui só a letra e o lápis, sempre alinhados. */}
+                        <span className="grid grid-cols-[1rem_auto] items-center gap-1">
                           <RowTitle>{c.CURVA}</RowTitle>
-                          <span>{c.CURVA_MANUAL ? <Code>manual</Code> : null}</span>
                           <IconButton label={`Fixar curva de ${c.NOME}`} onClick={() => setCurva(c)}><Pencil aria-hidden /></IconButton>
                         </span>
                       </Td>
