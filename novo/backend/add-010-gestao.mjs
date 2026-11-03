@@ -231,60 +231,7 @@ WHERE ID = {{id}}
   AND ${SEM_BLOQUEIO}`,
   },
 
-  // ── BUs e Vendedores (RN-012) ──
-  {
-    name: 's360BuListar',
-    type: 'SQL',
-    description: 'BUs com codigo, nome, status e numero de vendedores com escopo ativo. Sem parametros. GESTOR/ADMIN.',
-    code: `SELECT B.CODIGO, B.NOME, B.ATIVO,
-  (SELECT COUNT(DISTINCT BV.VENDEDOR_ID) FROM BU_VENDEDOR BV
-   WHERE BV.ATIVO = 1 AND CAST(BV.BU_CODIGO AS UNSIGNED) = CAST(B.CODIGO AS UNSIGNED)) AS VENDEDORES
-FROM BU B
-WHERE ${GESTAO}
-  AND ${SEM_BLOQUEIO}
-ORDER BY CAST(B.CODIGO AS UNSIGNED)`,
-  },
-  {
-    name: 's360BuCriar',
-    type: 'SQL',
-    description: 'Cria BU: codigo numerico do departamento no ERP, unico. Params: codigo, nome, agora. Devolve affectedRows.',
-    code: `INSERT INTO BU (CODIGO, NOME, ATIVO, CRIADO_EM, ATUALIZADO_EM)
-SELECT '{{codigo}}', TRIM('{{nome}}'), 1, ${agora}, ${agora}
-FROM INT_USER U
-WHERE U.ID = :VAR_USER
-  AND ${numerico(`'{{codigo}}'`)}
-  AND CHAR_LENGTH(TRIM('{{nome}}')) BETWEEN 1 AND 150
-  AND '{{agora}}' <> ''
-  AND NOT EXISTS (SELECT 1 FROM BU X WHERE TRIM(X.CODIGO) = '{{codigo}}')
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-  {
-    name: 's360BuAtualizar',
-    type: 'SQL',
-    description: 'Renomeia BU. Params: codigo, nome, agora. Devolve affectedRows.',
-    code: `UPDATE BU
-SET NOME = TRIM('{{nome}}'), ATUALIZADO_EM = ${agora}
-WHERE TRIM(CODIGO) = '{{codigo}}'
-  AND CHAR_LENGTH(TRIM('{{nome}}')) BETWEEN 1 AND 150
-  AND '{{agora}}' <> ''
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-  {
-    name: 's360BuStatusDefinir',
-    type: 'SQL',
-    description: 'Inativa (0) ou ativa (1) BU; escopos existentes nao mudam (RN-012). Params: codigo, ativo, agora. Devolve affectedRows.',
-    code: `UPDATE BU
-SET ATIVO = {{ativo}}, ATUALIZADO_EM = ${agora}
-WHERE TRIM(CODIGO) = '{{codigo}}'
-  AND {{ativo}} IN (0, 1)
-  AND '{{agora}}' <> ''
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-
-  // ── Escopo Usuarios (RN-013) ──
+  // ── Usuarios: escopos (RN-012, RN-013) ──
   {
     // PAI: BU da secao; e-mail do usuario.
     name: 's360EstruturaListar',
@@ -386,21 +333,7 @@ WHERE ID = {{id}}
   AND ${SEM_BLOQUEIO}`,
   },
 
-  // ── Governanca RCA (RN-014) ──
-  {
-    name: 's360RcaVinculoListar',
-    type: 'SQL',
-    description: 'Usuarios com o vinculo RCA (ou sem), busca por nome, e-mail ou RCA, paginada (TOTAL). Params: busca, limite, offset. GESTOR/ADMIN.',
-    code: `SELECT U.ID AS USER_ID, ${nome('U')} AS NOME, U.DESCR AS EMAIL, VR.COD_RCA, VR.COD_SUPERVISOR,
-  COUNT(*) OVER () AS TOTAL
-FROM INT_USER U
-LEFT JOIN VENDEDOR_RCA VR ON VR.USER_ID = U.ID
-WHERE (${busca('COALESCE(U.NOME, U.DESCR)', 'U.DESCR')} OR CAST(VR.COD_RCA AS CHAR) = '{{busca}}')
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}
-ORDER BY NOME
-${PAGINA}`,
-  },
+  // ── Usuarios: vinculo RCA (RN-014) ──
   {
     name: 's360RcaTotvsListar',
     type: 'SQL',
@@ -577,7 +510,7 @@ WHERE CAST(COD_SUPERVISOR AS CHAR) = '{{codSupervisor}}'
   AND ${SEM_BLOQUEIO}`,
   },
 
-  // ── Papeis de Usuarios (RN-016, D-010-2) ──
+  // ── Usuarios: papeis e lista (RN-016, D-010-2) ──
   {
     name: 's360PapelResumo',
     type: 'SQL',
@@ -598,9 +531,9 @@ WHERE U.ID = :VAR_USER
   {
     name: 's360PapelListar',
     type: 'SQL',
-    description: 'Usuarios com papeis (uniao nova + legado; vazio = VENDEDOR), busca por nome, e-mail, ID ou RCA e filtro de papel, paginada (TOTAL). Params: busca, papel (vazio = todos), limite, offset.',
+    description: 'Lista da tela Usuarios: papeis (uniao nova + legado; vazio = VENDEDOR), RCA e supervisor; busca por nome, e-mail, ID ou RCA e filtro de papel, paginada (TOTAL). Params: busca, papel (vazio = todos), limite, offset. GESTOR/DIRETORIA/ADMIN.',
     code: `WITH ${PAPEIS_CTE}
-SELECT U.ID AS USER_ID, ${nome('U')} AS NOME, U.DESCR AS EMAIL, VR.COD_RCA,
+SELECT U.ID AS USER_ID, ${nome('U')} AS NOME, U.DESCR AS EMAIL, VR.COD_RCA, VR.COD_SUPERVISOR,
   COALESCE(PU.PAPEIS, 'VENDEDOR') AS PAPEIS, COUNT(*) OVER () AS TOTAL
 FROM INT_USER U
 LEFT JOIN POR_USUARIO PU ON PU.USER_ID = U.ID
@@ -609,7 +542,7 @@ WHERE (${busca('COALESCE(U.NOME, U.DESCR)', 'U.DESCR')}
        OR CAST(U.ID AS CHAR) = '{{busca}}' OR CAST(VR.COD_RCA AS CHAR) = '{{busca}}')
   AND ('{{papel}}' = ''
        OR CONCAT(',', COALESCE(PU.PAPEIS, 'VENDEDOR'), ',') LIKE CONCAT('%,', '{{papel}}', ',%'))
-  AND ${DIRETORIA}
+  AND (${GESTAO} OR ${DIRETORIA})
   AND ${SEM_BLOQUEIO}
 ORDER BY NOME
 ${PAGINA}`,

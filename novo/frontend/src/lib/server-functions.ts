@@ -17,10 +17,6 @@
 // tudo pelos ids reais.
 
 export const SERVER_FUNCTION_NAMES = {
-  buAtualizar: 's360BuAtualizar',
-  buCriar: 's360BuCriar',
-  buListar: 's360BuListar',
-  buStatusDefinir: 's360BuStatusDefinir',
   comissaoAtualizar: 's360ComissaoAtualizar',
   comissaoCriar: 's360ComissaoCriar',
   comissaoExcluir: 's360ComissaoExcluir',
@@ -60,15 +56,10 @@ export const SERVER_FUNCTION_NAMES = {
   rcaRemover: 's360RcaRemover',
   rcaTotvsListar: 's360RcaTotvsListar',
   rcaVincular: 's360RcaVincular',
-  rcaVinculoListar: 's360RcaVinculoListar',
   sessaoObter: 's360SessaoObter',
 };
 
 export const SERVER_FUNCTIONS = {
-  buAtualizar: '1001',
-  buCriar: '1002',
-  buListar: '1003',
-  buStatusDefinir: '1004',
   comissaoAtualizar: '1005',
   comissaoCriar: '1006',
   comissaoExcluir: '1007',
@@ -108,6 +99,5 @@ export const SERVER_FUNCTIONS = {
   rcaRemover: '1037',
   rcaTotvsListar: '1038',
   rcaVincular: '1039',
-  rcaVinculoListar: '1040',
   sessaoObter: '1',
 };

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   MSG_BLOCO, ACOES_CONFIRMADAS, calcularComissao, confirmacao, lerValor, mensagemBloqueio, resumoEscopos, textoAtingimento,
-  textoGap, textoMeta, validarCodigoBu, validarMotivo, validarSupervisor,
+  textoGap, textoMeta, validarMotivo, validarSupervisor,
 } from '../src/lib/gestao.ts';
 
 const sp = (texto) => texto.replace(/\s/g, ' ');
@@ -44,12 +44,6 @@ test('RN-011 / RNT-011: valor aceita 1.500,50 e 1500.50', () => {
   assert.ok(Number.isNaN(lerValor('')));
 });
 
-test('C-011: código de BU numérico e sem repetir', () => {
-  assert.equal(validarCodigoBu('NUTRI', ['12']), 'Use o código numérico do departamento no ERP (ex.: 1, 2, 3).');
-  assert.equal(validarCodigoBu('12', ['1', '12']), 'Já existe a BU 12.');
-  assert.equal(validarCodigoBu('15', ['1', '12']), null);
-});
-
 test('C-012: "2 escopos vinculados. 1 já existia."', () => {
   assert.equal(resumoEscopos(3, 2), '2 escopos vinculados. 1 já existia.');
   assert.equal(resumoEscopos(1, 1), '1 escopo vinculado.');
@@ -68,7 +62,7 @@ test('RN-022: motivo até 500 caracteres', () => {
 });
 
 test('RN-025: toda ação que desfaz algo tem confirmação que nomeia o alvo', () => {
-  for (const acao of ['inativarBu', 'desvincularEscopo', 'removerRca', 'inativarCoordenador', 'removerBuCoordenador',
+  for (const acao of ['desvincularEscopo', 'removerRca', 'inativarCoordenador', 'removerBuCoordenador',
     'excluirComissao', 'encerrarFerias', 'desativarAcesso']) {
     assert.ok(ACOES_CONFIRMADAS.includes(acao), acao);
     const c = confirmacao(acao, 'ALVO-X');

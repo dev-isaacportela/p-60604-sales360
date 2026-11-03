@@ -48,14 +48,6 @@ export function calcularComissao(vendas: number, perc: number): number {
 
 const NUMERICO = /^[1-9]\d*$/;
 
-/** RN-012 / C-011. Devolve a mensagem de recusa ou null. */
-export function validarCodigoBu(codigo: string, existentes: string[]): string | null {
-  const c = String(codigo ?? '').trim();
-  if (!NUMERICO.test(c)) return 'Use o código numérico do departamento no ERP (ex.: 1, 2, 3).';
-  if (existentes.some(e => String(e).trim() === c)) return `Já existe a BU ${c}.`;
-  return null;
-}
-
 /** RN-015 / C-016. */
 export function validarSupervisor(codigo: string): string | null {
   return NUMERICO.test(String(codigo ?? '').trim()) ? null : 'Informe um código de supervisor numérico.';
@@ -77,12 +69,10 @@ export function resumoEscopos(pedidos: number, vinculados: number): string {
 }
 
 type Acao =
-  | 'inativarBu' | 'ativarBu' | 'desvincularEscopo' | 'removerRca' | 'inativarCoordenador' | 'ativarCoordenador'
+  | 'desvincularEscopo' | 'removerRca' | 'inativarCoordenador' | 'ativarCoordenador'
   | 'removerBuCoordenador' | 'excluirComissao' | 'encerrarFerias' | 'desativarAcesso' | 'reativarAcesso';
 
 const CONFIRMACOES: Record<Acao, { titulo: string; texto: (alvo: string) => string; botao: string; perigo: boolean }> = {
-  inativarBu: { titulo: 'Inativar BU', texto: a => `Inativar a BU ${a}? Ela deixa de aceitar escopos e coordenadores novos; os vínculos atuais continuam.`, botao: 'Inativar', perigo: true },
-  ativarBu: { titulo: 'Ativar BU', texto: a => `Ativar a BU ${a}?`, botao: 'Ativar', perigo: false },
   desvincularEscopo: { titulo: 'Desvincular escopo', texto: a => `Desvincular o escopo ${a}? A pessoa deixa de atuar nele.`, botao: 'Desvincular', perigo: true },
   removerRca: { titulo: 'Remover vínculo', texto: a => `Remover o RCA de ${a}? A pessoa sai da equipe do coordenador e não pode ter férias.`, botao: 'Remover vínculo', perigo: true },
   inativarCoordenador: { titulo: 'Inativar coordenador', texto: a => `Inativar o coordenador ${a}? Ele deixa de ver a equipe.`, botao: 'Inativar coordenador', perigo: true },

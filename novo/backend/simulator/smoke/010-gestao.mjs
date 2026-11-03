@@ -1,6 +1,8 @@
 // Smoke da spec 010 — gestão, coordenação e diretoria (etapa 1).
 // Rodado por ../smoke.mjs num banco descartável só deste arquivo.
 
+import { definitions } from '../../add-010-gestao.mjs';
+
 export default async function ({ teste, chamar, linhas, banco, db, ID, assert }) {
   const id = (email) => Number(banco(`SELECT ID FROM INT_USER WHERE DESCR = '${email}@benenutri.local'`)[0].ID);
   const P = Object.fromEntries(['helena.duarte', 'igor.matos', 'julia.freitas', 'nina.alves', 'olga.pires', 'pedro.sales',
@@ -102,18 +104,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     assert.equal(await afetadas('s360ComissaoExcluir', { id: c.ID }, GESTOR), 1);
   });
 
-  /* ── BUs e escopos ── */
-
-  await teste('C-011 / RN-012: BU só com código numérico do ERP e sem repetir', async () => {
-    const criar = (codigo, nome) => afetadas('s360BuCriar', { codigo, nome, agora: AGORA }, GESTOR);
-    assert.equal(await criar('NUTRI', 'Nutrição'), 0);
-    assert.equal(await criar('12', 'Odonto'), 0);
-    assert.equal(await criar('015', 'Estética'), 0);
-    assert.equal(await criar('15', 'Estética'), 1);
-    const bu = (await linhas('s360BuListar', {}, GESTOR)).find((b) => b.CODIGO === '15');
-    assert.equal(bu.NOME, 'Estética');
-    assert.equal(Number(bu.VENDEDORES), 0);
-  });
+  /* ── Usuários: escopos ── */
 
   const escopo = (secoes, extra = {}) => ({ vendedorId: P.NINA, buCodigo: '1', codfilial: '1', secoes, agora: AGORA, ...extra });
   const ativosNina = () => banco(`SELECT ID, ID_SECAO FROM BU_VENDEDOR WHERE VENDEDOR_ID = ${P.NINA} AND BU_CODIGO = '1' AND ATIVO = 1 ORDER BY ID_SECAO`);
@@ -137,14 +128,15 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     assert.equal(Number(lista[0].TOTAL), 4);
   });
 
-  await teste('RN-012: BU inativa não aceita escopo novo; o existente segue ativo', async () => {
-    assert.equal(await afetadas('s360BuStatusDefinir', { codigo: '13', ativo: 0, agora: AGORA }, GESTOR), 1);
+  await teste('RN-012: BU inativa (vem do ERP) não aceita escopo novo; o existente segue ativo; nenhuma SF grava BU', async () => {
+    assert.ok(definitions.every((d) => !/(INSERT INTO|UPDATE|DELETE FROM|REPLACE INTO)s+BU/.test(d.code)));
+    db.exec("UPDATE BU SET ATIVO = 0 WHERE TRIM(CODIGO) = '13'"); // carga do ERP (RN-024)
     assert.equal(await afetadas('s360EscopoIncluir', escopo('10001', { buCodigo: '13' }), GESTOR), 0);
     assert.equal(await afetadas('s360EscopoIncluir', escopo('', { vendedorId: P.QUESIA, buCodigo: '13' }), GESTOR), 0);
     assert.equal(banco(`SELECT ATIVO FROM BU_VENDEDOR WHERE VENDEDOR_ID = ${P.NINA} AND BU_CODIGO = '13'`)[0].ATIVO, 1);
   });
 
-  /* ── Governança RCA ── */
+  /* ── Usuários: vínculo RCA ── */
 
   const auditorias = () => banco('SELECT * FROM VENDEDOR_RCA_AUDITORIA ORDER BY ID');
 
@@ -312,11 +304,11 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     const carga = [
       ['s360PainelResumo', { hoje: HOJE, vendedorId: 0 }, GESTOR],
       ['s360ComissaoListar', PAGINA, GESTOR],
-      ['s360BuListar', {}, GESTOR],
       ['s360EscopoListar', PAGINA, GESTOR],
-      ['s360RcaVinculoListar', PAGINA, ID.TANIA],
+      ['s360PapelListar', PAGINA, GESTOR],
       ['s360CoordenadorListar', {}, DIRETORIA],
-      ['s360PapelListar', PAGINA, ID.TANIA],
+      ['s360PapelListar', PAGINA, DIRETORIA],
+      ['s360PapelResumo', {}, DIRETORIA],
       ['s360FeriasPessoas', {}, P.CARLOS],
       ['s360ExecutivaListar', PAGINA, P.CARLOS],
     ];
@@ -327,6 +319,13 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     // Gestão não abre telas de diretoria, nem diretoria as de gestão.
     assert.equal((await linhas('s360CoordenadorListar', {}, GESTOR)).length, 0);
     assert.equal((await linhas('s360PainelResumo', { hoje: HOJE, vendedorId: 0 }, DIRETORIA)).length, 0);
+    // Usuários: cada papel grava só a sua parte.
+    assert.equal((await linhas('s360PapelResumo', {}, GESTOR)).length, 0);
+    assert.equal(await afetadas('s360PapelIncluir', { userId: ID.BRUNO, diretoria: 1, coordenador: 0, vendedor: 1, agora: AGORA }, GESTOR), 0);
+    assert.equal(await afetadas('s360RcaAuditar', { userId: ID.BRUNO, codRca: 10941, codSupervisor: 0, observacao: '', agora: AGORA }, DIRETORIA), 0);
+    assert.equal(await afetadas('s360EscopoIncluir', escopo('', { vendedorId: ID.BRUNO, buCodigo: '12', codfilial: '2' }), DIRETORIA), 0);
+    assert.equal(await afetadas('s360EscopoIncluir', escopo('', { vendedorId: ID.BRUNO, buCodigo: '12', codfilial: '2' }), GESTOR), 1);
+    assert.equal(await afetadas('s360RcaAuditar', { userId: ID.BRUNO, codRca: 10941, codSupervisor: 0, observacao: '', agora: AGORA }, GESTOR), 1);
     // COORDENADOR sem cadastro ativo (Rita, spec 001) não abre as telas do coordenador.
     assert.equal((await linhas('s360FeriasPessoas', {}, ID.RITA)).length, 0);
     assert.equal((await linhas('s360ExecutivaListar', PAGINA, ID.RITA)).length, 0);

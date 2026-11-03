@@ -1,7 +1,7 @@
 // Spec 010 — Papéis de Usuários e menu de Férias (T-089).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { editavel, lerPapeis, marcacoes, mensagemPapeis } from '../src/lib/papeis.ts';
+import { editavel, lerPapeis, marcacoes, mensagemPapeis, partesUsuarios } from '../src/lib/papeis.ts';
 import { montarMenu, podeAbrir } from '../src/lib/menu.ts';
 
 test('C-017: GESTOR + Coordenador marcado manda só os editáveis; a mensagem lista os dois', () => {
@@ -27,4 +27,11 @@ test('RN-001: Férias de Vendedores abre para Diretoria sem cadastro de coordena
   const gil = montarMenu({ papeis: ['DIRETORIA', 'COORDENADOR'], coordenadorAtivo: true });
   assert.equal(gil.flatMap(s => s.itens).filter(i => i.caminho === '/ferias-vendedor').length, 1);
   assert.ok(gil.find(s => s.id === 'coordenador').itens.some(i => i.caminho === '/ferias-vendedor'));
+});
+
+test('RN-001: em Usuários, diretoria edita papéis, gestão edita RCA e escopo, TI edita tudo', () => {
+  assert.deepEqual(partesUsuarios(['DIRETORIA', 'COORDENADOR']), { papeis: true, rcaEscopo: false });
+  assert.deepEqual(partesUsuarios(['GESTOR']), { papeis: false, rcaEscopo: true });
+  assert.deepEqual(partesUsuarios(['ADMIN']), { papeis: true, rcaEscopo: true });
+  assert.deepEqual(partesUsuarios(['VENDEDOR']), { papeis: false, rcaEscopo: false });
 });

@@ -35,15 +35,15 @@
 
 - [x] **T-030** `[P]` — `src/lib/gestao.ts`, `src/lib/ferias.ts`, `src/lib/papeis.ts` com as funções da tabela do plan
 - [x] **T-031** — `src/lib/server-functions.ts`: entradas `s360*` da 010 em ordem alfabética, ids 1001+
-- [x] **T-032** — `src/lib/menu.ts`: Férias de Vendedores para coordenador ativo, DIRETORIA e ADMIN (na seção Diretoria para quem não é coordenador ativo); `AcessoRestrito.tsx` com `mensagemBloqueio`; `/configuracao-escopo-usuarios` sai do menu e Governança RCA vira "RCA e Escopo"
+- [x] **T-032** — `src/lib/menu.ts`: Férias de Vendedores para coordenador ativo, DIRETORIA e ADMIN (na seção Diretoria para quem não é coordenador ativo); `AcessoRestrito.tsx` com `mensagemBloqueio`; `/configuracao-escopo-usuarios`, `/gestao-cargos-usuarios` e `/gestao-bus-vendedores` saem do menu e Governança RCA vira "Usuários"
 - [x] **T-033** — `src/components/Confirmacao.tsx` (+ `use-bloco.ts`): diálogo que nomeia o alvo e só executa no `Confirmar`
 - [x] **T-034** — `PainelGestaoPage` (`/painel-gestao`)
 - [x] **T-035** — `GestaoCadastrosPage` (`/gestao-cadastros`)
-- [x] **T-036** — `BusVendedoresPage` (`/gestao-bus-vendedores`)
-- [x] **T-037** — escopos dentro de `GovernancaRcaPage` (telas fundidas em 2026-11-03; `EscopoUsuariosPage` e `/configuracao-escopo-usuarios` saíram)
-- [x] **T-038** — `GovernancaRcaPage` (`/governanca-rca`, "RCA e Escopo": vínculo RCA + escopos no painel do usuário)
+- [x] **T-036** — ~~`BusVendedoresPage` (`/gestao-bus-vendedores`)~~: tela retirada em 2026-11-03 (BU vem do ERP); página e SFs `s360Bu*` apagadas
+- [x] **T-037** — escopos dentro de `UsuariosPage` (telas fundidas em 2026-11-03; `EscopoUsuariosPage` e `/configuracao-escopo-usuarios` saíram)
+- [x] **T-038** — `UsuariosPage` (`/governanca-rca`, "Usuários": papéis, vínculo RCA e escopos no painel do usuário, cada parte para o seu papel)
 - [x] **T-039** — `GestaoCoordenadoresPage` (`/gestao-coordenadores`)
-- [x] **T-040** — `PapeisUsuariosPage` (`/gestao-cargos-usuarios`)
+- [x] **T-040** — papéis dentro de `UsuariosPage` (`PapeisUsuariosPage` e `/gestao-cargos-usuarios` saíram em 2026-11-03)
 - [x] **T-041** — `FeriasVendedorPage` (`/ferias-vendedor`)
 - [x] **T-042** — `ExecutivasPage` (`/gestao-acesso-executivas`)
 
@@ -52,13 +52,13 @@
 Uma task por grupo de linhas da seção Testes do plan.
 
 - [x] **T-080** — smoke Painel: C-001, C-002, C-003, RN-003, RNT-007 (férias), RN-005, RN-007
-- [x] **T-081** — smoke cadastros: C-010, C-011, C-012/RN-013, C-013, RN-012
+- [x] **T-081** — smoke cadastros: C-010, C-012/RN-013, C-013, RN-012
 - [x] **T-082** — smoke RCA: C-014, C-015, RN-014
 - [x] **T-083** — smoke coordenadores e papéis: C-016/RN-015, C-017, RN-016 (com o legado)
 - [x] **T-084** — smoke férias: C-021, C-022, RN-020
 - [x] **T-085** — smoke executivas: C-023, C-024, RN-021, RN-022
 - [x] **T-086** — smoke RN-001: matriz papel × tela das telas da etapa 1
-- [x] **T-087** `[P]` — `tests/gestao.test.mjs`: C-001, C-002, C-010, C-011, C-012, C-016, C-026, RN-001, RN-002, RN-006, RN-011, RN-022, RN-025
+- [x] **T-087** `[P]` — `tests/gestao.test.mjs`: C-001, C-002, C-010, C-012, C-016, C-026, RN-001, RN-002, RN-006, RN-011, RN-022, RN-025
 - [x] **T-088** `[P]` — `tests/ferias.test.mjs`: C-021, RN-020
 - [x] **T-089** `[P]` — `tests/papeis.test.mjs` e `tests/menu.test.mjs` (Férias para DIRETORIA sem cadastro de coordenador)
 
@@ -93,11 +93,11 @@ T-100 + T-101 → T-102 → T-103 → T-104 (exige T-001…T-003)
 | RF-008 / C-003, RN-007 | T-012, T-034 | T-080 |
 | RF-009 | spec 008 | — |
 | RF-020 / C-010, RN-011 | T-012, T-035 | T-081, T-087 |
-| RF-021 / C-011, RN-012 | T-012, T-036 | T-081, T-087 |
+| RN-012 (RF-021 e C-011 saíram) | T-012, T-036 | T-081 |
 | RF-022 / C-012, C-013, RN-013 | T-012, T-037 | T-081, T-087 |
 | RF-023…RF-025 / C-014, C-015, RN-014 | T-012, T-038 | T-082 |
 | RF-026 / C-016, RN-015 | T-012, T-039 | T-083, T-087 |
-| RF-027 / C-017, RN-016 | T-012, T-040 | T-083, T-089 |
+| RF-027 / C-017, RN-016 | T-012, T-038, T-040 | T-083, T-086, T-089 |
 | RF-028, RF-029 | etapa 2 | etapa 2 |
 | RF-030 / C-021, C-022, RN-020 | T-012, T-041 | T-084, T-088 |
 | RF-031, RF-032 / C-023, C-024, RN-021, RN-022 | T-012, T-042 | T-085, T-087 |

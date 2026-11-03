@@ -11,7 +11,7 @@ A spec 010 é construída em três etapas, cada uma com o seu plano e o seu
 
 | Etapa | O quê | Por quê separado |
 |---|---|---|
-| **1 (este plano)** | Painel de Gestão, Gestão Cadastros (comissões), BUs e Vendedores, RCA e Escopo, Gestão Coordenadores, Papéis de Usuários, Férias de Vendedores, Executivas de Venda | só depende da 001 |
+| **1 (este plano)** | Painel de Gestão, Gestão Cadastros (comissões), Usuários (papéis, RCA e escopo), Gestão Coordenadores, Férias de Vendedores, Executivas de Venda | só depende da 001 |
 | **2** | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, construída em paralelo |
 | **3** (aprovada em 2026-11-03) | Rotinas automáticas: RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003 | nada roda nem se verifica nesta máquina: integração com o planejamento estratégico e Data Loader do ERP só existem no sandbox, e a rotina de clientes grava `CLIENTES`, dado da 002 |
 
@@ -60,7 +60,7 @@ ou gravar (contrato em `000-visao-geral/modelo-de-dados.md`):
 | Visita | `VISITAS` | leitura (fila e "Visitas pendentes") | **010** |
 | Tarefa | `TAREFAS` | leitura (fila) | 001 |
 | Comissão | `COMISSOES` | leitura e escrita | **010** |
-| BU | `BU` | leitura e escrita (`CODIGO`, `NOME`, `ATIVO`) | 000 |
+| BU | `BU` | só leitura: vem do ERP pela rotina da RN-024 (etapa 3) | 000 |
 | Escopo | `BU_VENDEDOR` | leitura e escrita; desvincular = `ATIVO = 0` | 001 |
 | Filial, seção | `FILIAL`, `SECAO` | leitura | 000 |
 | Carteira | `EQUIPE_CLIENTE`, `CLIENTES` | leitura (realizado, clientes ativos) | 000 |
@@ -121,19 +121,15 @@ Gravações respondem `affectedRows`; 0 = recusado e a tela mostra o motivo
 | `s360ComissaoAtualizar` | `id` + os mesmos campos | linhas afetadas | RN-011 |
 | `s360ComissaoExcluir` | `id` | linhas afetadas (`DELETE`; T-003) | C-010 |
 
-### BUs e Vendedores (GESTOR, ADMIN)
+### BUs (sem tela)
 
-| Nome | Entrada | Saída | Atende |
-|---|---|---|---|
-| `s360BuListar` | — | `CODIGO`, `NOME`, `ATIVO`, `VENDEDORES` (escopos ativos distintos) | RF-021 |
-| `s360BuCriar` | `codigo`, `nome`, `agora` | linhas afetadas; recusa código não numérico, ≤ 0 ou já existente | RN-012, C-011 |
-| `s360BuAtualizar` | `codigo`, `nome`, `agora` | linhas afetadas (só nome) | RF-021 |
-| `s360BuStatusDefinir` | `codigo`, `ativo`, `agora` | linhas afetadas | RF-021, RN-012 |
+BUs e Vendedores deixou de existir em 2026-11-03: a BU vem direto do ERP
+(Winthor) pela rotina da RN-024, que entra na etapa 3. Nenhuma SF desta spec
+grava em `BU`; até a rotina existir, vale o que já está na tabela de produção.
+O bloco "Vincular BU ao vendedor" e o de vínculo RCA ↔ departamento também
+saem (RF-022, Fora de escopo).
 
-O bloco "Vincular BU ao vendedor" e o de vínculo RCA ↔ departamento **não**
-existem na tela nova (RF-022, Fora de escopo).
-
-### RCA e Escopo: escopos (GESTOR, ADMIN)
+### Usuários: escopos (GESTOR, ADMIN)
 
 | Nome | Entrada | Saída | Atende |
 |---|---|---|---|
@@ -149,11 +145,10 @@ existem na tela nova (RF-022, Fora de escopo).
 - Seção nula = todas; a unicidade compara `COALESCE(ID_SECAO, 0)`, porque o
   índice único de produção não impede duplicata com seção nula.
 
-### RCA e Escopo: vínculo RCA (GESTOR, ADMIN)
+### Usuários: vínculo RCA (GESTOR, ADMIN)
 
 | Nome | Entrada | Saída | Atende |
 |---|---|---|---|
-| `s360RcaVinculoListar` | `busca`, `limite`, `offset` | todos os usuários: `USER_ID`, `NOME`, `EMAIL`, `COD_RCA`, `COD_SUPERVISOR`, `TOTAL` | RF-023 |
 | `s360RcaTotvsListar` | — | `COD_RCA`, `RCA_NOME`, `COD_SUPERVISOR` (sugerido), `USUARIO_VINCULADO` | RF-023 |
 | `s360RcaAuditoriaListar` | — | 80 últimas: `ALTERADO_EM`, `USUARIO`, `COD_RCA_ANTERIOR`, `COD_RCA_NOVO`, `COD_SUPERVISOR_ANTERIOR`, `COD_SUPERVISOR_NOVO`, `ALTERADO_POR`, `OBSERVACAO` | RF-025 |
 | `s360RcaAuditar` | `userId`, `codRca` (0 = remover), `codSupervisor`, `observacao`, `agora` | 1 linha de auditoria com os valores **anteriores lidos do servidor**; 0 se a mudança é inválida (RCA de outro usuário, RCA fora do ERP, nada muda) | RN-014, C-014, C-015 |
@@ -178,18 +173,21 @@ correspondente não acontece, e a auditoria só nasce para uma mudança válida.
 da confirmação, se alguma BU saiu) → `Listar`; a mensagem "Coordenador salvo
 com 2 BUs." conta as BUs relidas.
 
-### Papéis de Usuários (DIRETORIA, ADMIN)
+### Usuários: lista e papéis (lista: GESTOR, DIRETORIA, ADMIN; papéis: DIRETORIA, ADMIN)
 
 | Nome | Entrada | Saída | Atende |
 |---|---|---|---|
 | `s360PapelResumo` | — | `DIRETORIA`, `COORDENADORES`, `VENDEDORES`, `OUTROS` (GESTOR/ADMIN); sem papel conta como vendedor | RF-027 |
-| `s360PapelListar` | `busca` (nome, e-mail, ID ou RCA), `papel` ('' = todos), `limite`, `offset` | `USER_ID`, `NOME`, `EMAIL`, `COD_RCA`, `PAPEIS` (união das duas tabelas), `TOTAL` | RF-027 |
+| `s360PapelListar` | `busca` (nome, e-mail, ID ou RCA), `papel` ('' = todos), `limite`, `offset` | lista da tela Usuários, para GESTOR, DIRETORIA e ADMIN: `USER_ID`, `NOME`, `EMAIL`, `COD_RCA`, `COD_SUPERVISOR`, `PAPEIS` (união das duas tabelas), `TOTAL` | RF-023, RF-027 |
 | `s360PapelIncluir` | `userId`, `diretoria`, `coordenador`, `vendedor` (0/1), `agora` | papéis marcados que faltavam em `USUARIO_PAPEL` | C-017 |
 | `s360PapelRemover` | idem | papéis desmarcados removidos de `USUARIO_PAPEL` (`DELETE`; T-003) | RN-016 |
 | `s360PapelLegadoSincronizar` | `userId`, `agora` | `USUARIO_CARGO` acompanha a mudança (D-010-2) | RN-016, D-003 da 001 |
 
-GESTOR e ADMIN não são parâmetro de nenhuma das três: por construção esta tela
-não os altera (RN-016). A mensagem "<Nome>: papéis salvos (COORDENADOR,
+GESTOR e ADMIN não são parâmetro de nenhuma das três: por construção a tela
+não os altera (RN-016). Em Usuários, o painel mostra só a parte que o papel de
+quem abre edita (`partesUsuarios` em `lib/papeis.ts`); as SFs de cada parte
+mantêm o guarda dela, então gestor não grava papel e diretoria não grava RCA
+nem escopo. A mensagem "<Nome>: papéis salvos (COORDENADOR,
 GESTOR)." sai da releitura do usuário.
 
 ### Férias de Vendedores (coordenador ativo; DIRETORIA, ADMIN)
@@ -221,10 +219,8 @@ Titular e substituto chegam por **usuário**; o RCA é resolvido no servidor.
 |---|---|---|
 | `/painel-gestao` | cards, filtro de vendedor, fila; data da última atualização das vendas | `PainelGestaoPage` |
 | `/gestao-cadastros` | comissões: lista com busca e 10 por página, formulário com comissão calculada, excluir com confirmação | `GestaoCadastrosPage` |
-| `/gestao-bus-vendedores` | lista de BUs, `+ Nova BU`, editar nome, `Inativar`/`Ativar` com confirmação | `BusVendedoresPage` |
-| `/governanca-rca` (RCA e Escopo) | lista de usuários com busca, RCA e supervisor; `Editar` abre o painel do usuário com o vínculo RCA (supervisor sugerido, `Remover vínculo` com confirmação) e os escopos dele (vincular BU, filial, várias seções ou todas; `Desvincular` com confirmação); auditoria embaixo. `/configuracao-escopo-usuarios` sai do menu (fundida em 2026-11-03) | `GovernancaRcaPage` |
+| `/governanca-rca` (Usuários) | cards por papel (diretoria); lista com busca e filtro de papel, papéis, RCA e supervisor; `Editar` abre o painel do usuário com papéis (diretoria), vínculo RCA com `Remover vínculo` e escopos com `Desvincular` (gestão), todos com confirmação; auditoria de RCA embaixo (gestão). `/configuracao-escopo-usuarios`, `/gestao-cargos-usuarios` e `/gestao-bus-vendedores` saem do menu (2026-11-03) | `UsuariosPage` |
 | `/gestao-coordenadores` | cadastro + BUs num salvar, `Inativar`/`Ativar` com confirmação, remover BU com confirmação | `GestaoCoordenadoresPage` |
-| `/gestao-cargos-usuarios` | cards por papel, busca, filtro, marcar DIRETORIA/COORDENADOR/VENDEDOR; GESTOR e ADMIN só leitura | `PapeisUsuariosPage` |
 | `/ferias-vendedor` | cadastro (calendário), lista "Férias ativas e futuras", `Encerrar` com confirmação | `FeriasVendedorPage` |
 | `/gestao-acesso-executivas` | lista com busca, filtro e 20 por página, `Desativar acesso`/`Reativar acesso` com confirmação | `ExecutivasPage` |
 | (comum) | diálogo de confirmação nomeando o alvo (RN-025), aviso de bloco que falhou, marcador; carregar bloco e gravar | `components/Confirmacao.tsx`, `components/use-bloco.ts` |
@@ -245,7 +241,7 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
 
 | Arquivo | Mudança | Por quê |
 |---|---|---|
-| `novo/frontend/src/lib/menu.ts` | `/ferias-vendedor` passa a `COORDENADOR_ATIVO`, DIRETORIA, ADMIN; para quem não é coordenador ativo, o item aparece na seção Diretoria (como Titulares); `/governanca-rca` passa a "RCA e Escopo" e `/configuracao-escopo-usuarios` sai de `ROTAS` e da seção Gestão (telas fundidas) | RN-001 da 010; hoje está só coordenador (spec 001, linha do menu) |
+| `novo/frontend/src/lib/menu.ts` | `/ferias-vendedor` passa a `COORDENADOR_ATIVO`, DIRETORIA, ADMIN; para quem não é coordenador ativo, o item aparece na seção Diretoria (como Titulares); `/governanca-rca` passa a "Usuários" (DIRETORIA, GESTOR, ADMIN) e `/configuracao-escopo-usuarios`, `/gestao-cargos-usuarios` e `/gestao-bus-vendedores` saem de `ROTAS` e das seções (telas fundidas ou retiradas) | RN-001 da 010; hoje está só coordenador (spec 001, linha do menu) |
 | `novo/frontend/src/pages/AcessoRestrito.tsx` | usa `mensagemBloqueio`: acrescenta "Seu perfil: …" e a mensagem de COORDENADOR sem cadastro ativo | RN-001, RN-002 |
 | `novo/frontend/src/lib/server-functions.ts` | entradas novas em ordem alfabética, ids 1001+ | contrato com o `add-010` |
 | `novo/backend/simulator/config.mjs` | `CHECK_INPUT` ganha `vendedorId`, `busca`, `filtro`, `papel`, `limite`, `offset` | o `sim:check` executa as leituras novas |
@@ -262,7 +258,7 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
   devolução, meta, tarefa e visita; RCAs 10001+; usuários novos por
   `ctx.usuario`. Base: filial 6 (Palmas, TO) e departamento 9 para o Painel
   (não se mistura com os dados das outras specs); filial 1 e 2 · Nutrição para
-  coordenador, férias e executivas; BU 12 já existente (C-011); seções 10001,
+  coordenador, férias e executivas; BUs 12 e 13; seções 10001,
   10002, 10003 na BU Nutrição (C-012).
 
   | Usuário | Para | Dados |
@@ -296,7 +292,6 @@ Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
 | C-002 | smoke + `gestao.test` | Júlia sem meta: `META = 0`, `LIQUIDO = 5.000`; tela "Meta não distribuída", "—" e sem texto de gap |
 | C-003 | smoke | hoje 30/10, Helena: ordem [tarefa 28/10, visita 29/10, visita 03/11] e ações "Cobrar conclusão imediata", "Reagendar ou concluir hoje", "Confirmar agenda com cliente" |
 | C-010 | `gestao.test` + smoke | `calcularComissao(50000, 3)` = 1500; texto de confirmação do C-010; servidor grava 1.500,00 e recusa a mesma vendedora + mês + ano |
-| C-011 | smoke + `gestao.test` | "NUTRI" → 0 e mensagem; "12" → 0 e "Já existe a BU 12."; "15" → 1 |
 | C-012 / RN-013 | smoke + `gestao.test` | seções 10001, 10002, 10003 com 10002 ativa → reativadas 0, incluídas 2; `resumoEscopos` = "2 escopos vinculados. 1 já existia."; recadastro ativo → 0 e 0 |
 | C-013 | smoke | desvincular → `ATIVO = 0`; reativar a mesma combinação → 1 e mesmo `ID` |
 | C-014 | smoke | auditar 10936 para Pedro → 0 linhas; vincular → 0; auditoria sem linha nova |
@@ -308,7 +303,7 @@ Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
 | C-023 | smoke | Carlos desativa Joana com "Desligamento" → `BLOQUEADO = 1`, motivo, autor e data; Joana: sessão `BLOQUEADO = 1`, contadores 0 linhas; carteira inalterada |
 | C-024 | smoke | Renata fora da lista de Carlos; alterar Renata como Carlos → 0 |
 | C-026 | `gestao.test` | `MSG_BLOCO` é a frase padrão (a tela usa `allSettled` por bloco) |
-| RN-001 | smoke + `gestao.test` | matriz: a SF de carga de cada uma das 9 telas devolve 0 linhas para Ana (VENDEDOR) e para Rita (COORDENADOR sem cadastro) nas telas de coordenador; devolve linhas para o papel certo. Tela: `mensagemBloqueio` de Rita = "Seu cadastro de coordenador não está ativo. Procure a diretoria." |
+| RN-001 | smoke + `gestao.test` | matriz: a SF de carga de cada tela (em Usuários, de cada parte) devolve 0 linhas para Ana (VENDEDOR) e para Rita (COORDENADOR sem cadastro) nas telas de coordenador; devolve linhas para o papel certo. Tela: `mensagemBloqueio` de Rita = "Seu cadastro de coordenador não está ativo. Procure a diretoria." |
 | RN-002 | `gestao.test` | bloqueio do Painel para Ana: "Esta tela está disponível apenas para Gestão e TI." + "Seu perfil: Vendedor", sem nome de tabela |
 | RN-003 | smoke | apagar a devolução de 200 de Helena sobe o líquido dela e o da equipe em 200; venda de cliente de Helena em F1·Nutrição não conta |
 | RNT-007 (férias) | smoke | venda de cliente de Helena em 06/10 conta para Igor filtrado; o total da equipe não muda (cada linha uma vez) |
@@ -316,7 +311,7 @@ Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
 | RN-006 | `gestao.test` | meta 50.000, realizado 55.000 → 110,0% e "Meta superada em R$ 5.000,00"; meta 0 → "—" |
 | RN-007 | smoke | 70 itens → 60; Igor em andamento com prazo futuro → "Acompanhar andamento"; "Visitas pendentes" de Helena = 1 |
 | RN-011 | `gestao.test` | `calcularComissao(12345.67, 2.5)` = 308.64; `lerValor('1.500,50')` = `lerValor('1500.50')` = 1500.5 |
-| RN-012 | smoke | BU 13 inativada: incluir escopo → 0; escopo de Nina na BU 13 segue ativo |
+| RN-012 | smoke | BU 13 inativada direto na tabela (como a carga do ERP): incluir escopo → 0; escopo de Nina na BU 13 segue ativo; nenhuma SF da 010 tem `INSERT`/`UPDATE`/`DELETE`/`REPLACE` em `BU` |
 | RN-014 | smoke | Olga 10936 → 10937 com `anterior=999` no input: auditoria anterior = 10936 |
 | RN-016 | smoke | Rui {COORDENADOR, GESTOR} − coordenador → {GESTOR}; Tânia com tudo desmarcado continua ADMIN; Sara (COORDENADOR só no legado) desmarcada → sessão sem COORDENADOR e `USUARIO_CARGO` = VENDEDOR |
 | RN-020 | smoke + `ferias.test` | substituto sem RCA (Yara) → 0; substituto = titular → 0; início > fim → 0; Xavier (substituindo Vítor) não sai de férias no período → 0; Vítor (de férias) não substitui no período → 0; titular fora da equipe de Carlos → 0 |

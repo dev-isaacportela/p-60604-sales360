@@ -25,3 +25,9 @@ export function marcacoes(marcados: string[]) {
 export function mensagemPapeis(nome: string, papeis: string[]): string {
   return `${nome}: papéis salvos (${[...papeis].sort().join(', ')}).`;
 }
+
+/** Usuários (RN-001 da 010): cada papel edita só a sua parte do painel do usuário. */
+export function partesUsuarios(papeis: string[]) {
+  const tem = (...p: string[]) => p.some(x => papeis.includes(x));
+  return { papeis: tem('DIRETORIA', 'ADMIN'), rcaEscopo: tem('GESTOR', 'ADMIN') };
+}
