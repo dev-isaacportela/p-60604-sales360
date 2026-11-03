@@ -140,11 +140,14 @@ export function Evolucao({ pontos, formato, compacto }: { pontos: PontoEvolucao[
           </div>
         ) : null}
       </div>
-      <table className="sr-only">
-        <caption>Evolução</caption>
-        <thead><tr><th>Período</th><th>Líquido</th><th>Meta</th></tr></thead>
-        <tbody>{pontos.map(pt => <tr key={pt.chave}><td>{pt.rotulo}</td><td>{formato(pt.valor)}</td><td>{formato(pt.meta)}</td></tr>)}</tbody>
-      </table>
+      {/* Tabela não encolhe a 1px: o sr-only vai num div, senão ela estica a página (2ª barra de rolagem). */}
+      <div className="sr-only">
+        <table>
+          <caption>Evolução</caption>
+          <thead><tr><th>Período</th><th>Líquido</th><th>Meta</th></tr></thead>
+          <tbody>{pontos.map(pt => <tr key={pt.chave}><td>{pt.rotulo}</td><td>{formato(pt.valor)}</td><td>{formato(pt.meta)}</td></tr>)}</tbody>
+        </table>
+      </div>
     </div>
   )
 }
