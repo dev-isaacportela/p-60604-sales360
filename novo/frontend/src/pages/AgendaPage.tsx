@@ -4,6 +4,7 @@
 // A visão inicial é a preferência `Modo padrão da Agenda` (sessão da 001).
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { linha, linhas, linhasAfetadas, acao as executar } from '@/lib/mitra-api'
 import { hojeBrasilia } from '@/lib/formato'
@@ -42,7 +43,14 @@ export default function AgendaPage() {
   const [erro, setErro] = useState<string | null>(null)
   const [aviso, setAviso] = useState<{ tom: 'success' | 'error'; texto: string } | null>(null)
   const [recarga, setRecarga] = useState(0)
-  const [nova, setNova] = useState(false)
+  // `?clienteId=&cliente=`: "Agendar visita" da Prospecção (spec 008) abre a Nova visita com o cliente.
+  const local = useLocation()
+  const clienteDaUrl = useMemo(() => {
+    const p = new URLSearchParams(local.search)
+    const id = (p.get('clienteId') ?? '').replace(/\D/g, '')
+    return id ? { id, nome: p.get('cliente') || `Cliente ${id}` } : null
+  }, [local.search])
+  const [nova, setNova] = useState(!!clienteDaUrl)
   const [janela, setJanela] = useState<Janela>(null)
   const [historico, setHistorico] = useState<number | null>(null)
   const recarregar = useCallback(() => setRecarga(n => n + 1), [])
@@ -170,7 +178,7 @@ export default function AgendaPage() {
         </Panel>
       </ComPainel>
 
-      <NovaAgenda aberto={nova} hoje={hoje} eu={sessao.userId} fechar={() => setNova(false)} salvo={concluido} />
+      <NovaAgenda aberto={nova} hoje={hoje} eu={sessao.userId} fechar={() => setNova(false)} salvo={concluido} cliente={clienteDaUrl} />
       <Detalhe item={aberta('detalhe')} fechar={fechar} agir={agir} />
       <VerTexto item={aberta('verPlanejamento')} qual="planejamento" fechar={fechar} />
       <VerTexto item={aberta('verRelato')} qual="relato" fechar={fechar} />

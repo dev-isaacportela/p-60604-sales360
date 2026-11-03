@@ -60,6 +60,9 @@ export default async function ({ teste, chamar, linhas, banco, execute, db, ID, 
   });
 
   await teste('C-009 / RN-008: contadores de Ana; concluir uma tarefa baixa o contador', async () => {
+    // RN-013 da 008: o contador so conta alerta de cliente na carteira, na BU do alerta.
+    db.exec(`UPDATE ALERTAS_INTELIGENTES SET CODEPTO = '1' WHERE ID_VENDEDOR = ${ID.ANA};
+      INSERT INTO EQUIPE_CLIENTE (ID_CLIENTE, ID_VENDEDOR, CODFILIAL) VALUES (1001, ${ID.ANA}, '1'), (1002, ${ID.ANA}, '1'), (1003, ${ID.ANA}, '1'), (1004, ${ID.ANA}, '1');`);
     let [c] = await linhas('s360ContadoresObter', {}, ID.ANA);
     assert.equal(Number(c.ATIVIDADES_PENDENTES), 3);
     assert.equal(Number(c.ALERTAS_NAO_LIDOS), 4);

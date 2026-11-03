@@ -39,13 +39,13 @@ const TIPOS_RELATO = `'Ligação', 'WhatsApp', 'E-mail', 'Reunião on-line', 'Ou
 
 /* ─────────────── SF JAVASCRIPT: preludio comum ─────────────── */
 
-function source(fn) {
+export function source(fn) {
   const texto = fn.toString();
   return texto.slice(texto.indexOf('{') + 1, texto.lastIndexOf('}')).trim();
 }
 
 // Funcoes do preludio publicado (sem import: viram texto no corpo da SF).
-function preludio() {
+export function preludio() {
   const { runQueryMitra } = require('mitra-sdk');
   const projectId = Number(process.env.MITRA_PROJECT_ID || event.projectId);
   // runQueryMitra nao liga {{param}}: o valor vai escapado no texto.
@@ -74,7 +74,7 @@ const corpoJs = (sql, corpo) => [
 
 const CART = carteiraVisivel(ESCOPO_MARCADO);
 
-const SQL_CARTEIRA = {
+export const SQL_CARTEIRA = {
   clientes: `SELECT C.ID, C.WINTHOR_CODCLI, C.RAZAO_SOCIAL, C.NOME_FANTASIA, ${nomeCliente('C')} AS NOME,
     C.CNPJ, C.CIDADE, C.UF, C.SEGMENTO, C.STATUS,
     ${ramoDe('C.ID')} AS RAMO,

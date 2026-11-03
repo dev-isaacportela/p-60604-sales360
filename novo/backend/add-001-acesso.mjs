@@ -22,6 +22,7 @@ import {
   runDmlMitra,
 } from 'mitra-sdk';
 import { SEM_BLOQUEIO, COORDENADOR_ATIVO } from './lib/guardas.mjs';
+import { ALERTAS_MARCAVEIS } from './lib/008-alertas.mjs';
 
 configureSdkMitra({
   baseURL: process.env.MITRA_BASE_URL,
@@ -104,10 +105,10 @@ WHERE U.ID = :VAR_USER`,
   {
     name: 's360ContadoresObter',
     type: 'SQL',
-    description: 'Contadores do menu: atividades pendentes ou em andamento e alertas nao lidos do usuario. Sem parametros.',
+    description: 'Contadores do menu: atividades pendentes ou em andamento e alertas nao lidos que o usuario pode marcar (RN-013 da 008). Sem parametros.',
     code: `SELECT
   (SELECT COUNT(*) FROM TAREFAS T WHERE T.VENDEDOR_ID = :VAR_USER AND T.STATUS IN ('PENDENTE', 'EM_ANDAMENTO')) AS ATIVIDADES_PENDENTES,
-  (SELECT COUNT(*) FROM ALERTAS_INTELIGENTES A WHERE A.ID_VENDEDOR = :VAR_USER AND A.LIDO = 0) AS ALERTAS_NAO_LIDOS
+  ${ALERTAS_MARCAVEIS} AS ALERTAS_NAO_LIDOS
 FROM INT_USER U
 WHERE U.ID = :VAR_USER
   AND ${SEM_BLOQUEIO}`,
