@@ -11,7 +11,7 @@ import { acao, linha, linhas, linhasAfetadas } from '@/lib/mitra-api'
 import { agoraBrasilia, fmtData, hojeBrasilia, moeda } from '@/lib/formato'
 import {
   AVISO_FORA_CARTEIRA, AVISO_POPUP, ETIQUETA_SEM_CUSTO, LIMITE_CONTROLES,
-  abrirProposta, aplicarTrocaCliente, calcularItem, csvMix, duplicar, faixaCmvConcorrente, faixaMargem, filtrarOrdenar,
+  abrirProposta, aplicarTrocaCliente, calcularItem, csvMix, duplicar, especialDisponivel, faixaCmvConcorrente, faixaMargem, filtrarOrdenar,
   fotoSegura, htmlProposta, idadeCustos, itemGravado, itemNovo, lerValor, motivoBloqueioSalvar, mudarMargem, mudarPreco,
   nomeArquivo, opcoesPorProduto, payloadItens, pct, rotuloCusto, totais, trocarCusto,
 } from '@/lib/mix'
@@ -614,12 +614,18 @@ function CampoNumero({ valor, onGravar, label, casas = 2, className }: { valor: 
 /** RF-005: menu de custo do item com as opções válidas para o cliente. */
 function MenuCusto({ item, opcoes, onEscolher }: { item: Item; opcoes: OpcaoCusto[]; onEscolher: (o: OpcaoCusto) => void }) {
   const [aberto, setAberto] = useState(false)
+  const especial = especialDisponivel(item, opcoes)
   return (
     <Popover open={aberto} onOpenChange={setAberto}>
       <PopoverTrigger asChild>
         <button type="button" className="text-left text-[13px] text-ink hover:underline">
           {moeda(item.custo)}
           <span className="block text-[12px] text-ink-secondary">{rotuloCusto(item)}</span>
+          {especial && (
+            <span className="mt-1 block w-fit rounded-full bg-attention-bg px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-attention">
+              Especial {moeda(especial.custo)}{especial.politicaNome ? ` · ${especial.politicaNome}` : ''}
+            </span>
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-1">

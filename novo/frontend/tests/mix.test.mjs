@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  pct, lerValor, limitarMargem, precoPelaMargem, margemPeloPreco, custoInicial, itemNovo, trocarCusto,
+  pct, lerValor, limitarMargem, precoPelaMargem, margemPeloPreco, custoInicial, especialDisponivel, itemNovo, trocarCusto,
   mudarMargem, mudarPreco, aplicarTrocaCliente, calcularItem, totais, faixaMargem, faixaCmvConcorrente,
   motivoBloqueioSalvar, duplicar, idadeCustos, fotoSegura, csvMix, nomeArquivo, htmlProposta, abrirProposta,
   payloadItens, filtrarOrdenar, itemGravado, AVISO_SEM_CUSTO, AVISO_POPUP, AVISO_FORA_CARTEIRA,
@@ -186,4 +186,12 @@ test('RNT-011: percentual com 1 casa e leitura de valor nos dois formatos', () =
   assert.equal(lerValor('1.500,50'), 1500.5);
   assert.equal(lerValor('1500.50'), 1500.5);
   assert.ok(Number.isNaN(lerValor('')));
+});
+
+test('especial disponível: item no padrão mostra o menor especial do cliente; item especial não', () => {
+  const opcoes = [padrao(70), especial(65, 9004, 'Geral'), especial(60, 9001, 'Rede Sul')];
+  const noPadrao = itemNovo(produto(9714), opcoes, 'PADRAO').item;
+  assert.equal(especialDisponivel(noPadrao, opcoes).politicaNome, 'Rede Sul');
+  assert.equal(especialDisponivel(trocarCusto(noPadrao, opcoes[1]), opcoes), null);
+  assert.equal(especialDisponivel(noPadrao, [padrao(70)]), null);
 });

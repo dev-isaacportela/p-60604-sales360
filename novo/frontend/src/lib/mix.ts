@@ -127,6 +127,10 @@ export const mudarPreco = (item: Item, preco: number): Item => {
   return { ...item, preco: p, margem: margemPeloPreco(item.custo, p) }
 }
 
+/** Item fora do especial, mas o cliente tem especial vigente para o produto: o menor deles. */
+export const especialDisponivel = (item: Pick<Item, 'tipo'>, opcoes: OpcaoCusto[]): OpcaoCusto | null =>
+  item.tipo === 'ESPECIAL' ? null : custoInicial(opcoes.filter(o => o.tipo === 'ESPECIAL'), 'ESPECIAL')
+
 export const rotuloCusto = (item: Pick<Item, 'tipo' | 'politicaNome'>) =>
   item.tipo === 'ESPECIAL' ? `Especial${item.politicaNome ? ` · ${item.politicaNome}` : ''}` : item.tipo === 'PADRAO' ? 'Padrão' : 'Sem custo'
 
