@@ -17,7 +17,7 @@ import {
 } from '@/lib/mix'
 import type { FaixaMargem, Item, OpcaoCusto, Ordem, Preferencia, Produto } from '@/lib/mix'
 import {
-  Alert, Badge, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Alert, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
   EmptyState, Field, IconButton, Input, LabelledField, PageHeader, Panel, PanelBody, PanelHeader, RowMeta, RowTitle,
   SearchInput, SelectMenu, Stack, Status, Table, Tabs, TabsContent, TabsList, TabsTrigger, Td, Th, Toolbar, Tr,
 } from '@/components/page'
@@ -606,25 +606,29 @@ function CampoNumero({ valor, onGravar, label, casas = 2, className }: { valor: 
   )
 }
 
+/** Custo em duas linhas fixas: valor · tipo; embaixo, o aviso (custo zero ou especial disponível). */
+function CustoTexto({ item, especial }: { item: Item; especial: OpcaoCusto | null }) {
+  const aviso = item.tipo === 'SEM_CUSTO'
+    ? ETIQUETA_SEM_CUSTO
+    : especial && `Especial ${moeda(especial.custo)}`
+  return (
+    <>
+      <span className="block leading-5 whitespace-nowrap">
+        {moeda(item.custo)} <span className="text-[12px] text-ink-secondary">· {rotuloCusto(item)}</span>
+      </span>
+      {aviso && <span className="block max-w-36 truncate text-[12px] leading-4 font-semibold text-attention" title={especial?.politicaNome ? `${aviso} · ${especial.politicaNome}` : aviso}>{aviso}</span>}
+    </>
+  )
+}
+
 /** RF-005: menu de custo do item com as opções válidas para o cliente. */
-/** `linha`: tudo numa linha (cartão do celular); sem ela, empilhado (coluna da tabela). */
-function MenuCusto({ item, opcoes, onEscolher, linha }: { item: Item; opcoes: OpcaoCusto[]; onEscolher: (o: OpcaoCusto) => void; linha?: boolean }) {
+function MenuCusto({ item, opcoes, onEscolher }: { item: Item; opcoes: OpcaoCusto[]; onEscolher: (o: OpcaoCusto) => void }) {
   const [aberto, setAberto] = useState(false)
-  const especial = especialDisponivel(item, opcoes)
   return (
     <Popover open={aberto} onOpenChange={setAberto}>
       <PopoverTrigger asChild>
-        <button type="button" className={cn('text-left text-[13px] text-ink hover:underline', linha && 'flex flex-wrap items-center gap-x-2 gap-y-1')}>
-          <span>
-            {moeda(item.custo)}
-            <span className={cn('text-[12px] text-ink-secondary', !linha && 'block')}>{linha && ' · '}{rotuloCusto(item)}</span>
-          </span>
-          {especial && (
-            <span className={cn('block w-fit rounded-lg bg-attention-bg px-2 py-0.5 text-[11px] font-semibold text-attention', !linha && 'mt-1 max-w-32')}>
-              <span className="whitespace-nowrap">Especial {moeda(especial.custo)}</span>
-              {especial.politicaNome && <span className={cn('truncate', !linha && 'block')} title={especial.politicaNome}>{linha && ' · '}{especial.politicaNome}</span>}
-            </span>
-          )}
+        <button type="button" className="block text-left text-[13px] text-ink hover:underline">
+          <CustoTexto item={item} especial={especialDisponivel(item, opcoes)} />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-1">
@@ -667,20 +671,21 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
     return {
       c,
       faixa,
-      custo: (linha = false) => editavel && onCusto ? <MenuCusto linha={linha} item={item} opcoes={opcoes.get(item.codprod) ?? []} onEscolher={o => onCusto(item.codprod, o)} /> : <>{moeda(item.custo)}<RowMeta>{rotuloCusto(item)}</RowMeta></>,
+      custo: editavel && onCusto
+        ? <MenuCusto item={item} opcoes={opcoes.get(item.codprod) ?? []} onEscolher={o => onCusto(item.codprod, o)} />
+        : <span className="text-[13px] text-ink"><CustoTexto item={item} especial={null} /></span>,
       qtd: editavel ? <CampoNumero label={`Quantidade de ${item.nome}`} casas={0} className="w-14" valor={item.qtd} onGravar={q => onQtd!(item.codprod, q)} /> : item.qtd,
       margem: editavel ? <CampoNumero label={`Margem de ${item.nome}`} className="w-20" valor={item.margem} onGravar={m => onMargem!(item.codprod, m)} /> : pct(item.margem),
       preco: editavel ? <CampoNumero label={`Preço de ${item.nome}`} className="w-20" valor={item.preco} onGravar={p => onPreco!(item.codprod, p)} /> : moeda(item.preco),
       conc: editavel ? <CampoNumero label={`Preço do concorrente de ${item.nome}`} valor={item.precoConcorrente} onGravar={p => onConcorrente!(item.codprod, p)} /> : item.precoConcorrente ? moeda(item.precoConcorrente) : <Dash />,
       cmvConc: c.cmvConcorrente === null ? <Dash /> : <Status tone={TOM_CMV[faixaCmvConcorrente(c.cmvConcorrente)]}>{pct(c.cmvConcorrente)}</Status>,
-      etiqueta: item.tipo === 'SEM_CUSTO' ? <Badge tone="attention">{ETIQUETA_SEM_CUSTO}</Badge> : null,
       remover: onRemover ? <IconButton label={`Remover ${item.nome}`} tone="danger" onClick={() => onRemover(item.codprod)}><Trash2 /></IconButton> : null,
     }
   }
 
   return (
     <>
-      <div className="hidden md:block [&_td]:px-2.5 [&_th]:px-2.5">
+      <div className="hidden md:block [&_td]:h-14 [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle [&_th]:px-2">
         <Table>
           <thead>
             <tr>
@@ -696,21 +701,22 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
               return (
                 <Tr key={item.codprod} className={cn(x.faixa === 'Baixa' && 'bg-destructive-bg hover:bg-destructive-bg')}>
                   <Td>
-                    <span className="flex items-start gap-2">
+                    <span className="flex items-center gap-2">
                       <Foto url={item.foto} nome={item.nome} />
-                      <span className="min-w-[160px]">
-                        <RowTitle>{item.nome}</RowTitle>
-                        <RowMeta><Code>{item.codprod}</Code></RowMeta>
-                        <RowMeta><span className="whitespace-nowrap">CMV {pct(x.c.cmv)} · Mark up {pct(x.c.markup)}</span></RowMeta>
-                        {x.etiqueta}
+                      <span className="min-w-0">
+                        <span className="block max-w-[260px] truncate" title={item.nome}><RowTitle>{item.nome}</RowTitle></span>
+                        <RowMeta><span className="whitespace-nowrap"><Code>{item.codprod}</Code> · CMV {pct(x.c.cmv)} · Mark up {pct(x.c.markup)}</span></RowMeta>
                       </span>
                     </span>
                   </Td>
-                  <Td>{x.custo()}</Td>
+                  <Td>{x.custo}</Td>
                   <Td numeric>{x.qtd}</Td>
                   <Td numeric>
-                    {x.margem}
-                    <span className="mt-1 block text-[12px]"><Status tone={TOM_FAIXA[x.faixa]}>{x.faixa}</Status></span>
+                    {/* Faixa como ponto ao lado da margem: a linha fica com a mesma altura. */}
+                    <span className="inline-flex items-center gap-2" title={x.faixa}>
+                      <Status tone={TOM_FAIXA[x.faixa]}><span className="sr-only">{x.faixa}</span></Status>
+                      {x.margem}
+                    </span>
                   </Td>
                   <Td numeric>{x.preco}</Td>
                   <Td numeric><span className="font-semibold whitespace-nowrap">{moeda(x.c.subtotal)}</span></Td>
@@ -732,14 +738,13 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
                 <span className="min-w-0 flex-1">
                   <RowTitle>{item.nome}</RowTitle>
                   <RowMeta><Code>{item.codprod}</Code></RowMeta>
-                  {x.etiqueta}
                 </span>
                 <span className="shrink-0 pt-0.5 text-[13px]"><Status tone={TOM_FAIXA[x.faixa]}>{x.faixa}</Status></span>
                 {x.remover}
               </div>
               <div className="flex items-baseline gap-2 text-[13px]">
                 <span className="text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">Custo</span>
-                {x.custo(true)}
+                <span>{x.custo}</span>
               </div>
               {/* Três campos lado a lado, largura toda e altura de toque. */}
               <dl className="grid grid-cols-3 gap-2 text-[13px] [&_input]:h-10 [&_input]:w-full">
