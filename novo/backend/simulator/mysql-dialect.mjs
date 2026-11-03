@@ -230,7 +230,12 @@ function traduzirComLiterais(sql) {
       });
       return `(SELECT ${campos.join(', ')} FROM json_each(${json}))`;
     })
-    .replace(/\bCONVERT\s*\(([\s\S]+?)\s+USING\s+utf8mb4\s*\)\s*COLLATE\s+utf8mb4_0900_ai_ci\b/gi, 'MITRA_SEM_ACENTO($1)');
+    .replace(/\bCONVERT\s*\(([\s\S]+?)\s+USING\s+utf8mb4\s*\)\s*COLLATE\s+utf8mb4_0900_ai_ci\b/gi, 'MITRA_SEM_ACENTO($1)')
+    // INSERT ... SELECT ... ON DUPLICATE KEY UPDATE A = VALUES(A) -> upsert do
+    // SQLite (spec 006, carga). O SELECT vai embrulhado com WHERE 1 porque o
+    // SQLite confunde o ON do upsert com o de um JOIN.
+    .replace(/^(\s*INSERT\s+INTO\s+\w+\s*\([^)]*\))\s*(SELECT[\s\S]+?)\s+ON\s+DUPLICATE\s+KEY\s+UPDATE\s+([\s\S]+)$/i,
+      (_, cabeca, select, sets) => `${cabeca} SELECT * FROM (${select}) WHERE 1 ON CONFLICT DO UPDATE SET ${sets.replace(/\bVALUES\s*\(\s*(\w+)\s*\)/gi, 'excluded.$1')}`);
   return restaurar(traduzido);
 }
 

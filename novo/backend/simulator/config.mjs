@@ -83,4 +83,7 @@ export const CHECK_INPUT = {
   pessoas: '[]',
   // spec 004
   status: '', prioridade: '', prazo: '', id: '0',
+  // spec 007
+  de: '2026-10-01', ate: '2026-10-31', deAnt: '2026-09-01', ateAnt: '2026-09-30', ramos: '', clientes: '', produtos: '', porDia: '1',
+  situacao: 'INATIVO', categoria: 'CLIENTE', metrica: 'FATURAMENTO', ano: '2026', mes: '10', coordenador: '', metas: '[]', ramosUf: '[]', ramosLimpar: '[]',
 };
