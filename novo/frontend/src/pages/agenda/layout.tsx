@@ -95,9 +95,9 @@ export function NomeLink({ children, onClick }: { children: React.ReactNode; onC
 }
 
 /** Sete colunas (seg–dom) da visão Semana no desktop. */
-export function GradeSemana({ children }: { children: React.ReactNode }) {
+export function GradeSemana({ colunas, children }: { colunas: number; children: React.ReactNode }) {
   // Altura fixa com rolagem interna; o cabeçalho de cada dia fica grudado no topo.
-  return <div className="grid h-[560px] grid-cols-7 divide-x divide-rule-row overflow-y-auto">{children}</div>
+  return <div className="grid h-[560px] divide-x divide-rule-row overflow-y-auto" style={{ gridTemplateColumns: `repeat(${colunas}, minmax(0, 1fr))` }}>{children}</div>
 }
 
 export function ColunaDia({ titulo, hoje, children }: { titulo: string; hoje: boolean; children: React.ReactNode }) {

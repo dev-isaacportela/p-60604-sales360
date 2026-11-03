@@ -1,8 +1,9 @@
 // Detalhe do cliente na visão Semanal (spec 006, RF-006, RN-011), aberto logo
 // abaixo da linha do cliente, sem janela: semanas do mês em lista que abre e
 // fecha, itens da semana contra a mesma semana do mês anterior (com as últimas
-// 8 semanas em minigráfico), pedidos e sazonalidade de 12 meses em mapa de
-// calor. Uma chamada (s360SemanalDetalhe) ao abrir.
+// 8 semanas em minigráfico), pedidos e sazonalidade de 12 meses (gráfico do
+// cliente por mês e uma linha por produto com as 12 barrinhas). Uma chamada
+// (s360SemanalDetalhe) ao abrir.
 
 import { useState } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
@@ -22,9 +23,7 @@ const TOM_MOVIMENTO: Record<string, 'alert' | 'attention' | 'live' | 'off'> = {
   'Deixou de comprar': 'alert', Queda: 'attention', 'Comprou a mais': 'live', 'Novo na semana': 'live', 'Estável': 'off',
 }
 const qtd = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 3 })
-/** Mapa de calor: tons de verde pela fração do maior mês do produto. */
-const CALOR = ['', 'bg-primary/10', 'bg-primary/25', 'bg-primary/45', 'bg-primary/70 font-semibold text-primary-foreground']
-const calor = (qt: number, max: number) => (qt <= 0 || max <= 0 ? 0 : Math.min(4, Math.ceil((qt / max) * 4)))
+const mesCurto = (x: { ano: number; mes: number }) => `${MESES[x.mes - 1].slice(0, 3).toLowerCase()}/${String(x.ano).slice(2)}`
 
 export function DetalheCliente({ cliente, input }: { cliente: LinhaMatriz; input: Record<string, string> }) {
   const detalhe = useBloco(() => acao('semanalDetalhe', { ...input, clienteId: String(cliente.CLIENTE_ID) }) as Promise<Detalhe>, [cliente.CLIENTE_ID, input])
@@ -141,35 +140,101 @@ function MiniSemanas({ semanas, pico }: { semanas: SemanaHist[]; pico: number })
   )
 }
 
+type MesSaz = Detalhe['sazonalidade'][number]['meses'][number]
+
+/** RN-011: 12 meses até o mês aberto (o último, em verde). */
 function Sazonalidade({ linhas }: { linhas: Detalhe['sazonalidade'] }) {
   if (!linhas.length) return <p className="text-[13px] text-ink-secondary">Sem compras nos últimos 12 meses.</p>
+  const meses = linhas[0].meses.map((m, k) => ({ ...m, valor: linhas.reduce((t, p) => t + (p.meses[k]?.valor ?? 0), 0) }))
+  const total = meses.reduce((t, m) => t + m.valor, 0)
+  const comCompra = meses.filter(m => m.valor > 0).length
+  const melhor = meses.reduce((a, b) => (b.valor > a.valor ? b : a))
+  const maxValor = Math.max(0, ...meses.map(m => m.valor))
+  const produtos = linhas
+    .map(p => {
+      const anteriores = p.meses.slice(0, -1)
+      const media = anteriores.reduce((t, m) => t + m.qt, 0) / Math.max(1, anteriores.length)
+      const atual = p.meses.at(-1)?.qt ?? 0
+      return { ...p, atual, media, vsMedia: atual - media, comCompra: p.meses.filter(m => m.qt > 0).length, total: p.meses.reduce((t, m) => t + m.valor, 0) }
+    })
+    .sort((a, b) => b.total - a.total)
+
   return (
-    <div className="overflow-hidden rounded-xl border border-rule-table bg-card">
-      <Table className="min-w-max">
-        <thead>
-          <tr>
-            <Th className="sticky left-0 z-10">Produto</Th>
-            {linhas[0].meses.map(x => <Th key={`${x.ano}-${x.mes}`} className="text-center">{MESES[x.mes - 1].slice(0, 3)}/{String(x.ano).slice(2)}</Th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {linhas.map(p => {
-            const max = Math.max(0, ...p.meses.map(x => x.qt))
+    <div className="flex flex-col gap-3">
+      <section className="rounded-xl border border-rule-table bg-card p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <p className="text-[13px] font-semibold text-ink">Compras do cliente nos últimos 12 meses</p>
+          <dl className="flex flex-wrap gap-x-6 gap-y-1 text-[12px] text-ink-secondary">
+            <div className="flex gap-1.5"><dt>Total</dt><dd className="font-semibold text-ink tabular-nums">{moeda(total)}</dd></div>
+            <div className="flex gap-1.5"><dt>Média/mês</dt><dd className="font-semibold text-ink tabular-nums">{moeda(total / meses.length)}</dd></div>
+            <div className="flex gap-1.5"><dt>Comprou em</dt><dd className="font-semibold text-ink tabular-nums">{comCompra} de {meses.length} meses</dd></div>
+            {melhor.valor > 0 ? <div className="flex gap-1.5"><dt>Melhor mês</dt><dd className="font-semibold text-ink">{mesCurto(melhor)}</dd></div> : null}
+          </dl>
+        </div>
+        <div role="img" aria-label={`Valor por mês: ${meses.map(m => `${mesCurto(m)} ${moeda(m.valor)}`).join('; ')}`} className="mt-4 grid grid-cols-12 items-end gap-1.5 sm:gap-2">
+          {meses.map((m, k) => {
+            const aberto = k === meses.length - 1
             return (
-              <Tr key={p.CODPROD} className="group">
-                <Td className="sticky left-0 z-10 max-w-64 truncate bg-card group-hover:bg-accent" title={p.PRODUTO}>
-                  <RowTitle>{p.PRODUTO}</RowTitle><RowMeta>Cód. {p.CODPROD}</RowMeta>
-                </Td>
-                {p.meses.map(x => (
-                  <Td key={`${x.ano}-${x.mes}`} className={cn('text-center tabular-nums', CALOR[calor(x.qt, max)], !x.qt && 'text-ink-muted')} title={`${qtd(x.qt)} un. · ${moeda(x.valor)}`}>
-                    {x.qt ? qtd(x.qt) : '—'}
-                  </Td>
-                ))}
-              </Tr>
+              <div key={`${m.ano}-${m.mes}`} className="flex flex-col items-center gap-1" title={`${mesCurto(m)}: ${moeda(m.valor)}`}>
+                <span className={cn('hidden text-[10px] tabular-nums sm:block', aberto ? 'font-semibold text-primary' : 'text-ink-muted')}>
+                  {m.valor > 0 ? compacto(m.valor) : ''}
+                </span>
+                <div className="flex h-28 w-full items-end">
+                  <div className={cn('w-full rounded-t-md', m.valor <= 0 ? 'h-0.5 bg-rule-row' : aberto ? 'bg-primary' : 'bg-ink-muted/40')}
+                    style={m.valor > 0 ? { height: `${Math.max(4, (m.valor / maxValor) * 100)}%` } : undefined} />
+                </div>
+                <span className={cn('text-[11px]', aberto ? 'font-semibold text-ink' : 'text-ink-secondary')}>{mesCurto(m)}</span>
+              </div>
             )
           })}
-        </tbody>
-      </Table>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-rule-table bg-card">
+        <Table className="min-w-max">
+          <thead>
+            <tr>
+              <Th>Produto</Th><Th>Quantidade nos 12 meses</Th><Th numeric>Comprou em</Th><Th numeric>Média/mês</Th>
+              <Th numeric>Mês aberto</Th><Th numeric>vs. média</Th><Th numeric>Total 12 meses</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {produtos.map(p => (
+              <Tr key={p.CODPROD}>
+                <Td className="max-w-72"><span className="block truncate" title={p.PRODUTO}><RowTitle>{p.PRODUTO}</RowTitle></span><RowMeta>Cód. {p.CODPROD}</RowMeta></Td>
+                <Td><Barrinhas meses={p.meses} /></Td>
+                <Td numeric className="text-ink-secondary tabular-nums">{p.comCompra}/{p.meses.length}</Td>
+                <Td numeric className="tabular-nums">{qtd(Math.round(p.media * 10) / 10)}</Td>
+                <Td numeric className="font-semibold text-ink tabular-nums">{qtd(p.atual)}</Td>
+                <Td numeric className={cn('font-semibold tabular-nums', Math.abs(p.vsMedia) < 0.05 ? 'text-ink-secondary' : p.vsMedia > 0 ? 'text-primary' : 'text-destructive')}>
+                  {Math.abs(p.vsMedia) < 0.05 ? '=' : `${p.vsMedia > 0 ? '+' : ''}${qtd(Math.round(p.vsMedia * 10) / 10)}`}
+                </Td>
+                <Td numeric className="font-semibold whitespace-nowrap text-ink tabular-nums">{moeda(p.total)}</Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+        <p className="border-t border-rule-row px-3 py-2.5 text-[12px] text-ink-secondary">
+          Média dos 11 meses anteriores ao mês aberto. Em verde, o mês aberto; passe o mouse nas barras para ver a quantidade e o valor de cada mês.
+        </p>
+      </section>
     </div>
   )
 }
+
+/** 12 barrinhas de quantidade do produto, a altura pelo maior mês dele. */
+function Barrinhas({ meses }: { meses: MesSaz[] }) {
+  const max = Math.max(0, ...meses.map(m => m.qt))
+  return (
+    <span role="img" aria-label={meses.map(m => `${mesCurto(m)} ${qtd(m.qt)}`).join(', ')} className="flex h-7 items-end gap-[3px]">
+      {meses.map((m, k) => (
+        <span key={`${m.ano}-${m.mes}`} title={`${mesCurto(m)}: ${qtd(m.qt)} un. · ${moeda(m.valor)}`}
+          className={cn('w-2 rounded-t-sm', m.qt <= 0 ? 'bg-rule-row' : k === meses.length - 1 ? 'bg-primary' : 'bg-ink-muted/50')}
+          style={{ height: m.qt > 0 && max > 0 ? `${Math.max(14, (m.qt / max) * 100)}%` : '2px' }} />
+      ))}
+    </span>
+  )
+}
+
+/** R$ curto para o rótulo das colunas: 1,2 mil / 3,4 mi. */
+const compacto = (v: number) => v.toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })

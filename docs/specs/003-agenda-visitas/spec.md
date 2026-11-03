@@ -122,7 +122,7 @@ de segunda a sexta aparece certo na meta semanal e no Google Agenda dele.
 
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
-| RF-001 | O sistema DEVE mostrar a agenda nas visões Dia, Semana (segunda a domingo) e Mês, com setas ‹ › e botão `Hoje` | `Hoje` leva à data atual de Brasília em qualquer visão; a visão inicial é a preferência `Modo padrão da Agenda` do usuário (Semana se não houver) | must |
+| RF-001 | O sistema DEVE mostrar a agenda nas visões Dia, Semana (segunda a sexta; sábado e domingo só aparecem quando têm algo marcado) e Mês, com setas ‹ › e botão `Hoje` | `Hoje` leva à data atual de Brasília em qualquer visão; a visão inicial é a preferência `Modo padrão da Agenda` do usuário (Semana se não houver) | must |
 | RF-002 | O sistema DEVE listar na agenda visitas a clientes, visitas de prospecção, compromissos internos e deslocamentos do escopo aberto (RNT-003), com cor por status | Legenda: Agendada amarelo, Em andamento azul, Concluída verde, Cancelada vermelho; itens de outra pessoa sem direito de operar mostram `Somente visualização` | must |
 | RF-003 | O sistema DEVE criar os quatro tipos por `+ Nova agenda` com os campos e tipos da RN-001 | C-001; campos obrigatórios conforme RN-002; mensagens literais da RN-002 | must |
 | RF-004 | O sistema DEVE buscar o cliente da visita na carteira do usuário (e dos titulares cobertos por férias ativas; para coordenador, também na da equipe) a partir de 2 letras, sem pré-selecionar nenhum | C-002; busca conforme RNT-014; até 50 resultados | must |

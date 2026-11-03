@@ -80,13 +80,15 @@ function ListaDia({ itens, ev, ehHoje }: { itens: Linha[]; ev: Eventos; ehHoje: 
 const doDia = (itens: Linha[], dia: string) => itens.filter(i => i.DATA === dia)
 
 function Semana({ itens, data, hoje, ev }: { itens: Linha[]; data: string; hoje: string; ev: Eventos }) {
+  // Sábado e domingo só aparecem quando têm algo marcado.
   const dias = Array.from({ length: 7 }, (_, n) => somarDias(semanaDe(data).segunda, n))
+    .filter((dia, n) => n < 5 || doDia(itens, dia).length > 0)
   const [aberto, setAberto] = useState(dias.includes(hoje) ? hoje : dias.includes(data) ? data : dias[0])
   const diaCelular = dias.includes(aberto) ? aberto : dias[0]
   return (
     <>
       <SoDesktop>
-        <GradeSemana>
+        <GradeSemana colunas={dias.length}>
           {dias.map(dia => (
             <ColunaDia key={dia} titulo={rotuloDia(dia)} hoje={dia === hoje}>
               {doDia(itens, dia).map(i => (
