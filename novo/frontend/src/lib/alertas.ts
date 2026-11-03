@@ -16,7 +16,9 @@ export const TIPOS = [
   { value: 'NAO_EXPLORADO', label: 'Não Explorado' },
   { value: 'PEDIDO_INCOMPLETO', label: 'Pedido Incompleto' },
 ];
-export const rotuloTipo = (tipo: string) => TIPOS.find(t => t.value === tipo)?.label ?? tipo;
+/** Tipo fora da lista (ex.: SEM_COMPRA) vira texto legível: "Sem compra". */
+export const rotuloTipo = (tipo: string) =>
+  TIPOS.find(t => t.value === tipo)?.label ?? String(tipo ?? '').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
 
 export const SITUACOES = [
   { value: 'NAO_LIDOS', label: 'Não lidos' },

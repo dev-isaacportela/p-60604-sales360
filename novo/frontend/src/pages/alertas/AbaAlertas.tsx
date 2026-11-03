@@ -15,9 +15,10 @@ import {
 } from '@/lib/alertas'
 import type { FiltrosAlertas } from '@/lib/alertas'
 import {
-  Actions, Alert, Button, Code, Dash, EmptyState, Field, FilterChip, Input, MoreFilters, Pagination, Panel, PanelBody, PanelHeader,
-  RowMeta, RowTitle, SearchInput, SelectMenu, Stack, Stat, Status, TextLink, Toolbar,
+  Alert, Button, Code, Dash, EmptyState, Field, FilterChip, Input, MoreFilters, Pagination, Panel, PanelBody, PanelHeader,
+  RowMeta, SearchInput, SelectMenu, Stack, Status, TextLink, Toolbar,
 } from '@/components/page'
+import { cn } from '@/lib/utils'
 import { gravar, useBloco } from '@/components/use-bloco'
 import { BlocoFalhou } from '@/components/Confirmacao'
 import { Cresce, MenuAcoes, SoCelular, SoDesktop } from '../clientes/layout'
@@ -28,6 +29,8 @@ import { Historico } from './Historico'
 type Linha = Record<string, any>
 
 const POR_PAGINA = 50
+/** Faixa à esquerda do alerta: só a prioridade alta ganha cor. */
+const BARRA_PRIORIDADE: Record<string, string> = { ALTA: 'bg-destructive', MEDIA: 'bg-ink-muted/60', BAIXA: 'bg-ink-muted/25' }
 const TODOS = { value: '', label: 'Todos' }
 
 export function AbaAlertas({ escopo }: { escopo: Record<string, string> }) {
@@ -94,6 +97,7 @@ export function AbaAlertas({ escopo }: { escopo: Record<string, string> }) {
   }
 
   const ops = oportunidades(painel.dados ?? [], todasOportunidades)
+  const maiorOp = Math.max(0, ...ops.map(o => o.potencial))
   const opcoesRamo = [TODOS, ...ramos(painel.dados ?? []).map(r => ({ value: r, label: r }))]
   const seletores = (
     <>
@@ -110,28 +114,45 @@ export function AbaAlertas({ escopo }: { escopo: Record<string, string> }) {
 
   return (
     <Stack>
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <p className="font-title text-[20px] font-bold text-ink">
-          {resumo ? <><Stat>{Number(resumo.PENDENTES).toLocaleString('pt-BR')}</Stat> alertas pendentes</> : <Dash />}
-        </p>
-        <p className="text-[13px] text-ink-secondary">{lista.dados ? `${moeda(potencial)} potencial no filtro` : ''}</p>
-      </div>
+      <section className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-rule-table bg-rule-row sm:grid-cols-3">
+        {[
+          ['Alertas pendentes', resumo ? Number(resumo.PENDENTES).toLocaleString('pt-BR') : null, 'não lidos no escopo'],
+          ['Potencial no filtro', lista.dados ? moeda(potencial) : null, 'soma do valor dos alertas listados'],
+          ['Alertas no filtro', lista.dados ? total.toLocaleString('pt-BR') : null, lista.dados ? `${grupos.length} ${grupos.length === 1 ? 'cliente' : 'clientes'} nesta página` : ''],
+        ].map(([rotulo, valor, nota]) => (
+          <div key={rotulo} className="flex min-w-0 flex-col gap-1 bg-card px-5 py-4">
+            <span className="text-[12px] text-ink-secondary">{rotulo}</span>
+            <span className="truncate font-title text-[24px] leading-tight font-bold text-ink tabular-nums">{valor ?? <Dash />}</span>
+            <span className="truncate text-[12px] text-ink-secondary">{nota}</span>
+          </div>
+        ))}
+      </section>
 
       {ops.length ? (
         <Panel>
           <PanelHeader title="Oportunidades e Vendas Perdidas" hint="Produtos com mais avisos de Produto Perdido e Não Explorado, por potencial.">
             <TextLink onClick={() => setTodasOportunidades(t => !t)}>{todasOportunidades ? 'Ver só as 3 maiores' : 'Ver todas'}</TextLink>
           </PanelHeader>
-          <ul>
-            {ops.map(o => (
-              <li key={o.produto} className="flex items-center gap-3 border-b border-rule-row px-4 py-2 last:border-b-0">
-                <div className="min-w-0 flex-1">
-                  <RowTitle><span className="block truncate">{o.produto}</span></RowTitle>
-                  <RowMeta>{o.n} {o.n === 1 ? 'aviso' : 'avisos'} · {moeda(o.potencial)} potencial</RowMeta>
-                </div>
-                <Button size="sm" onClick={() => aplicar({ ...mudarFiltro(filtros, 'produto', o.produto), situacao: 'NAO_LIDOS' })}>Ver detalhes</Button>
-              </li>
-            ))}
+          <ul className="grid grid-cols-1 gap-3 p-4 pt-0 sm:grid-cols-2 lg:grid-cols-3">
+            {ops.map(o => {
+              const ativo = filtros.produto === o.produto
+              return (
+                <li key={o.produto}>
+                  <button type="button" aria-pressed={ativo} onClick={() => aplicar({ ...mudarFiltro(filtros, 'produto', ativo ? '' : o.produto), situacao: 'NAO_LIDOS' })}
+                    className={cn('flex h-full w-full flex-col gap-2 rounded-xl border px-4 py-3 text-left transition-colors', ativo ? 'border-primary bg-accent' : 'border-rule-table hover:bg-accent/60')}>
+                    <span className="truncate text-[13px] font-semibold text-ink" title={o.produto}>{o.produto}</span>
+                    <span className="flex items-baseline justify-between gap-2">
+                      <span className="font-title text-[18px] font-bold text-ink tabular-nums">{moeda(o.potencial)}</span>
+                      <span className="text-[12px] text-ink-secondary">{o.n} {o.n === 1 ? 'aviso' : 'avisos'}</span>
+                    </span>
+                    <span className="block h-1.5 rounded-full bg-muted" aria-hidden>
+                      <span className="block h-1.5 rounded-full bg-primary" style={{ width: `${maiorOp > 0 ? (o.potencial / maiorOp) * 100 : 0}%` }} />
+                    </span>
+                    <span className="text-[12px] font-semibold text-primary">{ativo ? 'Filtrando a lista · clique para tirar' : 'Ver alertas deste produto'}</span>
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </Panel>
       ) : null}
@@ -178,12 +199,15 @@ export function AbaAlertas({ escopo }: { escopo: Record<string, string> }) {
               const aberto = abertos[g.id] ?? (g.aberto || !!filtros.clienteId)
               return (
                 <li key={g.id} className="border-b border-rule-row last:border-b-0">
-                  <div className="flex items-center gap-x-3 bg-muted/40 px-4 py-2">
+                  <div className="flex items-center gap-x-3 bg-secondary/60 px-4 py-2.5">
                     <div className="min-w-0 flex-1">
-                      <RowTitle><span className="block truncate">{g.nome}</span></RowTitle>
-                      <RowMeta><span className="block truncate"><Code prefix="#">{g.id}</Code> · {g.n} {g.n === 1 ? 'alerta' : 'alertas'} · {moeda(g.potencial)}<span className="hidden sm:inline"> potencial</span></span></RowMeta>
+                      <p className="truncate font-title text-[14px] font-bold text-ink">{g.nome}</p>
+                      <RowMeta><span className="block truncate"><Code prefix="#">{g.id}</Code> · {g.n} {g.n === 1 ? 'alerta' : 'alertas'}</span></RowMeta>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
+                    <span className={cn('hidden shrink-0 text-right text-[13px] tabular-nums sm:block', g.potencial > 0 ? 'font-semibold text-ink' : 'text-ink-muted')}>
+                      {g.potencial > 0 ? <>{moeda(g.potencial)}<span className="block text-[11px] font-normal text-ink-secondary">potencial</span></> : 'sem valor'}
+                    </span>
+                    <div className="flex shrink-0 items-center justify-end gap-2 sm:w-[19rem]">
                       {!aberto ? (
                         <Button size="sm" onClick={() => (g.n > g.alertas.length ? mudar('clienteId', String(g.id)) : setAbertos(a => ({ ...a, [g.id]: true })))}>
                           Ver alertas ({g.n})
@@ -233,29 +257,32 @@ function LinhaAlerta({ a, equipe, expandido, alternar, marcar, escopo }: {
     ...(podeMarcar ? [{ rotulo: 'Marcar como lido', icone: <Check aria-hidden />, onClick: marcar }] : []),
   ]
   return (
-    <li className="border-t border-rule-row px-4 py-2">
+    <li className={cn('border-t border-rule-row px-4 py-2.5', lido && 'opacity-70')}>
       <div className="flex items-center gap-x-3">
+        <span aria-hidden className={cn('w-1 self-stretch rounded-full', BARRA_PRIORIDADE[a.PRIORIDADE] ?? BARRA_PRIORIDADE.MEDIA)} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-ink">{a.TITULO}</p>
-          <p className="flex items-center gap-x-2 overflow-hidden text-[12px] whitespace-nowrap text-ink-secondary">
+          <p className="truncate text-[13px] font-semibold text-ink" title={a.TITULO}>{a.TITULO}</p>
+          <p className="flex items-center gap-x-2 overflow-hidden text-[12px] whitespace-nowrap text-ink-secondary" title={a.ESCOPO}>
             <Status tone={prioridade.tom}>{prioridade.rotulo}</Status>
             <span>{rotuloTipo(a.TIPO_ALERTA)}</span>
-            <span>{Number(a.VALOR) > 0 ? moeda(a.VALOR) : 'Sem valor'}</span>
-            <span className="hidden sm:inline">{a.ESCOPO}</span>
-            {equipe && a.VENDEDOR ? <span className="hidden sm:inline">{a.VENDEDOR}</span> : null}
+            <span aria-hidden>·</span>
             <span>{fmtData(a.DATA_GERACAO)}</span>
+            {equipe && a.VENDEDOR ? <><span aria-hidden className="hidden sm:inline">·</span><span className="hidden sm:inline">{a.VENDEDOR}</span></> : null}
             {lido ? <Status tone="off">Lido</Status> : null}
           </p>
         </div>
+        <span className={cn('shrink-0 text-right text-[13px] tabular-nums', Number(a.VALOR) > 0 ? 'font-semibold text-ink' : 'text-ink-muted')}>
+          {Number(a.VALOR) > 0 ? moeda(a.VALOR) : 'sem valor'}
+        </span>
         <SoDesktop>
-          <Actions>
+          <div className="flex w-[19rem] shrink-0 items-center justify-end gap-2">
             {historico ? (
               <Button size="sm" variant="ghost" aria-expanded={expandido} onClick={alternar}>
                 {expandido ? <ChevronUp aria-hidden /> : <ChevronDown aria-hidden />}{expandido ? 'Ocultar gráfico' : 'Ver padrão histórico'}
               </Button>
             ) : null}
             {podeMarcar ? <Button size="sm" onClick={marcar}>Marcar como lido</Button> : null}
-          </Actions>
+          </div>
         </SoDesktop>
         {acoes.length ? <SoCelular><MenuAcoes label={`Ações do alerta ${a.TITULO}`} acoes={acoes} /></SoCelular> : null}
       </div>

@@ -143,7 +143,7 @@ caminha de "Novo" até "Convertido" com histórico de visitas.
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
 | RF-001 | O sistema DEVE gerar os 6 tipos de alerta pelas regras RN-002 a RN-007 | Cada tipo tem um caso que gera e um que não gera (Testes) | must |
-| RF-002 | O sistema DEVE listar alertas agrupados por cliente, com filtros de busca, ramo, tipo, valor mínimo e situação aplicados sobre todos os alertas do escopo, paginados e com total | C-006 | must |
+| RF-002 | O sistema DEVE listar alertas agrupados por cliente, com filtros de busca, ramo, tipo, valor mínimo e situação aplicados sobre todos os alertas do escopo, paginados e com total. No topo, faixa com pendentes, potencial no filtro e alertas no filtro; Oportunidades em cartões que filtram a lista pelo produto; cada alerta com faixa de prioridade (só Alta em vermelho), tipo, data e valor alinhado à direita ("sem valor" quando não há); tipo fora da lista aparece por extenso (ex.: "Sem compra") | C-006 | must |
 | RF-003 | O sistema DEVE ocultar alertas lidos por padrão | C-001 | must |
 | RF-004 | O sistema DEVE permitir marcar como lido um alerta e todos os do recorte aberto, só para o dono ou substituto ativo, informando quantos mudaram | C-004, C-005 | must |
 | RF-005 | O sistema DEVE mostrar no menu o número de alertas não lidos que o usuário pode marcar | C-008 | must |
