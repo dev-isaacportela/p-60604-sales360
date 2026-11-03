@@ -278,3 +278,14 @@ export const LEGENDA = [
     texto: 'Abre o Mix Builder para montar uma proposta para o cliente. Só o mix enviado ao histórico aparece no Histórico do Cliente.',
   },
 ];
+
+/* ── Indicadores ── */
+
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+/** RN-010: a receita do mês vai do dia 1 até hoje — "de 1º a 3 de novembro"; no dia 1, "de 1º de novembro". */
+export function periodoDoMes(hoje: string): string {
+  const [, m, d] = String(hoje).split('-').map(Number);
+  if (!m || !d) return 'do mês';
+  return d === 1 ? `de 1º de ${MESES[m - 1]}` : `de 1º a ${d} de ${MESES[m - 1]}`;
+}

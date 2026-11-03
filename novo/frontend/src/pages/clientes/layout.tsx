@@ -29,25 +29,84 @@ export function GradeResumo({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:[&>*:first-child]:col-span-2">{children}</div>
 }
 
-/** Faixa de números separados por filete (2 colunas no celular, 5 no desktop). */
-export function FaixaIndicadores({ itens }: { itens: { rotulo: string; valor: React.ReactNode }[] }) {
+const TOM_MEDIDOR = { live: 'bg-primary', attention: 'bg-attention', alert: 'bg-destructive' } as const
+
+export interface Indicador {
+  rotulo: string
+  valor: React.ReactNode
+  /** Contexto do número, ao pé da ficha. */
+  nota?: React.ReactNode
+  /** Barra de proporção (0..1). */
+  medidor?: { fracao: number; tom: keyof typeof TOM_MEDIDOR; rotulo: string }
+  /** Nota 0–100 sobre as faixas Frio / Morno / Quente (RN-008). */
+  termometro?: number | null
+  /** Ficha clicável (liga um filtro). */
+  acao?: { rotulo: string; ativo: boolean; onClick: () => void }
+}
+
+function Medidor({ fracao, tom, rotulo }: NonNullable<Indicador['medidor']>) {
+  const pct = Math.max(0, Math.min(1, fracao || 0)) * 100
+  return (
+    <span className="block h-1.5 rounded-full bg-muted" role="img" aria-label={rotulo}>
+      <span className={cn('block h-1.5 rounded-full', TOM_MEDIDOR[tom])} style={{ width: `${pct}%` }} />
+    </span>
+  )
+}
+
+function Termometro({ nota }: { nota: number }) {
+  const pos = Math.max(0, Math.min(100, nota))
+  return (
+    <span className="relative block pt-1" role="img" aria-label={`Nota ${nota} de 100: Frio abaixo de 40, Morno de 40 a 69, Quente a partir de 70`}>
+      <span className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
+        <span className="w-[40%] bg-destructive/35" />
+        <span className="w-[30%] bg-attention/35" />
+        <span className="w-[30%] bg-primary/35" />
+      </span>
+      <span className="absolute top-0 h-3.5 w-1 -translate-x-1/2 rounded-full bg-ink" style={{ left: `${pos}%` }} />
+    </span>
+  )
+}
+
+/**
+ * Faixa de indicadores separados por filete (2 colunas no celular, 5 no
+ * desktop). Cada ficha preenche a altura com número em cima e contexto
+ * (medidor e nota) embaixo.
+ */
+export function FaixaIndicadores({ itens }: { itens: Indicador[] }) {
   return (
     <section className="grid grid-cols-2 rounded-2xl border border-rule-table bg-card sm:grid-cols-5">
-      {itens.map((i, n) => (
-        <div
-          key={i.rotulo}
-          className={cn(
-            'min-w-0 px-4 py-3',
-            n > 0 && 'sm:border-l sm:border-rule-row',
-            n % 2 === 1 && 'border-l border-rule-row',
-            n >= 2 && 'border-t border-rule-row sm:border-t-0',
-            n === itens.length - 1 && itens.length % 2 === 1 && 'col-span-2 sm:col-span-1',
-          )}
-        >
-          <p className="text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">{i.rotulo}</p>
-          <p className="mt-1 truncate font-title text-[18px] font-bold text-ink">{i.valor}</p>
-        </div>
-      ))}
+      {itens.map((i, n) => {
+        const classe = cn(
+          'flex min-w-0 flex-col justify-between gap-4 px-4 py-4 text-left',
+          n > 0 && 'sm:border-l sm:border-rule-row',
+          n % 2 === 1 && 'border-l border-rule-row',
+          n >= 2 && 'border-t border-rule-row sm:border-t-0',
+          n === itens.length - 1 && itens.length % 2 === 1 && 'col-span-2 sm:col-span-1',
+          i.acao && 'transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none',
+          i.acao?.ativo && 'bg-accent',
+          n === 0 && 'rounded-l-2xl',
+        )
+        const conteudo = (
+          <>
+            <span className="block">
+              <span className="block text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">{i.rotulo}</span>
+              <span className="mt-1.5 block truncate font-title text-[26px] leading-tight font-bold text-ink">{i.valor}</span>
+            </span>
+            <span className="flex flex-col gap-2">
+              {i.medidor ? <Medidor {...i.medidor} /> : null}
+              {i.termometro != null ? <Termometro nota={i.termometro} /> : null}
+              {i.nota ? <span className="block text-[12px] text-ink-secondary">{i.nota}</span> : null}
+            </span>
+          </>
+        )
+        return i.acao ? (
+          <button key={i.rotulo} type="button" aria-pressed={i.acao.ativo} title={i.acao.rotulo} onClick={i.acao.onClick} className={classe}>
+            {conteudo}
+          </button>
+        ) : (
+          <div key={i.rotulo} className={classe}>{conteudo}</div>
+        )
+      })}
     </section>
   )
 }

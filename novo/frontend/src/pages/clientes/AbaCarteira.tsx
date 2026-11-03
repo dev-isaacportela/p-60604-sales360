@@ -9,7 +9,7 @@ import { acao, linhas, linhasAfetadas } from '@/lib/mitra-api'
 import { agoraBrasilia, moeda } from '@/lib/formato'
 import {
   FILTROS_PADRAO, LEGENDA, MSG_REMOVIDO, OPCOES_STATUS, ORDENS, alertaDias, aoMudarFiltro, rotuloStatus,
-  rotuloTemperatura, tomStatus, tomTemperatura, ultimaPagina,
+  periodoDoMes, rotuloTemperatura, tomStatus, tomTemperatura, ultimaPagina,
 } from '@/lib/carteira'
 import {
   Actions, Alert, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, EmptyState, Field,
@@ -209,11 +209,31 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
     <Stack>
       <GradeResumo>
         <FaixaIndicadores itens={[
-          { rotulo: 'Clientes', valor: ind ? ind.total : <Dash /> },
-          { rotulo: 'Ativos', valor: ind ? ind.ativos : <Dash /> },
-          { rotulo: 'Receita do mês', valor: ind ? moeda(ind.receita) : <Dash /> },
-          { rotulo: 'Ticket médio', valor: ind?.ticket != null ? moeda(ind.ticket) : <Dash /> },
-          { rotulo: 'Temperatura média', valor: ind?.score != null ? `${ind.classe} (${ind.score})` : <Dash /> },
+          {
+            rotulo: 'Clientes',
+            valor: ind ? ind.total : <Dash />,
+            medidor: ind?.total ? { fracao: ind.pendentes / ind.total, tom: 'attention', rotulo: `${ind.pendentes} de ${ind.total} com visita pendente` } : undefined,
+            nota: ind ? `${ind.pendentes} com visita pendente` : undefined,
+            acao: ind?.pendentes ? { rotulo: 'Mostrar só os clientes com visita pendente', ativo: !!filtros.pendentes, onClick: () => mudar('pendentes', filtros.pendentes ? 0 : 1) } : undefined,
+          },
+          {
+            rotulo: 'Ativos',
+            valor: ind ? ind.ativos : <Dash />,
+            medidor: ind?.total ? { fracao: ind.ativos / ind.total, tom: 'live', rotulo: `${ind.ativos} de ${ind.total} ativos` } : undefined,
+            nota: ind?.total ? `${Math.round((ind.ativos / ind.total) * 100)}% da carteira` : undefined,
+          },
+          { rotulo: 'Receita do mês', valor: ind ? moeda(ind.receita) : <Dash />, nota: `Faturamento líquido ${periodoDoMes(escopo.hoje)}` },
+          {
+            rotulo: 'Ticket médio',
+            valor: ind?.ticket != null ? moeda(ind.ticket) : <Dash />,
+            nota: ind?.ativos ? `Receita do mês ÷ ${ind.ativos} clientes ativos` : 'Sem clientes ativos no filtro',
+          },
+          {
+            rotulo: 'Temperatura',
+            valor: ind?.score != null ? `${ind.classe} · ${ind.score}` : <Dash />,
+            termometro: ind?.score ?? null,
+            nota: 'Média da carteira, de 0 a 100',
+          },
         ]} />
         <SoDesktop>
           <Panel>

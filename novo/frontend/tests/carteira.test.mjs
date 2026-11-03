@@ -95,3 +95,10 @@ test('RN-007: sem dados, o detalhe diz o que falta; nota 100 não pede correçã
   assert.match(vis.motivo, /Nenhuma visita concluída/);
   assert.equal(recomendacaoDetalhada({ total: 100, recencia: 30, frequencia: 25, tendencia: 25, visitas: 20 }).fator, null);
 });
+
+test('RN-010: período da receita do mês vai do dia 1 até hoje', async () => {
+  const { periodoDoMes } = await import('../src/lib/carteira.ts');
+  assert.equal(periodoDoMes('2026-11-03'), 'de 1º a 3 de novembro');
+  assert.equal(periodoDoMes('2026-10-01'), 'de 1º de outubro');
+  assert.equal(periodoDoMes(''), 'do mês');
+});
