@@ -133,7 +133,7 @@ export function AbaAlertas({ escopo }: { escopo: Record<string, string> }) {
           <PanelHeader title="Oportunidades e Vendas Perdidas" hint="Produtos com mais avisos de Produto Perdido e Não Explorado, por potencial.">
             <TextLink onClick={() => setTodasOportunidades(t => !t)}>{todasOportunidades ? 'Ver só as 3 maiores' : 'Ver todas'}</TextLink>
           </PanelHeader>
-          <ul className="grid grid-cols-1 gap-3 p-4 pt-0 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
             {ops.map(o => {
               const ativo = filtros.produto === o.produto
               return (

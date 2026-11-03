@@ -176,7 +176,7 @@ export function sugestoes(linhas: Linha[]): string[] {
 export const TENDENCIAS = [
   { value: '', label: 'Todos' },
   { value: 'ALTA', label: 'Alta' },
-  { value: 'MEDIA', label: 'Media' },
+  { value: 'MEDIA', label: 'Média' },
   { value: 'BAIXA', label: 'Baixa' },
   { value: 'INATIVO', label: 'Cliente inativo' },
 ];
@@ -186,7 +186,7 @@ export const tomTendencia = (t: string): 'live' | 'attention' | 'off' | 'alert' 
 
 export function subtituloProspeccao(r: { semana?: number; mes?: string; altas?: number } | null): string {
   if (!r?.semana) return '';
-  return `Semana ${r.semana} de ${r.mes} — ${r.altas ?? 0} clientes com alta tendência de recompra`;
+  return `Semana ${r.semana} de ${r.mes} — ${r.altas ?? 0} ${r.altas === 1 ? 'cliente' : 'clientes'} com alta tendência de recompra`;
 }
 
 export const VAZIO_PROSPECCAO = 'Nenhum cliente da sua carteira com histórico de compras encontrado.';

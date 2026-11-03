@@ -155,7 +155,7 @@ caminha de "Novo" até "Convertido" com histórico de visitas.
 | RF-011 | O sistema DEVE gerar alertas em fila diária, das 6h às 20h, a cada 10 minutos | C-010 | must |
 | RF-012 | O sistema DEVE enviar o resumo semanal de avisos aos vendedores às quintas, 3h | C-011 | must |
 | RF-013 | O sistema DEVE enviar o relatório semanal aos coordenadores às segundas, 8h | C-012 | must |
-| RF-014 | O sistema DEVE listar a prospecção da semana da carteira com tendência, filtros e `Agendar visita` (abre a Agenda com o cliente) | C-013, C-014 | must |
+| RF-014 | O sistema DEVE listar a prospecção da semana da carteira com tendência, filtros e `Agendar visita` (abre a Agenda com o cliente); no topo, faixa com a semana, os clientes de alta tendência e o total da lista; tendência em botões (Todos, Alta, Média, Baixa, Cliente inativo); colunas Curva, Temperatura, dias sem comprar (em vermelho quando passou do ciclo, com o ciclo embaixo) e última compra | C-013, C-014 | must |
 | RF-015 | O sistema DEVE cadastrar prospect com contato principal | C-015 | must |
 | RF-016 | O sistema DEVE manter a lista de prospects, na aba "Prospects" da tela Clientes (spec 002), com etapa, contatos, visitas e ações `Mudar etapa`, `Adicionar contato` e `Converter` | C-016, C-017; a lista não aparece em Alertas e Prospecção | should |
 | RF-017 | O sistema DEVE gravar no prospect o resultado da visita: resumo, objeções, próximo passo e data do próximo passo | C-016 | must |
