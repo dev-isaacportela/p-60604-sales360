@@ -212,7 +212,7 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
           {
             rotulo: 'Clientes',
             valor: ind ? ind.total : <Dash />,
-            medidor: ind?.total ? { fracao: ind.pendentes / ind.total, tom: 'attention', rotulo: `${ind.pendentes} de ${ind.total} com visita pendente` } : undefined,
+            medidor: ind?.total ? { fracao: ind.pendentes / ind.total, tom: 'neutro', rotulo: `${ind.pendentes} de ${ind.total} com visita pendente` } : undefined,
             nota: ind ? `${ind.pendentes} com visita pendente` : undefined,
             acao: ind?.pendentes ? { rotulo: 'Mostrar só os clientes com visita pendente', ativo: !!filtros.pendentes, onClick: () => mudar('pendentes', filtros.pendentes ? 0 : 1) } : undefined,
           },

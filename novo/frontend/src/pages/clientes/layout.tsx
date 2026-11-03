@@ -24,12 +24,12 @@ export function Cresce({ children }: { children: React.ReactNode }) {
   return <div className="min-w-0 flex-1 basis-64">{children}</div>
 }
 
-/** Indicadores e gráfico lado a lado no desktop; empilhados no celular. */
+/** Indicadores em faixa larga e o gráfico embaixo: lado a lado, a faixa esticava até a altura do gráfico e cortava os valores. */
 export function GradeResumo({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:[&>*:first-child]:col-span-2">{children}</div>
+  return <div className="flex flex-col gap-4">{children}</div>
 }
 
-const TOM_MEDIDOR = { live: 'bg-primary', attention: 'bg-attention', alert: 'bg-destructive' } as const
+const TOM_MEDIDOR = { live: 'bg-primary', neutro: 'bg-ink-secondary/45', attention: 'bg-attention', alert: 'bg-destructive' } as const
 
 export interface Indicador {
   rotulo: string
@@ -77,7 +77,7 @@ export function FaixaIndicadores({ itens }: { itens: Indicador[] }) {
     <section className="grid grid-cols-2 rounded-2xl border border-rule-table bg-card sm:grid-cols-5">
       {itens.map((i, n) => {
         const classe = cn(
-          'flex min-w-0 flex-col justify-between gap-4 px-4 py-4 text-left',
+          '@container flex min-w-0 flex-col justify-between gap-3 px-4 py-4 text-left',
           n > 0 && 'sm:border-l sm:border-rule-row',
           n % 2 === 1 && 'border-l border-rule-row',
           n >= 2 && 'border-t border-rule-row sm:border-t-0',
@@ -90,7 +90,7 @@ export function FaixaIndicadores({ itens }: { itens: Indicador[] }) {
           <>
             <span className="block">
               <span className="block text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">{i.rotulo}</span>
-              <span className="mt-1.5 block truncate font-title text-[26px] leading-tight font-bold text-ink">{i.valor}</span>
+              <span className="mt-1.5 block truncate font-title text-[clamp(18px,14cqi,26px)] leading-tight tabular-nums font-bold text-ink">{i.valor}</span>
             </span>
             <span className="flex flex-col gap-2">
               {i.medidor ? <Medidor {...i.medidor} /> : null}
@@ -119,15 +119,16 @@ export function BarrasRamo({ ramos, total, ativo, escolher }: {
   escolher: (ramo: string) => void
 }) {
   return (
-    <ul className="flex flex-col gap-1">
+    // Duas colunas no desktop (em ordem de cima para baixo) para o gráfico largo não empurrar a tabela.
+    <ul className="lg:columns-2 lg:gap-x-8">
       {ramos.map(r => (
-        <li key={r.ramo}>
+        <li key={r.ramo} className="mb-1 break-inside-avoid">
           <button
             type="button"
             aria-pressed={ativo === r.ramo}
             onClick={() => escolher(ativo === r.ramo ? '' : r.ramo)}
             className={cn(
-              'grid w-full grid-cols-[7rem_1fr_2.5rem] items-center gap-3 rounded-lg px-2 py-1 text-left text-[12px] transition-colors hover:bg-accent',
+              'grid w-full grid-cols-[9rem_1fr_2.5rem] items-center gap-3 rounded-lg px-2 py-1 text-left text-[12px] transition-colors hover:bg-accent',
               'focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none',
               ativo === r.ramo && 'bg-accent',
             )}
