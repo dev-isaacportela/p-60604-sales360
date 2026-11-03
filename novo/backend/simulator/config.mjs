@@ -75,4 +75,5 @@ export const MAP_IDS = 'SERVER_FUNCTIONS';
 export const CHECK_INPUT = {
   hoje: '2026-10-30', agora: '2026-10-30T10:00:00',
   nome: 'Ana Souza', modoAgenda: 'SEMANA', exibicaoAtividades: 'LISTA', paginaInicial: '/',
+  vendedorId: 0, busca: '', filtro: '', papel: '', limite: 50, offset: 0,
 };

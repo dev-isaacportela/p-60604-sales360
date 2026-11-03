@@ -34,7 +34,7 @@ const TODOS: Perfil[] = ['TODOS'];
 const COORD: Perfil[] = ['COORDENADOR_ATIVO'];
 const DIRETORIA: Perfil[] = ['DIRETORIA', 'ADMIN'];
 const COORD_DIRETORIA: Perfil[] = ['COORDENADOR_ATIVO', 'DIRETORIA', 'ADMIN'];
-const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
+const GESTAO_DIRETORIA: Perfil[] = ['DIRETORIA', 'GESTOR', 'ADMIN'];
 
 /**
  * Todas as telas do sistema novo. Telas canceladas não existem aqui: Ajuda, Suporte,
@@ -54,13 +54,10 @@ export const ROTAS: Rota[] = [
   { caminho: '/direcionamento-semanal', titulo: 'Direcionamento Semanal', perfis: COORD_DIRETORIA },
   { caminho: '/gestao-carteira', titulo: 'Gestão de Carteira', perfis: COORD },
   { caminho: '/gestao-titulares', titulo: 'Titulares de Clientes', perfis: COORD_DIRETORIA },
-  { caminho: '/ferias-vendedor', titulo: 'Férias de Vendedores', perfis: COORD },
-  { caminho: '/gestao-cargos-usuarios', titulo: 'Papéis de Usuários', perfis: DIRETORIA },
+  { caminho: '/ferias-vendedor', titulo: 'Férias de Vendedores', perfis: COORD_DIRETORIA },
   { caminho: '/gestao-coordenadores', titulo: 'Gestão Coordenadores', perfis: DIRETORIA },
   { caminho: '/gestao-acesso-executivas', titulo: 'Executivas de Venda', perfis: COORD_DIRETORIA },
-  { caminho: '/governanca-rca', titulo: 'Governança RCA', perfis: GESTAO },
-  { caminho: '/gestao-bus-vendedores', titulo: 'BUs e Vendedores', perfis: GESTAO },
-  { caminho: '/configuracao-escopo-usuarios', titulo: 'Escopo Usuários', perfis: GESTAO },
+  { caminho: '/governanca-rca', titulo: 'Usuários', perfis: GESTAO_DIRETORIA },
   { caminho: '/configuracoes', titulo: 'Configurações', perfis: TODOS },
 ];
 
@@ -120,11 +117,12 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
   const filtrar = (caminhos: Array<string | ItemMenu>) =>
     caminhos.map(c => (typeof c === 'string' ? item(c) : c)).filter(i => pode(i.caminho));
 
-  // Seção Coordenador é de quem tem cadastro ativo (RN-005/RN-006); Titulares também abre para Diretoria/TI.
+  // Seção Coordenador é de quem tem cadastro ativo (RN-005/RN-006); Titulares e
+  // Férias (RN-001 da 010) também abrem para Diretoria/TI, e aí vão na seção Diretoria.
   const coordenador = sessao.coordenadorAtivo
     ? filtrar(['/gestao-carteira', '/gestao-titulares', '/ferias-vendedor'])
     : [];
-  const titularesNoCoordenador = coordenador.some(i => i.caminho === '/gestao-titulares');
+  const noCoordenador = (caminho: string) => coordenador.some(i => i.caminho === caminho);
 
   const secoes: SecaoMenu[] = [
     {
@@ -140,15 +138,15 @@ export function montarMenu(sessao: SessaoAcesso): SecaoMenu[] {
       id: 'diretoria',
       titulo: 'Diretoria',
       itens: filtrar([
-        '/gestao-cargos-usuarios', '/gestao-coordenadores',
-        ...(titularesNoCoordenador ? [] : ['/gestao-titulares']),
+        '/gestao-coordenadores',
+        ...['/gestao-titulares', '/ferias-vendedor'].filter(c => !noCoordenador(c)),
       ]),
     },
     {
       id: 'gestao',
       titulo: 'Gestão',
       itens: filtrar([
-        '/gestao-acesso-executivas', '/governanca-rca', '/gestao-bus-vendedores', '/configuracao-escopo-usuarios',
+        '/gestao-acesso-executivas', '/governanca-rca',
       ]),
     },
     { id: 'final', titulo: '', itens: filtrar(['/configuracoes']) },

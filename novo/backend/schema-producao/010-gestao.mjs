@@ -1,0 +1,40 @@
+// Tabelas de PRODUCAO que a spec 010 le ou grava — so para o simulador.
+// Contrato: docs/specs/000-visao-geral/modelo-de-dados.md. Nao e publicado.
+// Uma tabela mora num arquivo so de schema-producao/: se outra spec precisar
+// destas, usa daqui. FKs ficam de fora (o SQLite do simulador nao as aplica).
+
+export const TABELAS = [
+  `CREATE TABLE IF NOT EXISTS VENDEDOR_RCA_AUDITORIA (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    USER_ID INT NOT NULL,
+    COD_RCA_ANTERIOR INT NULL,
+    COD_RCA_NOVO INT NULL,
+    COD_SUPERVISOR_ANTERIOR INT NULL,
+    COD_SUPERVISOR_NOVO INT NULL,
+    ALTERADO_POR INT NOT NULL,
+    ALTERADO_EM VARCHAR(19) NULL,
+    OBSERVACAO VARCHAR(300) NULL
+  )`,
+
+  // Espelho dos RCAs do ERP; COD_SUPERVISOR e o supervisor sugerido.
+  `CREATE TABLE IF NOT EXISTS RCA_TOTVS (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    COD_RCA INT NOT NULL,
+    RCA_NOME VARCHAR(200) NULL,
+    SUPERVISOR_NOME VARCHAR(200) NULL,
+    COD_SUPERVISOR INT NULL,
+    ATIVO BOOLEAN DEFAULT TRUE,
+    ATUALIZADO_EM VARCHAR(19) NULL,
+    UNIQUE KEY UX_RCA_TOTVS_COD (COD_RCA)
+  )`,
+
+  // BUs (filial + departamento) do coordenador; CODFILIAL e CODEPTO sao INT aqui.
+  `CREATE TABLE IF NOT EXISTS COORDENADORES_BU (
+    AUTO_ID INT AUTO_INCREMENT PRIMARY KEY,
+    COD_SUPERVISOR INT NOT NULL,
+    CODFILIAL INT NOT NULL,
+    CODEPTO INT NOT NULL,
+    UNIQUE KEY UX_COORDENADORES_BU_ESCOPO (COD_SUPERVISOR, CODFILIAL, CODEPTO),
+    INDEX IX_COORDENADORES_BU_BU (CODFILIAL, CODEPTO)
+  )`,
+];

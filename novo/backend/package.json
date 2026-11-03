@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "publish:001": "node add-001-acesso.mjs",
+    "publish:010": "node add-010-gestao.mjs",
     "publish:perfil": "node add-000-perfil-acesso.mjs",
     "sync:function-map": "node sync-server-function-map.mjs",
     "sim": "node simulator/server.mjs",
