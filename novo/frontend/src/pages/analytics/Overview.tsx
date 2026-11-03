@@ -7,7 +7,7 @@ import type * as React from 'react'
 import { linhas } from '@/lib/mitra-api'
 import { fmtData, moeda } from '@/lib/formato'
 import { cardsResumo, ehUtil, fmtPct, metaBatidaEm, moedaCurta, pontosEvolucao, porDia, projecao, visitas } from '@/lib/analytics'
-import { Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
+import { Pagination, Panel, PanelBody, PanelHeader, RowTitle, Stack, Table, Td, Th, Tr } from '@/components/page'
 import { useBloco } from '@/components/use-bloco'
 import { cn } from '@/lib/utils'
 import { Evolucao, Progresso, type Barra } from './graficos'
@@ -74,10 +74,10 @@ export function Overview({ consulta, params, hoje, blocos, filtrarPor }: {
         <Ranking titulo="Produtos por quantidade" coluna="Qtd" bloco={produtos} itens={barrasDe(produtos.dados, 'QTD', 'QT', 8)} formato={x => `${qtd(x)} un.`} escolher={escolher} />
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[3fr_2fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
         <Devolucoes params={params} />
         <Panel>
-          <PanelHeader title="Tipos de visita" hint={`${v.total} visita(s) concluída(s) · média de ${v.media.toLocaleString('pt-BR')} por semana`} />
+          <PanelHeader title="Tipos de visita" hint={`${v.total} ${v.total === 1 ? 'visita concluída' : 'visitas concluídas'} · média de ${v.media.toLocaleString('pt-BR')} por semana`} />
           <PanelBody>
             <EstadoBloco erro={vis.erro} carregando={!vis.dados && !vis.erro} nome="as visitas">
               {v.total > 0 ? (
@@ -170,12 +170,12 @@ function Devolucoes({ params }: { params: Record<string, string> }) {
     ['Acima de 30 dias', String(n(total?.ACIMA_30))],
   ]
   return (
-    <Panel>
-      <PanelHeader title="Devoluções do período" />
+    <Panel className="flex flex-col">
+      <PanelHeader title="Devoluções do período" hint="Da maior para a menor." />
       <EstadoBloco erro={bloco.erro} carregando={!bloco.dados && !bloco.erro} nome="as devoluções">
-        <dl className="mx-4 mt-1 mb-2 grid grid-cols-2 gap-3 rounded-xl bg-secondary px-4 py-3 sm:grid-cols-4">
-          {numeros.map(([rotulo, v]) => (
-            <div key={rotulo}>
+        <dl className="grid grid-cols-2 border-b border-rule-row sm:grid-cols-4">
+          {numeros.map(([rotulo, v], i) => (
+            <div key={rotulo} className={cn('px-4 py-3', i > 0 && 'sm:border-l sm:border-rule-row', i % 2 === 1 && 'border-l border-rule-row', i >= 2 && 'border-t border-rule-row sm:border-t-0')}>
               <dt className="text-[12px] text-ink-secondary">{rotulo}</dt>
               <dd className="font-title text-[17px] font-bold text-ink tabular-nums">{v}</dd>
             </div>
@@ -184,22 +184,23 @@ function Devolucoes({ params }: { params: Record<string, string> }) {
         {!lista.length ? <p className="px-4 py-6 text-[13px] text-ink-secondary">Nenhuma devolução no período.</p> : (
           <>
             <Table>
-              <thead><tr><Th>Cliente · produto</Th><Th>Pedido</Th><Th>Devolução</Th><Th numeric>Dias</Th><Th numeric>Valor</Th></tr></thead>
+              <thead><tr><Th>Cliente</Th><Th>Produto</Th><Th>Pedido</Th><Th>Devolução</Th><Th numeric>Dias</Th><Th numeric>Valor</Th></tr></thead>
               <tbody>
                 {lista.map(r => (
                   <Tr key={`${r.ORDEM}`}>
-                    <Td>
-                      <RowTitle>{String(r.CLIENTE ?? r.CODCLI)}</RowTitle>
-                      <RowMeta>{nomeProduto(r.PRODUTO, r.CODPROD)} · {qtd(n(r.QT))} un.</RowMeta>
+                    <Td className="max-w-56 truncate" title={String(r.CLIENTE ?? r.CODCLI)}><RowTitle>{String(r.CLIENTE ?? r.CODCLI)}</RowTitle></Td>
+                    <Td className="max-w-48 truncate text-ink-secondary" title={nomeProduto(r.PRODUTO, r.CODPROD)}>
+                      {nomeProduto(r.PRODUTO, r.CODPROD)}{n(r.QT) > 0 ? ` · ${qtd(n(r.QT))} un.` : ''}
                     </Td>
-                    <Td>{r.NUMPED ? String(r.NUMPED) : '—'}</Td>
-                    <Td className="whitespace-nowrap">{fmtData(String(r.DIA ?? ''))}</Td>
-                    <Td numeric className={n(r.DIAS) > 30 ? 'font-semibold text-ink' : 'text-ink-secondary'}>{r.DIAS === null || r.DIAS === undefined ? '—' : String(r.DIAS)}</Td>
-                    <Td numeric className="font-semibold whitespace-nowrap text-ink">{moeda(n(r.VALOR))}</Td>
+                    <Td className="tabular-nums">{r.NUMPED ? String(r.NUMPED) : '—'}</Td>
+                    <Td className="whitespace-nowrap tabular-nums">{fmtData(String(r.DIA ?? ''))}</Td>
+                    <Td numeric className={cn('tabular-nums', n(r.DIAS) > 30 ? 'font-semibold text-ink' : 'text-ink-secondary')}>{r.DIAS === null || r.DIAS === undefined ? '—' : String(r.DIAS)}</Td>
+                    <Td numeric className="font-semibold whitespace-nowrap text-ink tabular-nums">{moeda(n(r.VALOR))}</Td>
                   </Tr>
                 ))}
               </tbody>
             </Table>
+            <div className="flex-1" />
             <Pagination page={pagina} lastPage={Math.max(1, Math.ceil(registros / 50))} total={registros} unit="devoluções" onPrevious={() => setPagina(p => p - 1)} onNext={() => setPagina(p => p + 1)} />
           </>
         )}
