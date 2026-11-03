@@ -20,8 +20,7 @@ várias telas dizem "sucesso" quando nada foi gravado. Resultado: chamados de
 
 ## Resultado esperado
 
-Quem gerencia a força de vendas vê, em qualquer painel, o mesmo realizado e a
-mesma meta para o mesmo recorte, e todo cadastro de governança grava só
+Quem gerencia a força de vendas tem cadastros de governança que gravam só
 combinações válidas, pede confirmação antes de desfazer algo e diz exatamente o
 que mudou.
 
@@ -29,37 +28,13 @@ que mudou.
 
 | Perfil | O que precisa fazer | Frequência |
 |---|---|---|
-| Gestão (GESTOR/ADMIN) | Painel de Gestão; manter código de vendedor do ERP, escopos e comissões | diária / sob demanda |
+| Gestão (GESTOR/ADMIN) | Manter código de vendedor do ERP e escopos | diária / sob demanda |
 | Diretoria (DIRETORIA/ADMIN) | Papéis e coordenadores; férias e acesso de executivas de qualquer equipe | semanal |
 | Coordenador (cadastro ativo) | Mover carteira da equipe, cadastrar férias, desativar acesso de executiva da equipe | semanal |
 | TI | Mesmos acessos de gestão às telas de acesso de executivas | sob demanda |
 | Rotinas automáticas | Trazer metas do planejamento estratégico, clientes e BUs do ERP | semanal / diária |
 
 ## Cenários
-
-### Painel de Gestão
-
-**C-001 — Painel mostra líquido contra a meta distribuída**
-- **Dado que** em outubro/2026 a equipe tem 3 vendedores com faturamento bruto somado de R$ 50.000, devoluções de R$ 2.000 e meta distribuída somada de R$ 60.000, e as BUs da equipe venderam R$ 3.000 líquidos a 2 clientes que não estão na carteira de ninguém
-- **Quando** o gestor abre o Painel de Gestão em "Toda a equipe"
-- **Então** vê `Faturamento líquido no mês` R$ 48.000,00, `Meta do mês` R$ 60.000,00, `Atingimento` 80,0%, `Gap da meta` "Faltam R$ 12.000,00" e `Vendas sem carteira` R$ 3.000,00 (2 clientes), que não entra no faturamento nem no atingimento
-
-**C-002 — Vendedor sem meta distribuída (borda)**
-- **Dado que** a vendedora Ana tem R$ 5.000 líquidos no mês e o coordenador não distribuiu meta para ela
-- **Quando** o gestor filtra "Vendedor: Ana"
-- **Então** `Meta do mês` mostra "Meta não distribuída", `Atingimento` mostra "—" e o gap não diz "Meta superada"
-
-**C-003 — Fila operacional prioriza o atrasado**
-- **Dado que** hoje é 30/10/2026 e a equipe tem uma tarefa pendente com prazo 28/10, uma visita agendada para 29/10 e uma visita agendada para 03/11
-- **Quando** o gestor abre a `Fila Operacional da Equipe`
-- **Então** a tarefa aparece com "Cobrar conclusão imediata" e a visita de 29/10 com "Reagendar ou concluir hoje", ambas antes da visita de 03/11, que mostra "Confirmar agenda com cliente"
-
-### Cadastros de gestão
-
-**C-010 — Comissão calculada e exclusão confirmada**
-- **Dado que** o gestor cadastra para Ana, outubro/2026, vendas de R$ 50.000 e 3%
-- **Quando** salva e depois clica na lixeira da linha
-- **Então** a comissão gravada é R$ 1.500,00; a lixeira abre "Excluir a comissão de Ana de 10/2026? Esta ação não pode ser desfeita." e só exclui após `Excluir`
 
 ### Governança de cadastros
 
@@ -144,25 +119,9 @@ que mudou.
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
 | RF-001 | O sistema DEVE liberar cada tela e item de menu desta spec pelo papel ou cadastro da RN-001, conferido no servidor a cada carga | Para cada linha da RN-001, um usuário sem o papel recebe a mensagem de bloqueio e zero dados; com o papel, vê o item no menu | must |
-| RF-002 | O sistema DEVE calcular realizado, devolução e meta dos painéis pela RN-003 e RN-005 | C-001 dá os mesmos números que Dashboard e Analytics para o mesmo recorte | must |
 | RF-003 | O sistema DEVE pedir confirmação antes de toda ação da RN-025 | Cancelar a confirmação não grava nada (C-013) | must |
 | RF-004 | O sistema DEVE responder toda gravação com o que mudou (RNT-013) | C-012, C-018, C-019 | must |
-| RF-005 | O sistema DEVE isolar falhas por bloco em todas as 10 telas | C-026 | must |
-
-### Painel de Gestão
-
-| ID | Requisito | Critério de aceite | Prioridade |
-|---|---|---|---|
-| RF-006 | O sistema DEVE mostrar, para o mês atual, os cards `Faturamento líquido no mês`, `Meta do mês`, `Atingimento` (com "Clientes ativos"), `Gap da meta` (com "Visitas pendentes") e `Vendas sem carteira` (RN-003) | C-001, C-002 | must |
-| RF-007 | O sistema DEVE filtrar por "Toda a equipe" ou um vendedor com RCA vinculado | Filtrar Ana recalcula os cards só com Ana (`Vendas sem carteira`: nas BUs em que Ana atua) | must |
-| RF-008 | O sistema DEVE listar a `Fila Operacional da Equipe` pela RN-007 | C-003; vazia mostra "Nenhum item operacional pendente para o filtro selecionado." | must |
-| RF-009 | O sistema DEVE oferecer `Gerar novos alertas` só para ADMIN: com "Toda a equipe" inicia o ciclo diário (spec 008); com um vendedor, recalcula os dele | Mensagem "Ciclo diário de alertas iniciado. N vendedor processado agora e M pendente(s)…" ou "Alertas atualizados para o filtro atual." | should |
-
-### Gestão Cadastros (comissões)
-
-| ID | Requisito | Critério de aceite | Prioridade |
-|---|---|---|---|
-| RF-020 | O sistema DEVE manter comissões por vendedor e mês/ano (Vendas, %, Comissão), com busca por nome e 10 por página | C-010 | must |
+| RF-005 | O sistema DEVE isolar falhas por bloco em todas as telas desta spec | C-026 | must |
 
 ### Usuários
 
@@ -213,7 +172,6 @@ Uma tela só para papéis, vínculo RCA e escopo de cada usuário (antes Papéis
 
 | ID | Requisito | Como se mede |
 |---|---|---|
-| RNF-001 | Painel de Gestão abre o mês inteiro, com "Toda a equipe", em até 5 s com todos os blocos | Cronômetro com outubro/2026 de produção |
 | RNF-002 | Rotinas automáticas não dependem de identificador fixo de outro projeto e rodam com identidade de integração | Revisão das rotinas; execução agendada no ambiente de produção |
 | RNF-003 | Toda rotina automática registra início, fim, situação e quantidade de registros; a falha aparece na tela que depende dela | Forçar falha e ver o aviso na aba Metas do Analytics (spec 007) |
 | RNF-004 | Transferência de carteira inteira com 2.000 clientes termina em até 10 s, tudo ou nada | Volume de teste no simulador |
@@ -222,9 +180,6 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 
 ## Entidades do domínio
 
-- **Meta da BU** — valor mensal por filial + departamento, vindo do planejamento estratégico por BU + UF e rateado às filiais (RN-004). Não é lançado neste sistema.
-- **Meta do vendedor** — distribuída pelo coordenador (spec 007); a meta da equipe é a soma.
-- **Comissão** — registro manual por vendedor e mês: vendas, percentual e valor.
 - **BU** — departamento do ERP (código numérico), com nome e status, carregado do ERP (RN-012).
 - **Escopo** — usuário + BU + filial + seção (ou todas), ativo ou inativo (spec 000).
 - **Vínculo RCA** — usuário ↔ código de vendedor do ERP (1:1) e supervisor, com auditoria.
@@ -240,7 +195,6 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 
   | Tela | Libera | Recorte |
   |---|---|---|
-  | Painel de Gestão, Gestão Cadastros | GESTOR ou ADMIN | todos os vendedores |
   | Usuários | GESTOR, DIRETORIA ou ADMIN; vínculo RCA e escopo: GESTOR ou ADMIN; papéis: DIRETORIA ou ADMIN | todos os usuários |
   | Gestão Coordenadores | DIRETORIA ou ADMIN | todas as BUs |
   | Gestão de Carteira | coordenador com cadastro ativo e usuário vinculado | equipe (RNT-004) |
@@ -249,12 +203,6 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 
   Em Usuários, quem não edita uma parte não a vê no painel do usuário. Papel COORDENADOR sem cadastro ativo não abre as telas do coordenador e vê "Seu cadastro de coordenador não está ativo. Procure a diretoria." O menu mostra exatamente as telas liberadas (spec 001).
 - **RN-002 — Mensagem de bloqueio.** "Esta tela está disponível apenas para <papéis>." seguida de "Seu perfil: <papéis do usuário>", sem nome de cadastro interno.
-- **RN-003 — Realizado.** Em todas as telas desta spec, realizado = faturamento líquido (RNT-008) atribuído pela RNT-007; a devolução segue a mesma atribuição, pela data da devolução. O realizado de uma BU é a soma do que foi atribuído aos vendedores naquela filial + departamento; o de um coordenador, a soma das suas BUs. Bruto e devolução aparecem com esse nome. Venda a cliente que não está na carteira de ninguém fica fora do realizado e aparece à parte, em valor líquido e nº de clientes, no card `Vendas sem carteira` do Painel de Gestão (BUs da equipe ou do vendedor filtrado).
-- **RN-004 — Meta da BU.** Vem do planejamento estratégico, que é outro sistema (RNT-009), rateada entre filiais como na spec 007 (RN-010). Esta spec não lança, não altera nem remove meta da BU; lançamentos manuais guardados pelo sistema antigo não são lidos.
-- **RN-005 — Meta da equipe no Painel de Gestão.** Soma das metas dos vendedores filtrados (RNT-009).
-- **RN-006 — Atingimento e gap.** Atingimento = realizado ÷ meta × 100, uma casa. Gap = meta − realizado: > 0 "Faltam R$ X"; ≤ 0 "Meta superada em R$ X". Meta zero: "Meta não distribuída" (vendedor/equipe) ou "Sem meta" (BU), atingimento "—", sem texto de gap.
-- **RN-007 — Fila operacional.** Tarefas Pendente/Em andamento e visitas Agendada/Em andamento da equipe filtrada. Tarefa: prazo < hoje → "Cobrar conclusão imediata"; senão Em andamento → "Acompanhar andamento"; senão "Priorizar na próxima rotina". Visita: data < hoje → "Reagendar ou concluir hoje"; senão "Confirmar agenda com cliente". Ordem: atrasados, tarefas pendentes, demais; depois por data e responsável; até 60 itens. "Visitas pendentes" = visitas Agendada/Em andamento com data ≤ hoje. "Clientes ativos" = clientes ativos na carteira da equipe.
-- **RN-011 — Comissão.** Comissão = vendas × percentual ÷ 100, arredondada em 2 casas, calculada pela tela e não digitável. Um registro por vendedor + mês + ano. Valores nos formatos da RNT-011.
 - **RN-012 — BU.** Vem direto do ERP (Winthor): código = código numérico do departamento, nome e status do ERP, carregados pela rotina da RN-024; não há cadastro, renomeação nem inativação de BU por tela. BU inativa não aceita novos escopos nem vínculo com coordenador; os existentes continuam até serem desvinculados.
 - **RN-013 — Escopo.** Usuário + BU + filial + seção (ou "Todas as seções") é única. Recadastrar uma combinação inativa a reativa; ativa conta como "já existia". Desvincular inativa, não apaga.
 - **RN-014 — Vínculo RCA.** Um RCA por usuário e um usuário por RCA. Supervisor sugerido pelo ERP, editável. Vincular, trocar e remover gravam auditoria na mesma operação, com os valores reais anteriores lidos pelo servidor; tentativa recusada não gera auditoria. Sem RCA, o usuário some da equipe do coordenador (RNT-004) e não pode ter férias.
@@ -268,16 +216,12 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 - **RN-022 — Bloqueio de acesso.** Motivo opcional até 500 caracteres. Executiva desativada é recusada pelo servidor em qualquer ação e na entrada, e a sessão aberta é encerrada na próxima ação, com a mensagem de acesso desativado no login. Reativar libera na hora. Carteira, histórico e vendas não mudam. Grava quem e quando.
 - **RN-023 — Rotina de metas do planejamento.** Segundas às 7h (Brasília): atualiza as metas por BU, UF e mês e registra a execução; a data da última atualização aparece na aba Metas do Analytics (spec 007, RNT-015).
 - **RN-024 — Rotina de clientes e BUs do ERP.** Diária às 4h: inclui clientes novos e atualiza ramo, UF e cidade; inclui departamentos novos como BU e atualiza nome e status das existentes; valor vazio no ERP não apaga o atual; registra a execução.
-- **RN-025 — Confirmações.** Pedem confirmação, nomeando o alvo: `Desvincular` escopo, `Remover vínculo` RCA, `Inativar coordenador`, remover BU do coordenador, excluir comissão, `Transferir toda carteira`, `Encerrar` férias, `Desativar acesso`.
+- **RN-025 — Confirmações.** Pedem confirmação, nomeando o alvo: `Desvincular` escopo, `Remover vínculo` RCA, `Inativar coordenador`, remover BU do coordenador, `Transferir toda carteira`, `Encerrar` férias, `Desativar acesso`.
 
 ## Testes
 
 | Cenário / regra | Evidência automática exigida | Camada |
 |---|---|---|
-| C-001 | 3 vendedores, bruto 50.000, devolução 2.000, meta 60.000, 3.000 sem carteira → 48.000 / 60.000 / 80,0% / "Faltam R$ 12.000,00" / sem carteira 3.000 e 2 clientes | regra de negócio |
-| C-002 | Ana: líquido 5.000, sem distribuição → meta 0 devolvida e tela "Meta não distribuída", atingimento "—" | regra de tela |
-| C-003 | Hoje 30/10: tarefa prazo 28/10, visita 29/10, visita 03/11 → ordem [tarefa, visita 29/10, visita 03/11] com as ações da RN-007 | regra de negócio |
-| C-010 | Vendas 50.000 × 3% → 1.500,00; exclusão sem confirmação não chega ao servidor | regra de tela |
 | C-012 | Seções 1, 2, 3 com 2 já ativa → 2 novas, 1 existente | regra de negócio |
 | C-013 | Desvincular confirmado → inativo; recadastrar → ativo, mesma combinação | regra de negócio |
 | C-014 | Vincular 936 (de Ana) a Bruno → recusado, 0 linhas gravadas, 0 linhas de auditoria | regra de negócio |
@@ -293,13 +237,7 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 | C-024 | Carlos pede alteração de Rita (fora das BUs) → 0 gravados, "sem permissão" | regra de negócio |
 | C-026 | Consulta da lista falha → bloco com a mensagem padrão; formulário ativo | regra de tela |
 | RN-001 | Matriz papel × tela: cada tela da RN-001 (em Usuários, cada parte) recusa os perfis fora da linha; papel COORDENADOR sem cadastro → mensagem própria | regra de negócio |
-| RN-002 | Bloqueio do Painel de Gestão para VENDEDOR não contém nome de cadastro interno | regra de tela |
-| RN-003 | Venda de R$ 1.000 de cliente sem carteira na BU → fora do realizado da BU e somada em `Vendas sem carteira` da BU; devolução de R$ 200 de cliente da carteira de Ana → desconta de Ana e da BU | regra de negócio |
-| RN-004 | Planejamento BU Nutrição/GO 100.000, filiais 2 e 4 em GO com faturamento 12 m de 300.000 e 100.000 → 75.000 e 25.000 | regra de negócio |
-| RN-005 | Metas 20.000 + 25.000 + 15.000 → meta da equipe 60.000 | regra de negócio |
-| RN-006 | Meta 50.000, realizado 55.000 → 110,0% e "Meta superada em R$ 5.000,00"; meta 0 → "—" | regra de tela |
-| RN-007 | 70 itens pendentes → 60 devolvidos; tarefa Em andamento com prazo futuro → "Acompanhar andamento" | regra de negócio |
-| RN-011 | Vendas 12.345,67 × 2,5% → 308,64 | regra de tela |
+| RN-002 | Bloqueio de Usuários para VENDEDOR não contém nome de cadastro interno | regra de tela |
 | RN-012 | BU inativa: novo escopo recusado; escopos existentes seguem ativos; nenhuma SF desta spec grava BU | regra de negócio |
 | RN-013 | Recadastro de combinação ativa → 0 novos, 1 existente | regra de negócio |
 | RN-014 | Trocar 936→937 com auditoria lida do servidor mesmo se a tela enviar "anterior=999" | regra de negócio |
@@ -323,16 +261,9 @@ Verificação manual:
 
 | Hoje | Na reconstrução | Origem |
 |---|---|---|
-| Painel de Gestão mostra bruto sem dizer | Líquido por padrão; bruto e devolução com rótulo (RN-003) | manual seção 12, "Por que os números diferem"; `docs/specs/000` RNT-008 |
-| Painel de Gestão usa a meta digitada em Gestão Cadastros | Meta da equipe = soma das metas distribuídas (RN-005) | manual seção 12, Painel de Gestão |
-| Painel de Gestão soma vendas de clientes sem carteira | Uma regra só (RN-003); vendas sem carteira aparecem à parte no card `Vendas sem carteira` | manual seção 12, tabela de divergências |
-| Meta 0 e realizado 0 mostram "Meta superada em R$ 0,00" | "Meta não distribuída"/"Sem meta" (RN-006) | manual seção 12, Painel de Gestão |
-| "Atividades pendentes" conta visitas | Rótulo "Visitas pendentes" (RN-007) | manual seção 12, Painel de Gestão |
 | Bloqueio cita nome de cadastro interno ao vendedor | Mensagem da RN-002 | `PainelGestaoPage.tsx:197` |
 | Telas e acessos liberados pelo e-mail da TI | Papel ADMIN (TI) (RNT-002) | `backend/add-gestao-acesso-executivas.mjs:24` |
 | Papel COORDENADOR abre telas do coordenador que ficam vazias sem cadastro | Exige cadastro ativo, com mensagem (RN-001) | manual seção 13, Gestão Coordenadores |
-| `1.500,00` grava 0 em Gestão Cadastros | Os dois formatos da RNT-011 | manual seção 12 |
-| Comissão e realizado digitados à mão | Comissão calculada (RN-011); aba Metas de vendedor sai | manual seção 12, Gestão Cadastros |
 | Lixeira, `Desvincular`, `Inativar`, `Remover`, `Encerrar` sem confirmação | Confirmação (RN-025) | manual seção 13 |
 | `+ Nova BU` gera código BU000N que não casa com o ERP | BU vem do ERP; a tela BUs e Vendedores sai (RN-012) | manual seção 13; `backend/add-gestao-bus-vendedores.mjs:229` |
 | Escopo exige seção; "Foram salvos X de Y" sem dizer quais já existiam | Seção opcional ("Todas"); resposta com novos e existentes (RN-013) | manual seção 13 |
@@ -360,22 +291,22 @@ Verificação manual:
 - [ ] Titulares de Clientes (spec 002), Direcionamento Semanal (spec 008).
 - [ ] Análise Diretoria, Faturamento e Gestão de Metas: canceladas em 2026-11-03. A meta da BU vem do planejamento estratégico, que é outro sistema (RNT-009); os cenários, requisitos e regras dessas telas saíram desta spec e os ids não são reaproveitados (C-004 a C-009, C-025, RF-010 a RF-019, RN-008 a RN-010). Agenda dos Vendedores: cancelada no mesmo dia (spec 003).
 - [ ] Um "Painel do coordenador" com KPIs, performance, anomalias, riscos, gaps e concentração: não há tela e as funções que existem sem tela são aposentadas (decidido em 2026-10-30).
-- [ ] Aba Metas de Gestão Cadastros (meta por vendedor com realizado digitado): sai; a meta do vendedor é a distribuída pelo coordenador (spec 007).
+- [ ] Painel de Gestão e Gestão Cadastros (comissões): cancelados em 2026-11-03 (D4, `docs/specs/pendencias-consolidadas.md`). Saíram desta spec os cenários C-001 a C-003 e C-010, os requisitos RF-002, RF-006 a RF-009 e RF-020, as regras RN-003 a RN-007 e RN-011 e o RNF-001; os ids não são reaproveitados. O cadastro manual de comissão deixa de existir; `Gerar novos alertas` (RF-009) fica com a spec 008.
 - [ ] Tela BUs e Vendedores: sai em 2026-11-03, com o bloco "Vincular BU ao vendedor" (escopo só em Usuários) e o cadastro de BU (BU vem do ERP, RN-012). RF-021 e C-011 saíram desta spec e os ids não são reaproveitados.
 - [ ] Bloco de vínculo vendedor ↔ departamento e filial de BUs e Vendedores: sai da tela; o registro é aposentado só depois de confirmado que nada mais o usa.
 - [ ] Cadastro de produtos pela gestão: não há tela hoje; o catálogo vem do sistema de custos (spec 009).
-- [ ] Cálculo automático de comissão a partir das vendas (spec 000).
 - [ ] Tela para corrigir a UF de uma filial: continua ajuste da TI.
 - [ ] Atribuir GESTOR e ADMIN por tela (ver Pendências da spec 000).
 
 ## Pendências
 
-- [x] Decidido em 2026-10-30: vendas a clientes sem carteira ficam fora do realizado e aparecem no card `Vendas sem carteira` do Painel de Gestão (RN-003).
-- [x] Decidido em 2026-10-30: a aba Metas de Gestão Cadastros é retirada; a meta do vendedor é a distribuída pelo coordenador.
+- [x] Decidido em 2026-10-30: vendas a clientes sem carteira ficam fora do realizado e aparecem no card `Vendas sem carteira` do Painel de Gestão (RN-003). *Sem efeito desde 2026-11-03: o Painel de Gestão foi cancelado (D4).*
+- [x] Decidido em 2026-10-30: a aba Metas de Gestão Cadastros é retirada; a meta do vendedor é a distribuída pelo coordenador. *Sem efeito desde 2026-11-03: Gestão Cadastros foi cancelada (D4).*
 - [x] Decidido em 2026-10-30: o "Painel do coordenador" não é construído; as funções que existem sem tela são aposentadas.
 - [x] Decidido em 2026-10-30: o bloco de vínculo vendedor ↔ departamento e filial sai, e o registro só é aposentado depois de confirmado que nada mais o usa.
 - [x] Decidido em 2026-10-30: escopo é cadastrado só em Escopo Usuários; sai o bloco duplicado de BUs e Vendedores.
 - [x] Decidido em 2026-11-03: Papéis de Usuários, Governança RCA e Escopo Usuários viram uma tela só, Usuários (`/governanca-rca`); cada papel edita a sua parte (RN-001). `/configuracao-escopo-usuarios` e `/gestao-cargos-usuarios` saem do menu.
+- [x] Decidido em 2026-11-03 (D4): Painel de Gestão (`/painel-gestao`) e Gestão Cadastros (`/gestao-cadastros`) são cancelados, com o cadastro manual de comissão.
 - [x] Decidido em 2026-11-03: BUs e Vendedores (`/gestao-bus-vendedores`) deixa de existir; a BU vem direto do ERP (Winthor) pela rotina da RN-024.
 - [x] Decidido em 2026-10-30: não há histórico de alterações da meta da BU; guarda só o último valor e quem lançou, como hoje. *Sem efeito desde 2026-11-03: a tela Gestão de Metas foi cancelada e a meta vem só do planejamento.*
 - [x] Decidido em 2026-10-30: a diretoria tem o botão `Remover lançamento manual`, que volta à meta do planejamento (RN-010). *Sem efeito desde 2026-11-03: a tela Gestão de Metas foi cancelada e a meta vem só do planejamento.*
@@ -386,7 +317,7 @@ Verificação manual:
 - [x] Nenhuma menção a tecnologia, tabela ou componente fora do anexo e da coluna Origem
 - [x] Todo RF tem critério de aceite verificável
 - [x] Seção "Fora de escopo" preenchida
-- [x] Cenários cobrem caminhos de erro (C-002, C-014, C-018, C-021, C-024, C-026)
+- [x] Cenários cobrem caminhos de erro (C-014, C-018, C-021, C-024, C-026)
 - [x] Seção "Testes" preenchida: todo C-00N e toda RN-00N com evidência concreta
 - [x] Zero `[NEEDS CLARIFICATION]` em aberto
 
@@ -401,12 +332,12 @@ Páginas atuais: `PainelGestaoPage.tsx`, `AnaliseDiretoriaPage.tsx`, `Faturament
 | RF / RN | SFs atuais (alias · id) | Tabelas |
 |---|---|---|
 | RF-001, RN-001, RN-002 | painelGestaoPermissao 29 · painelCoordenadorPermissao 153 · gestaoMetasDiretoriaPermissao 167 (gate de Análise, Faturamento e Metas) · gestaoCoordenadoresPermissao 172 · gestaoCargosUsuariosPermissao 204 · gestaoAcessoExecutivasPermissao 383 | USUARIO_CARGO, COORDENADORES, INT_USER |
-| RF-006–RF-008, RN-005–RN-007 | painelGestaoVendedores 30 · painelGestaoResumo 31 · painelGestaoOperacional 32 | METAS, EQUIPE_CLIENTE, BU_VENDEDOR, PEDIDOS_SEMANAIS_SYNC_RAW, TAREFAS, VISITAS, CLIENTE_TITULAR_DEPTO, USUARIO_BLOQUEIO |
-| RF-009 | alertasInteligentesPopular 130 · alertasInteligentesProcessarFila 264 (spec 008) | ALERTAS_* |
+| RF-006–RF-008, RN-005–RN-007 — **tela cancelada em 2026-11-03 (D4): aposentar** | painelGestaoVendedores 30 · painelGestaoResumo 31 · painelGestaoOperacional 32 | METAS, EQUIPE_CLIENTE, BU_VENDEDOR, PEDIDOS_SEMANAIS_SYNC_RAW, TAREFAS, VISITAS, CLIENTE_TITULAR_DEPTO, USUARIO_BLOQUEIO |
+| RF-009 — **botão do Painel cancelado (D4); fica com a spec 008** | alertasInteligentesPopular 130 · alertasInteligentesProcessarFila 264 (spec 008) | ALERTAS_* |
 | RF-010–RF-013, RN-008 — **tela cancelada em 2026-11-03: aposentar** | analiseDiretoriaFiltros 198 · analiseDiretoriaResumo 199 · analiseDiretoriaBus 200 · analiseDiretoriaCoordenadores 201 · analiseDiretoriaTendencia 202 · analiseDiretoriaRiscos 203 | METAS_BU, IMP_DEVOLUCOES_TOTVS, PEDIDOS_SEMANAIS_SYNC_RAW, COORDENADORES_BU |
 | RF-014–RF-016, RN-009 — **tela cancelada em 2026-11-03: aposentar** | faturamentoDiretoriaFiltros 240 · Resumo 241 · Coordenadores 242 · Vendedores 243 · Produtos 244 · Clientes 245 · Detalhe 246 · Filiais 247 | PEDIDOS_SEMANAIS_SYNC_RAW, EQUIPE_CLIENTE, BU_VENDEDOR, VENDEDOR_RCA |
 | RF-017–RF-019, RN-004, RN-010 — **tela cancelada em 2026-11-03: aposentar** | gestaoMetasDiretoriaBus 168 · gestaoMetasDiretoriaListar 169 · gestaoMetasDiretoriaHistorico 170 (último valor e autor) · gestaoMetasDiretoriaSalvar 171; remover lançamento manual: nova (não existe hoje); cálculo da meta recebida: painelCoordenadorMetasBuRecebidas 195 (spec 007) | METAS_BU, INTG_MONTHLY_BILLING_TARGET, FILIAL.UF |
-| RF-020, RN-011 | adminListarComissoes 79 · adminContarComissoes 80 · adminCriarComissao 81 · adminAtualizarComissao 82 · adminExcluirComissao 83; vendedores via painelGestaoVendedores 30 | COMISSOES |
+| RF-020, RN-011 — **tela cancelada em 2026-11-03 (D4): aposentar** | adminListarComissoes 79 · adminContarComissoes 80 · adminCriarComissao 81 · adminAtualizarComissao 82 · adminExcluirComissao 83; vendedores via painelGestaoVendedores 30 | COMISSOES |
 | Aba Metas de Gestão Cadastros (sai; aposentar) | adminListarMetas 74 · adminContarMetas 75 · adminCriarMeta 76 · adminAtualizarMeta 77 · adminExcluirMeta 78 | METAS |
 | RF-021 (**tela sai em 2026-11-03: aposentar**), RN-012 | adminListarBus 94 · adminContarBus 95 · adminCriarBu 96 · adminAtualizarBu 97 | BU, SECAO |
 | RF-022, RN-013 (só Escopo Usuários; o bloco de BUs e Vendedores deixa de chamá-las) | adminListarVendedoresBu 98 · adminListarVinculosBuVendedor 99 · adminContarVinculosBuVendedor 100 · adminVincularBuVendedor 101 · adminDesvincularBuVendedor 102 · listarFiliais 117 · listarSecoesDisponiveis 118 | BU_VENDEDOR, FILIAL, SECAO |
@@ -423,7 +354,7 @@ Páginas atuais: `PainelGestaoPage.tsx`, `AnaliseDiretoriaPage.tsx`, `Faturament
 SFs do módulo **sem uso** no frontend (aposentar; decidido em 2026-10-30):
 painelCoordenadorKpis 154 · painelCoordenadorPerformanceVendedores 155 · painelCoordenadorDevolucoesRecentes 156 · painelCoordenadorAnomaliasTerritorio 189 · painelCoordenadorVendedoresRisco 190 · painelCoordenadorClientesSemCompra 191 · painelCoordenadorGapMetaVendedor 192 · painelCoordenadorDevolucoesCriticasRca 193 · painelCoordenadorConcentracaoClientes 194 (todas em `backend/add-painel-coordenador-*.mjs`, atualizadas por migrations `update-sf-painelcoordenador*`) · adminListarProdutos 68 · adminContarProdutos 69 · adminCriarProduto 70 · adminAtualizarProduto 71 · adminInativarProduto 72 · adminExcluirProduto 73 · desvincularVendedorRca 63 · 289–292 · 294.
 
-Base para o card `Vendas sem carteira` (RN-003): painelCoordenadorSemCarteiraDetalhe 213 (hoje sem uso; reaproveitar ou aposentar quando o card tiver função própria).
+painelCoordenadorSemCarteiraDetalhe 213 (base do card `Vendas sem carteira`, sem uso): aposentar com o Painel de Gestão (D4).
 
 SFs usadas por estas telas mas de outra spec: adminListarVendedores 145 (Acomp. Semanal Admin, spec 006; tela cancelada) · painelCoordenadorMetasBuRecebidas 195, painelCoordenadorMetasVendedoresBu 196, painelCoordenadorSalvarMetaVendedorBu 197, metasVendedorRamoUfAplicadas 295, painelCoordenadorSalvarMetaVendedorRamoUf 296, painelCoordenadorSincronizarMetaVendedorPorRamo 396 (spec 007).
 

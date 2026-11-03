@@ -17,10 +17,6 @@
 // tudo pelos ids reais.
 
 export const SERVER_FUNCTION_NAMES = {
-  comissaoAtualizar: 's360ComissaoAtualizar',
-  comissaoCriar: 's360ComissaoCriar',
-  comissaoExcluir: 's360ComissaoExcluir',
-  comissaoListar: 's360ComissaoListar',
   configuracoesGarantir: 's360ConfiguracoesGarantir',
   configuracoesSalvar: 's360ConfiguracoesSalvar',
   contadoresObter: 's360ContadoresObter',
@@ -43,9 +39,6 @@ export const SERVER_FUNCTION_NAMES = {
   feriasListar: 's360FeriasListar',
   feriasMinhasObter: 's360FeriasMinhasObter',
   feriasPessoas: 's360FeriasPessoas',
-  painelFila: 's360PainelFila',
-  painelResumo: 's360PainelResumo',
-  painelVendedores: 's360PainelVendedores',
   papelIncluir: 's360PapelIncluir',
   papelLegadoSincronizar: 's360PapelLegadoSincronizar',
   papelListar: 's360PapelListar',
@@ -60,10 +53,6 @@ export const SERVER_FUNCTION_NAMES = {
 };
 
 export const SERVER_FUNCTIONS = {
-  comissaoAtualizar: '1005',
-  comissaoCriar: '1006',
-  comissaoExcluir: '1007',
-  comissaoListar: '1008',
   configuracoesGarantir: '4',
   configuracoesSalvar: '5',
   contadoresObter: '2',
@@ -86,9 +75,6 @@ export const SERVER_FUNCTIONS = {
   feriasListar: '1025',
   feriasMinhasObter: '3',
   feriasPessoas: '1026',
-  painelFila: '1027',
-  painelResumo: '1028',
-  painelVendedores: '1029',
   papelIncluir: '1030',
   papelLegadoSincronizar: '1031',
   papelListar: '1032',

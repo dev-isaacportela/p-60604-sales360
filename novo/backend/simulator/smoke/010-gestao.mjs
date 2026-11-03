@@ -5,7 +5,7 @@ import { definitions } from '../../add-010-gestao.mjs';
 
 export default async function ({ teste, chamar, linhas, banco, db, ID, assert }) {
   const id = (email) => Number(banco(`SELECT ID FROM INT_USER WHERE DESCR = '${email}@benenutri.local'`)[0].ID);
-  const P = Object.fromEntries(['helena.duarte', 'igor.matos', 'julia.freitas', 'nina.alves', 'olga.pires', 'pedro.sales',
+  const P = Object.fromEntries(['nina.alves', 'olga.pires', 'pedro.sales',
     'quesia.lemos', 'carlos.viana', 'davi.moura', 'rui.barros', 'sara.nunes', 'tereza.lima', 'ulisses.reis', 'vitor.gomes',
     'xavier.melo', 'yara.dias', 'joana.prates', 'renata.costa'].map((e) => [e.split('.')[0].toUpperCase(), id(e)]));
   const GESTOR = ID.PAULO; // GESTOR pelo legado (spec 001)
@@ -13,96 +13,8 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
   const HOJE = '2026-10-30';
   const AGORA = '2026-10-30T10:00:00';
   const afetadas = async (nome, input, userId) => (await chamar(nome, input, userId)).affectedRows;
-  const resumo = async (vendedorId = 0, userId = GESTOR) => (await linhas('s360PainelResumo', { hoje: HOJE, vendedorId }, userId))[0];
   const papeis = async (userId) => String((await linhas('s360SessaoObter', { hoje: HOJE }, userId))[0].PAPEIS).split(',').sort();
   const PAGINA = { busca: '', filtro: '', papel: '', limite: 50, offset: 0 };
-
-  // "Toda a equipe" soma todo vendedor com RCA: isola os dados do Painel (plan, Simulador).
-  for (const [tabela, chave] of [['PEDIDOS_SEMANAIS_SYNC_RAW', 'ID'], ['IMP_DEVOLUCOES_TOTVS', 'AUTO_ID'],
-    ['METAS_BU_VENDEDOR', 'AUTO_ID'], ['TAREFAS', 'ID'], ['VISITAS', 'ID']]) {
-    db.exec(`DELETE FROM ${tabela} WHERE ${chave} NOT BETWEEN 10001 AND 10999`);
-  }
-
-  /* ── Painel de Gestão ── */
-
-  await teste('C-001: toda a equipe vê líquido contra a meta distribuída e vendas sem carteira à parte', async () => {
-    const r = await resumo();
-    assert.equal(Number(r.BRUTO), 50000);
-    assert.equal(Number(r.DEVOLUCAO), 2000);
-    assert.equal(Number(r.LIQUIDO), 48000);
-    assert.equal(Number(r.META), 60000);
-    assert.equal(Number(r.SEM_CARTEIRA_LIQUIDO), 3000);
-    assert.equal(Number(r.SEM_CARTEIRA_CLIENTES), 2);
-    assert.equal(r.ATUALIZADO_EM, '2026-10-30 06:00:00');
-  });
-
-  await teste('RN-005: meta da equipe = soma das metas distribuídas (20.000 + 25.000 + 15.000)', async () => {
-    const metas = await Promise.all([P.HELENA, P.IGOR, P.JULIA].map(async (v) => Number((await resumo(v)).META)));
-    assert.deepEqual(metas, [20000, 25000, 15000]);
-  });
-
-  await teste('RN-003: venda fora do escopo não conta; devolução de cliente da carteira desconta do vendedor e da equipe', async () => {
-    const antes = await resumo(P.HELENA);
-    assert.equal(Number(antes.BRUTO), 25000); // a venda de 2.000 em F1·Nutrição ficou de fora
-    assert.equal(Number(antes.LIQUIDO), 24200);
-    db.exec('DELETE FROM IMP_DEVOLUCOES_TOTVS WHERE AUTO_ID = 10001');
-    assert.equal(Number((await resumo(P.HELENA)).LIQUIDO), 24400);
-    assert.equal(Number((await resumo()).LIQUIDO), 48200);
-    db.exec(`INSERT INTO IMP_DEVOLUCOES_TOTVS (AUTO_ID, NOTA_DEVOLUCAO, CODFILIAL, CODEPTO, CODCLI, DATA_DEVOLUCAO, VALOR_DEVOLVIDO)
-             VALUES (10001, 'D10001', '6', '9', 10001, '2026-10-12', 200)`);
-  });
-
-  await teste('RNT-007 (férias): venda de cliente de Helena nas férias conta para Igor; o total da equipe conta a linha uma vez', async () => {
-    assert.equal(Number((await resumo(P.IGOR)).BRUTO), 23000);
-    assert.equal(Number((await resumo()).BRUTO), 50000);
-  });
-
-  await teste('C-002: Júlia sem meta distribuída devolve meta 0 e o líquido dela', async () => {
-    db.exec(`DELETE FROM METAS_BU_VENDEDOR WHERE VENDEDOR_ID = ${P.JULIA}`);
-    const r = await resumo(P.JULIA);
-    assert.equal(Number(r.META), 0);
-    assert.equal(Number(r.LIQUIDO), 5000);
-    db.exec(`INSERT INTO METAS_BU_VENDEDOR (AUTO_ID, CODFILIAL, CODEPTO, VENDEDOR_ID, MES, ANO, META_VALOR) VALUES (10003, 6, 9, ${P.JULIA}, 10, 2026, 15000)`);
-  });
-
-  await teste('C-003: a fila põe o atrasado primeiro, com a ação da RN-007', async () => {
-    const fila = await linhas('s360PainelFila', { hoje: HOJE, vendedorId: P.HELENA }, GESTOR);
-    assert.deepEqual(fila.map((i) => [i.TIPO, i.DATA, i.ACAO]), [
-      ['TAREFA', '2026-10-28', 'Cobrar conclusão imediata'],
-      ['VISITA', '2026-10-29', 'Reagendar ou concluir hoje'],
-      ['VISITA', '2026-11-03', 'Confirmar agenda com cliente'],
-    ]);
-  });
-
-  await teste('RN-007: em andamento com prazo futuro, visitas pendentes, clientes ativos e limite de 60', async () => {
-    const [igor] = await linhas('s360PainelFila', { hoje: HOJE, vendedorId: P.IGOR }, GESTOR);
-    assert.equal(igor.ACAO, 'Acompanhar andamento');
-    const [julia] = await linhas('s360PainelFila', { hoje: HOJE, vendedorId: P.JULIA }, GESTOR);
-    assert.equal(julia.ACAO, 'Priorizar na próxima rotina');
-    const helena = await resumo(P.HELENA);
-    assert.equal(Number(helena.VISITAS_PENDENTES), 1);
-    assert.equal(Number(helena.CLIENTES_ATIVOS), 3);
-    for (let n = 0; n < 70; n += 1) {
-      db.exec(`INSERT INTO TAREFAS (ID, VENDEDOR_ID, TITULO, STATUS, DATA_LIMITE) VALUES (${10100 + n}, ${P.JULIA}, 'Extra ${n}', 'PENDENTE', '2026-11-20')`);
-    }
-    assert.equal((await linhas('s360PainelFila', { hoje: HOJE, vendedorId: 0 }, GESTOR)).length, 60);
-    db.exec('DELETE FROM TAREFAS WHERE ID BETWEEN 10100 AND 10169');
-  });
-
-  /* ── Comissões ── */
-
-  await teste('C-010 / RN-011: comissão calculada no servidor; mesma vendedora + mês + ano é recusada; exclusão', async () => {
-    const nova = { vendedorId: P.HELENA, mes: 10, ano: 2026, vendas: 50000, percentual: 3 };
-    assert.equal(await afetadas('s360ComissaoCriar', nova, GESTOR), 1);
-    assert.equal(await afetadas('s360ComissaoCriar', nova, GESTOR), 0);
-    const [c] = await linhas('s360ComissaoListar', { ...PAGINA, busca: 'Helena' }, GESTOR);
-    assert.equal(Number(c.VALOR_COMISSAO), 1500);
-    assert.equal(Number(c.TOTAL), 1);
-    assert.equal(await afetadas('s360ComissaoAtualizar', { ...nova, id: c.ID, vendas: 12345.67, percentual: 2.5 }, GESTOR), 1);
-    assert.equal(Number((await linhas('s360ComissaoListar', { ...PAGINA, busca: 'Helena' }, GESTOR))[0].VALOR_COMISSAO), 308.64);
-    assert.equal(await afetadas('s360ComissaoExcluir', { id: c.ID }, ID.ANA), 0);
-    assert.equal(await afetadas('s360ComissaoExcluir', { id: c.ID }, GESTOR), 1);
-  });
 
   /* ── Usuários: escopos ── */
 
@@ -300,10 +212,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
   /* ── RN-001: matriz papel × tela ── */
 
   await teste('RN-001: cada tela recusa os perfis fora da linha e libera os da linha', async () => {
-    await chamar('s360ComissaoCriar', { vendedorId: P.IGOR, mes: 9, ano: 2026, vendas: 1000, percentual: 1 }, GESTOR);
     const carga = [
-      ['s360PainelResumo', { hoje: HOJE, vendedorId: 0 }, GESTOR],
-      ['s360ComissaoListar', PAGINA, GESTOR],
       ['s360EscopoListar', PAGINA, GESTOR],
       ['s360PapelListar', PAGINA, GESTOR],
       ['s360CoordenadorListar', {}, DIRETORIA],
@@ -318,7 +227,8 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     }
     // Gestão não abre telas de diretoria, nem diretoria as de gestão.
     assert.equal((await linhas('s360CoordenadorListar', {}, GESTOR)).length, 0);
-    assert.equal((await linhas('s360PainelResumo', { hoje: HOJE, vendedorId: 0 }, DIRETORIA)).length, 0);
+    assert.equal((await linhas('s360RcaAuditoriaListar', {}, DIRETORIA)).length, 0);
+    assert.ok((await linhas('s360RcaAuditoriaListar', {}, GESTOR)).length > 0);
     // Usuários: cada papel grava só a sua parte.
     assert.equal((await linhas('s360PapelResumo', {}, GESTOR)).length, 0);
     assert.equal(await afetadas('s360PapelIncluir', { userId: ID.BRUNO, diretoria: 1, coordenador: 0, vendedor: 1, agora: AGORA }, GESTOR), 0);
@@ -330,6 +240,6 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     assert.equal((await linhas('s360FeriasPessoas', {}, ID.RITA)).length, 0);
     assert.equal((await linhas('s360ExecutivaListar', PAGINA, ID.RITA)).length, 0);
     // Bloqueado não lê nada (RN-016 da 001).
-    assert.equal((await linhas('s360PainelResumo', { hoje: HOJE, vendedorId: 0 }, ID.FABIO)).length, 0);
+    assert.equal((await linhas('s360PapelListar', PAGINA, ID.FABIO)).length, 0);
   });
 }

@@ -22,7 +22,7 @@ import {
 } from 'mitra-sdk';
 import { SEM_BLOQUEIO, temPapel } from './lib/guardas.mjs';
 import {
-  GESTAO, DIRETORIA, nome, agora, numerico, naEquipe, realizadoCtes,
+  GESTAO, DIRETORIA, nome, agora, numerico, naEquipe,
   SEM_BLOQUEIO_DERIVADO, temPapelDerivado,
 } from './lib/010-gestao.mjs';
 
@@ -37,24 +37,6 @@ const projectId = Number(process.env.MITRA_PROJECT_ID);
 const busca = (...colunas) => `('{{busca}}' = '' OR ${colunas
   .map((c) => `UPPER(${c}) LIKE UPPER(CONCAT('%', '{{busca}}', '%'))`).join(' OR ')})`;
 const PAGINA = `LIMIT {{limite}} OFFSET {{offset}}`;
-
-/* ─────────────── Painel de Gestao (GESTOR, ADMIN) ─────────────── */
-
-// Equipe = usuarios com RCA vinculado; vendedorId 0 = toda a equipe (RF-007).
-const VENDEDORES_FILTRO = `VENDEDORES AS (
-  SELECT VR.USER_ID AS VENDEDOR_ID FROM VENDEDOR_RCA VR
-  WHERE ({{vendedorId}} = 0 OR VR.USER_ID = {{vendedorId}})
-)`;
-const MES_HOJE = `SUBSTRING('{{hoje}}', 1, 7)`;
-
-// Cada linha atribuida conta uma vez no total (D-010-4).
-const LINHAS_REALIZADO = `(SELECT M.TIPO, M.VALOR FROM MOVIMENTO M
-  WHERE EXISTS (SELECT 1 FROM ATRIBUIDO A WHERE A.TIPO = M.TIPO AND A.LINHA = M.LINHA))`;
-// RN-003: venda nas BUs do filtro a cliente que nao esta em carteira nenhuma.
-const LINHAS_SEM_CARTEIRA = `(SELECT M.TIPO, M.VALOR, M.CLIENTE FROM MOVIMENTO M
-  WHERE EXISTS (SELECT 1 FROM ESCOPOS E WHERE E.FILIAL = M.FILIAL AND E.DEPTO = M.DEPTO)
-    AND NOT EXISTS (SELECT 1 FROM EQUIPE_CLIENTE EC WHERE EC.ID_CLIENTE = M.CLIENTE))`;
-const soma = (tabela, tipo) => `(SELECT ROUND(COALESCE(SUM(X.VALOR), 0), 2) FROM ${tabela} X WHERE X.TIPO = '${tipo}')`;
 
 /* ─────────────── Papeis ─────────────── */
 
@@ -93,144 +75,6 @@ const executivaVisivel = (alvo) => `(${alvo} <> :VAR_USER
 /* ─────────────── definicoes ─────────────── */
 
 export const definitions = [
-  // ── Painel de Gestao ──
-  {
-    name: 's360PainelVendedores',
-    type: 'SQL',
-    description: 'Vendedores com RCA vinculado (filtro do Painel de Gestao e select de comissoes). Sem parametros. GESTOR/ADMIN.',
-    code: `SELECT U.ID, ${nome('U')} AS NOME, U.DESCR AS EMAIL, VR.COD_RCA
-FROM VENDEDOR_RCA VR
-JOIN INT_USER U ON U.ID = VR.USER_ID
-WHERE ${GESTAO}
-  AND ${SEM_BLOQUEIO}
-ORDER BY NOME`,
-  },
-  {
-    name: 's360PainelResumo',
-    type: 'SQL',
-    description: 'Cards do Painel de Gestao no mes de hoje: bruto, devolucao, liquido atribuido (RNT-007/008), meta distribuida, clientes ativos, visitas pendentes e vendas sem carteira. Params: hoje AAAA-MM-DD, vendedorId (0 = equipe).',
-    code: `WITH ${VENDEDORES_FILTRO},
-${realizadoCtes(MES_HOJE)}
-SELECT
-  ${soma(LINHAS_REALIZADO, 'V')} AS BRUTO,
-  ${soma(LINHAS_REALIZADO, 'D')} AS DEVOLUCAO,
-  ROUND(${soma(LINHAS_REALIZADO, 'V')} - ${soma(LINHAS_REALIZADO, 'D')}, 2) AS LIQUIDO,
-  (SELECT ROUND(COALESCE(SUM(MB.META_VALOR), 0), 2) FROM METAS_BU_VENDEDOR MB
-     JOIN VENDEDORES V ON V.VENDEDOR_ID = MB.VENDEDOR_ID
-     WHERE MB.ANO = CAST(SUBSTRING('{{hoje}}', 1, 4) AS UNSIGNED)
-       AND MB.MES = CAST(SUBSTRING('{{hoje}}', 6, 2) AS UNSIGNED)) AS META,
-  (SELECT COUNT(DISTINCT EC.ID_CLIENTE) FROM EQUIPE_CLIENTE EC
-     JOIN VENDEDORES V ON V.VENDEDOR_ID = EC.ID_VENDEDOR
-     JOIN CLIENTES C ON C.ID = EC.ID_CLIENTE
-     WHERE C.STATUS = 'ATIVO') AS CLIENTES_ATIVOS,
-  (SELECT COUNT(*) FROM VISITAS VI
-     JOIN VENDEDORES V ON V.VENDEDOR_ID = VI.VENDEDOR_ID
-     WHERE VI.STATUS IN ('AGENDADA', 'EM_ANDAMENTO') AND VI.DATA_AGENDADA <= '{{hoje}}') AS VISITAS_PENDENTES,
-  ROUND(${soma(LINHAS_SEM_CARTEIRA, 'V')} - ${soma(LINHAS_SEM_CARTEIRA, 'D')}, 2) AS SEM_CARTEIRA_LIQUIDO,
-  (SELECT COUNT(DISTINCT X.CLIENTE) FROM ${LINHAS_SEM_CARTEIRA} X WHERE X.TIPO = 'V') AS SEM_CARTEIRA_CLIENTES,
-  (SELECT MAX(REPLACE(R.ATUALIZADO_EM, 'T', ' ')) FROM PEDIDOS_SEMANAIS_SYNC_RAW R) AS ATUALIZADO_EM
-FROM INT_USER U
-WHERE U.ID = :VAR_USER
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-  {
-    // RN-007: atrasados primeiro, depois tarefa pendente, depois data e responsavel.
-    name: 's360PainelFila',
-    type: 'SQL',
-    description: 'Fila operacional da equipe (RN-007): tarefas Pendente/Em andamento e visitas Agendada/Em andamento com a acao sugerida, ate 60. Params: hoje, vendedorId (0 = equipe).',
-    code: `WITH ${VENDEDORES_FILTRO},
-ITENS AS (
-  SELECT 'TAREFA' AS TIPO, T.ID, T.TITULO, C.RAZAO_SOCIAL AS CLIENTE, ${nome('U')} AS RESPONSAVEL,
-         T.DATA_LIMITE AS DATA, T.STATUS,
-         CASE WHEN T.DATA_LIMITE < '{{hoje}}' THEN 1 ELSE 0 END AS ATRASADO,
-         CASE WHEN T.DATA_LIMITE < '{{hoje}}' THEN 'Cobrar conclusão imediata'
-              WHEN T.STATUS = 'EM_ANDAMENTO' THEN 'Acompanhar andamento'
-              ELSE 'Priorizar na próxima rotina' END AS ACAO
-  FROM TAREFAS T
-  JOIN VENDEDORES V ON V.VENDEDOR_ID = T.VENDEDOR_ID
-  JOIN INT_USER U ON U.ID = T.VENDEDOR_ID
-  LEFT JOIN CLIENTES C ON C.ID = T.CLIENTE_ID
-  WHERE T.STATUS IN ('PENDENTE', 'EM_ANDAMENTO')
-  UNION ALL
-  SELECT 'VISITA', VI.ID, 'Visita', C.RAZAO_SOCIAL, ${nome('U')},
-         VI.DATA_AGENDADA, VI.STATUS,
-         CASE WHEN VI.DATA_AGENDADA < '{{hoje}}' THEN 1 ELSE 0 END,
-         CASE WHEN VI.DATA_AGENDADA < '{{hoje}}' THEN 'Reagendar ou concluir hoje'
-              ELSE 'Confirmar agenda com cliente' END
-  FROM VISITAS VI
-  JOIN VENDEDORES V ON V.VENDEDOR_ID = VI.VENDEDOR_ID
-  JOIN INT_USER U ON U.ID = VI.VENDEDOR_ID
-  LEFT JOIN CLIENTES C ON C.ID = VI.CLIENTE_ID
-  WHERE VI.STATUS IN ('AGENDADA', 'EM_ANDAMENTO')
-)
-SELECT I.* FROM ITENS I
-WHERE ${GESTAO}
-  AND ${SEM_BLOQUEIO}
-ORDER BY I.ATRASADO DESC,
-  CASE WHEN I.TIPO = 'TAREFA' AND I.STATUS = 'PENDENTE' THEN 0 ELSE 1 END,
-  I.DATA, I.RESPONSAVEL, I.ID
-LIMIT 60`,
-  },
-
-  // ── Gestao Cadastros: comissoes (RN-011) ──
-  {
-    name: 's360ComissaoListar',
-    type: 'SQL',
-    description: 'Comissoes com busca pelo nome do vendedor, paginada (TOTAL em cada linha). Params: busca, limite, offset. GESTOR/ADMIN.',
-    code: `SELECT CO.ID, CO.VENDEDOR_ID, ${nome('U')} AS VENDEDOR, CO.MES, CO.ANO,
-  CO.VALOR_VENDAS, CO.PERC_COMISSAO, CO.VALOR_COMISSAO, COUNT(*) OVER () AS TOTAL
-FROM COMISSOES CO
-JOIN INT_USER U ON U.ID = CO.VENDEDOR_ID
-WHERE ${busca('COALESCE(U.NOME, U.DESCR)')}
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}
-ORDER BY CO.ANO DESC, CO.MES DESC, VENDEDOR
-${PAGINA}`,
-  },
-  {
-    // Comissao calculada no servidor, nunca digitada (RN-011).
-    name: 's360ComissaoCriar',
-    type: 'SQL',
-    description: 'Cria comissao (vendas x % / 100, 2 casas). Um registro por vendedor + mes + ano. Params: vendedorId, mes, ano, vendas, percentual. Devolve affectedRows.',
-    code: `INSERT INTO COMISSOES (VENDEDOR_ID, MES, ANO, VALOR_VENDAS, PERC_COMISSAO, VALOR_COMISSAO)
-SELECT VR.USER_ID, {{mes}}, {{ano}}, ROUND({{vendas}}, 2), ROUND({{percentual}}, 2),
-  ROUND({{vendas}} * {{percentual}} / 100, 2)
-FROM VENDEDOR_RCA VR
-WHERE VR.USER_ID = {{vendedorId}}
-  AND {{mes}} BETWEEN 1 AND 12 AND {{ano}} BETWEEN 2000 AND 2100
-  AND {{vendas}} >= 0 AND {{percentual}} >= 0 AND {{percentual}} <= 100
-  AND NOT EXISTS (SELECT 1 FROM COMISSOES X WHERE X.VENDEDOR_ID = VR.USER_ID AND X.MES = {{mes}} AND X.ANO = {{ano}})
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-  {
-    name: 's360ComissaoAtualizar',
-    type: 'SQL',
-    description: 'Atualiza comissao (recalcula o valor). Params: id, vendedorId, mes, ano, vendas, percentual. Devolve affectedRows.',
-    code: `UPDATE COMISSOES
-SET VENDEDOR_ID = {{vendedorId}}, MES = {{mes}}, ANO = {{ano}},
-    VALOR_VENDAS = ROUND({{vendas}}, 2), PERC_COMISSAO = ROUND({{percentual}}, 2),
-    VALOR_COMISSAO = ROUND({{vendas}} * {{percentual}} / 100, 2)
-WHERE ID = {{id}}
-  AND EXISTS (SELECT 1 FROM VENDEDOR_RCA VR WHERE VR.USER_ID = {{vendedorId}})
-  AND {{mes}} BETWEEN 1 AND 12 AND {{ano}} BETWEEN 2000 AND 2100
-  AND {{vendas}} >= 0 AND {{percentual}} >= 0 AND {{percentual}} <= 100
-  AND NOT EXISTS (SELECT 1 FROM (SELECT DISTINCT ID, VENDEDOR_ID, MES, ANO FROM COMISSOES) X
-                  WHERE X.VENDEDOR_ID = {{vendedorId}} AND X.MES = {{mes}} AND X.ANO = {{ano}} AND X.ID <> {{id}})
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-  {
-    name: 's360ComissaoExcluir',
-    type: 'SQL',
-    description: 'Exclui comissao (a tela confirma antes, RN-025). Params: id. Devolve affectedRows.',
-    code: `DELETE FROM COMISSOES
-WHERE ID = {{id}}
-  AND ${GESTAO}
-  AND ${SEM_BLOQUEIO}`,
-  },
-
   // ── Usuarios: escopos (RN-012, RN-013) ──
   {
     // PAI: BU da secao; e-mail do usuario.

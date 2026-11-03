@@ -11,13 +11,12 @@ A spec 010 é construída em três etapas, cada uma com o seu plano e o seu
 
 | Etapa | O quê | Por quê separado |
 |---|---|---|
-| **1 (este plano)** | Painel de Gestão, Gestão Cadastros (comissões), Usuários (papéis, RCA e escopo), Gestão Coordenadores, Férias de Vendedores, Executivas de Venda | só depende da 001 |
+| **1 (este plano)** | Usuários (papéis, RCA e escopo), Gestão Coordenadores, Férias de Vendedores, Executivas de Venda | só depende da 001 |
 | **2** | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, construída em paralelo |
 | **3** (aprovada em 2026-11-03) | Rotinas automáticas: RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003 | nada roda nem se verifica nesta máquina: integração com o planejamento estratégico e Data Loader do ERP só existem no sandbox, e a rotina de clientes grava `CLIENTES`, dado da 002 |
 
-Também fica para depois, dentro da etapa 1: **RF-009** (`Gerar novos alertas`,
-should). O botão chama o ciclo de alertas da spec 008, que ainda não existe
-no sistema novo; entra quando a 008 publicar as SFs.
+O **RF-009** (`Gerar novos alertas`) era um botão do Painel de Gestão e saiu
+com ele (D4, 2026-11-03); o ciclo de alertas fica com a spec 008.
 
 ## Checagem de princípios
 
@@ -54,16 +53,10 @@ ou gravar (contrato em `000-visao-geral/modelo-de-dados.md`):
 
 | Entidade (spec) | Tabela | Uso | Declarada em |
 |---|---|---|---|
-| Venda (bruto) | `PEDIDOS_SEMANAIS_SYNC_RAW` | leitura: `CLIENTE_ID`, `CODFILIAL`, `CODEPTO`, `ID_SECAO`, `DATA_SAIDA`, `TOTAL`, `ATIVO`, `STATUS_INGESTAO`, `ATUALIZADO_EM` | **`schema-producao/010-gestao.mjs`** |
-| Devolução | `IMP_DEVOLUCOES_TOTVS` | leitura: `CODCLI`, `CODFILIAL`, `CODEPTO`, `CODSEC`, `DATA_DEVOLUCAO`, `VALOR_DEVOLVIDO` (sem DDL no repo, L-01; T-002) | **010** |
-| Meta do vendedor | `METAS_BU_VENDEDOR` | leitura: `SUM(META_VALOR)` por vendedor, ano, mês (C3) | **010** |
-| Visita | `VISITAS` | leitura (fila e "Visitas pendentes") | **010** |
-| Tarefa | `TAREFAS` | leitura (fila) | 001 |
-| Comissão | `COMISSOES` | leitura e escrita | **010** |
 | BU | `BU` | só leitura: vem do ERP pela rotina da RN-024 (etapa 3) | 000 |
 | Escopo | `BU_VENDEDOR` | leitura e escrita; desvincular = `ATIVO = 0` | 001 |
 | Filial, seção | `FILIAL`, `SECAO` | leitura | 000 |
-| Carteira | `EQUIPE_CLIENTE`, `CLIENTES` | leitura (realizado, clientes ativos) | 000 |
+| Carteira | `EQUIPE_CLIENTE`, `CLIENTES` | leitura (Gestão de Carteira, etapa 2) | 000 |
 | Vínculo RCA | `VENDEDOR_RCA` | leitura e escrita (`REPLACE INTO`; remover = `DELETE`) | 001 |
 | Auditoria RCA | `VENDEDOR_RCA_AUDITORIA` | leitura e escrita | **010** |
 | RCAs do ERP | `RCA_TOTVS` | leitura (lista e supervisor sugerido) | **010** |
@@ -81,11 +74,6 @@ as SFs são SQL, resolvem quem chama por `:VAR_USER` (RNT-012) e levam
 `SEM_BLOQUEIO`. Datas `hoje`/`agora` vêm da tela, em Brasília (D-007 da 001).
 Fragmentos SQL próprios em `novo/backend/lib/010-gestao.mjs`:
 
-- `REALIZADO` — linhas de venda e devolução atribuídas pela RNT-007:
-  cliente na carteira do vendedor **ou** na de um titular de quem ele é
-  substituto com férias ativas na data; filial e departamento casando com um
-  escopo ativo dele, e a seção quando o escopo define seção. Códigos comparados
-  como número (`CAST(x AS UNSIGNED)`: 2 = 02).
 - `naEquipe(alvo, { comRca })` — RNT-004: o alvo tem escopo ativo numa BU do
   cadastro ativo de coordenador de quem chama (e RCA, quando pedido).
 - `GESTAO = temPapel('GESTOR','ADMIN')`, `DIRETORIA = temPapel('DIRETORIA','ADMIN')`.
@@ -93,33 +81,13 @@ Fragmentos SQL próprios em `novo/backend/lib/010-gestao.mjs`:
 Gravações respondem `affectedRows`; 0 = recusado e a tela mostra o motivo
 (RNT-013, D-010-3).
 
-### Painel de Gestão (GESTOR, ADMIN)
+### Painel de Gestão e Gestão Cadastros — cancelados (D4, 2026-11-03)
 
-| Nome | Entrada | Saída | Atende |
-|---|---|---|---|
-| `s360PainelVendedores` | — | `ID`, `NOME`, `EMAIL`, `COD_RCA`: usuários com RCA vinculado | RF-007; select de comissões |
-| `s360PainelResumo` | `hoje`, `vendedorId` (0 = toda a equipe) | 1 linha: `BRUTO`, `DEVOLUCAO`, `LIQUIDO`, `META`, `CLIENTES_ATIVOS`, `VISITAS_PENDENTES`, `SEM_CARTEIRA_LIQUIDO`, `SEM_CARTEIRA_CLIENTES`, `ATUALIZADO_EM` (mês de `hoje`) | RF-002, RF-006, RF-007; RN-003, RN-005, RN-007 |
-| `s360PainelFila` | `hoje`, `vendedorId` | até 60 linhas: `TIPO` (TAREFA/VISITA), `ID`, `TITULO`, `CLIENTE`, `RESPONSAVEL`, `DATA`, `STATUS`, `ATRASADO`, `ACAO` | RF-008; RN-007 |
-
-- **Equipe** = usuários com RCA vinculado; filtro de vendedor = um deles.
-- **Realizado da equipe** = soma das linhas atribuídas a **pelo menos um**
-  vendedor do filtro, cada linha uma vez (D-010-4).
-- **Vendas sem carteira** = linhas nas BUs (filial + departamento) dos escopos
-  ativos do filtro cujo cliente não está em carteira nenhuma; valor líquido e
-  nº de clientes distintos.
-- **Meta** = `SUM(METAS_BU_VENDEDOR.META_VALOR)` dos vendedores do filtro no
-  mês; sem linha = 0 (RNT-009).
-- **Fila:** ação e ordem da RN-007 calculadas no SQL (`ATRASADO` primeiro,
-  depois tarefa pendente, depois data e responsável).
-
-### Gestão Cadastros — comissões (GESTOR, ADMIN)
-
-| Nome | Entrada | Saída | Atende |
-|---|---|---|---|
-| `s360ComissaoListar` | `busca`, `limite`, `offset` | `ID`, `VENDEDOR_ID`, `VENDEDOR`, `MES`, `ANO`, `VALOR_VENDAS`, `PERC_COMISSAO`, `VALOR_COMISSAO`, `TOTAL` (`COUNT(*) OVER ()`) | RF-020 |
-| `s360ComissaoCriar` | `vendedorId`, `mes`, `ano`, `vendas`, `percentual` | linhas afetadas; comissão gravada = `ROUND(vendas × % ÷ 100, 2)` calculada no servidor; recusa duplicata vendedor + mês + ano | RN-011, C-010 |
-| `s360ComissaoAtualizar` | `id` + os mesmos campos | linhas afetadas | RN-011 |
-| `s360ComissaoExcluir` | `id` | linhas afetadas (`DELETE`; T-003) | C-010 |
+As SFs `s360Painel*` e `s360Comissao*`, o fragmento `realizadoCtes` de
+`lib/010-gestao.mjs` e as tabelas de venda, devolução, meta do vendedor,
+visita e comissão saíram da 010. O cálculo do realizado fica para quem
+precisar dele (Dashboard e Analytics, specs 005 e 007); o histórico do git
+guarda a versão da 010 (commit 3248908).
 
 ### BUs (sem tela)
 
@@ -217,8 +185,6 @@ Titular e substituto chegam por **usuário**; o RCA é resolvido no servidor.
 
 | Tela / rota | Responsabilidade | Novos |
 |---|---|---|
-| `/painel-gestao` | cards, filtro de vendedor, fila; data da última atualização das vendas | `PainelGestaoPage` |
-| `/gestao-cadastros` | comissões: lista com busca e 10 por página, formulário com comissão calculada, excluir com confirmação | `GestaoCadastrosPage` |
 | `/governanca-rca` (Usuários) | cards por papel (diretoria); lista com busca e filtro de papel, papéis, RCA e supervisor; `Editar` abre o painel do usuário com papéis (diretoria), vínculo RCA com `Remover vínculo` e escopos com `Desvincular` (gestão), todos com confirmação; auditoria de RCA embaixo (gestão). `/configuracao-escopo-usuarios`, `/gestao-cargos-usuarios` e `/gestao-bus-vendedores` saem do menu (2026-11-03) | `UsuariosPage` |
 | `/gestao-coordenadores` | cadastro + BUs num salvar, `Inativar`/`Ativar` com confirmação, remover BU com confirmação | `GestaoCoordenadoresPage` |
 | `/ferias-vendedor` | cadastro (calendário), lista "Férias ativas e futuras", `Encerrar` com confirmação | `FeriasVendedorPage` |
@@ -233,7 +199,7 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
 
 | Arquivo | Funções |
 |---|---|
-| `gestao.ts` | `lerValor` (RNT-011: `1.500,50` e `1500.50`), `percentual` (12,3%), `textoMeta`, `textoAtingimento`, `textoGap` (RN-006), `calcularComissao` (RN-011), `validarCodigoBu`, `validarSupervisor`, `validarMotivo`, `resumoEscopos` (C-012), `confirmacao(acao, alvo)` (as 9 da RN-025), `MSG_BLOCO`, `mensagemBloqueio(caminho, sessao)` (RN-001/RN-002) |
+| `gestao.ts` | `validarSupervisor`, `validarMotivo`, `resumoEscopos` (C-012), `confirmacao(acao, alvo)` (RN-025), `mensagemBloqueio` (RN-001, RN-002), `MSG_BLOCO` (C-026) |
 | `ferias.ts` | `estadoFerias`, `validarFerias(nova, existentes, pessoas)` (RNT-010, RN-020, mensagem do C-021) |
 | `papeis.ts` | `papeisEditaveis`, `marcacoes(papeis)`, `mensagemPapeis(nome, papeis)` |
 
@@ -249,24 +215,17 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
 
 ## Simulador
 
-- **`schema-producao/010-gestao.mjs`:** `PEDIDOS_SEMANAIS_SYNC_RAW`,
-  `IMP_DEVOLUCOES_TOTVS` (colunas do uso nas SFs, a verificar em T-002),
-  `METAS_BU_VENDEDOR`, `VISITAS`, `COMISSOES`, `VENDEDOR_RCA_AUDITORIA`,
-  `RCA_TOTVS`, `COORDENADORES_BU`. Conferido: nenhuma está em `000-base`,
-  `001-acesso` nem nos `add-*`.
-- **`seeds/010-gestao.mjs`:** ids 10001+ para clientes, linhas de venda,
-  devolução, meta, tarefa e visita; RCAs 10001+; usuários novos por
-  `ctx.usuario`. Base: filial 6 (Palmas, TO) e departamento 9 para o Painel
-  (não se mistura com os dados das outras specs); filial 1 e 2 · Nutrição para
-  coordenador, férias e executivas; BUs 12 e 13; seções 10001,
-  10002, 10003 na BU Nutrição (C-012).
+- **`schema-producao/010-gestao.mjs`:** `VENDEDOR_RCA_AUDITORIA`, `RCA_TOTVS`,
+  `COORDENADORES_BU`. Conferido: nenhuma está em `000-base`, `001-acesso` nem
+  nos `add-*`. (Vendas, devoluções, metas, visitas e comissões saíram com o
+  Painel e o Gestão Cadastros, D4; a 002 declara `VISITAS` e
+  `IMP_DEVOLUCOES_TOTVS` no branch dela.)
+- **`seeds/010-gestao.mjs`:** RCAs 10001+; usuários novos por `ctx.usuario`;
+  filial 1 e 2 · Nutrição para coordenador, férias e executivas; BUs 12 e 13;
+  seções 10001, 10002, 10003 na BU Nutrição (C-012).
 
   | Usuário | Para | Dados |
   |---|---|---|
-  | Helena Duarte | C-001, RN-003, RN-007 | RCA; escopo F6·9; carteira; bruto 25.000; devolução 800 (200 + 600); meta 20.000; tarefa pendente 28/10; visitas 29/10 e 03/11 |
-  | Igor Matos | C-001, RNT-007 (férias) | RCA; escopo F6·9; bruto 20.000; devolução 1.200; meta 25.000; substituto de Helena de 05/10 a 09/10; tarefa em andamento com prazo futuro |
-  | Júlia Freitas | C-001, C-002 | RCA; escopo F6·9; bruto 5.000; meta 15.000 (o smoke apaga para o C-002) |
-  | — | C-001, RN-003 | clientes 10011 e 10012 sem carteira: 1.000 e 2.500 − 500 de devolução em F6·9 |
   | Nina Alves | C-012, C-013, RN-012, RN-013 | escopo ativo F1·Nutrição·seção 10002; escopo na BU 13 (ativa no seed) |
   | Olga Pires / Pedro Sales / Quésia Lemos | C-014, C-015, RN-014 | RCA 10936 (sup 10012) / RCA 10940 (sup 10012) / sem RCA; `RCA_TOTVS` com 10936, 10937, 10940, 10941 e 10012 |
   | Carlos Viana | C-023, C-024, férias | coordenador ativo (sup 10045) com F1·Nutrição |
@@ -276,11 +235,6 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
   | Yara Dias | RN-020 | escopo F1·Nutrição, sem RCA |
   | Joana Prates / Renata Costa | C-023 / C-024 | escopo F1·Nutrição / só F3·Medicamento |
 
-- **Isolamento do Painel:** "Toda a equipe" soma todo vendedor com RCA,
-  inclusive os das outras specs. O smoke do Painel apaga, no banco descartável,
-  vendas, devoluções, metas, tarefas e visitas fora da faixa 10001–10999 antes
-  de verificar os totais.
-
 ## Testes
 
 Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
@@ -288,10 +242,6 @@ Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
 
 | Cenário / regra | Arquivo | O que o `assert` verifica |
 |---|---|---|
-| C-001 | smoke | toda a equipe: líquido 48.000, meta 60.000, sem carteira 3.000 e 2 clientes; Tela: `textoAtingimento` 80,0%, `textoGap` "Faltam R$ 12.000,00" |
-| C-002 | smoke + `gestao.test` | Júlia sem meta: `META = 0`, `LIQUIDO = 5.000`; tela "Meta não distribuída", "—" e sem texto de gap |
-| C-003 | smoke | hoje 30/10, Helena: ordem [tarefa 28/10, visita 29/10, visita 03/11] e ações "Cobrar conclusão imediata", "Reagendar ou concluir hoje", "Confirmar agenda com cliente" |
-| C-010 | `gestao.test` + smoke | `calcularComissao(50000, 3)` = 1500; texto de confirmação do C-010; servidor grava 1.500,00 e recusa a mesma vendedora + mês + ano |
 | C-012 / RN-013 | smoke + `gestao.test` | seções 10001, 10002, 10003 com 10002 ativa → reativadas 0, incluídas 2; `resumoEscopos` = "2 escopos vinculados. 1 já existia."; recadastro ativo → 0 e 0 |
 | C-013 | smoke | desvincular → `ATIVO = 0`; reativar a mesma combinação → 1 e mesmo `ID` |
 | C-014 | smoke | auditar 10936 para Pedro → 0 linhas; vincular → 0; auditoria sem linha nova |
@@ -304,13 +254,7 @@ Backend em `novo/backend/simulator/smoke/010-gestao.mjs`; tela em
 | C-024 | smoke | Renata fora da lista de Carlos; alterar Renata como Carlos → 0 |
 | C-026 | `gestao.test` | `MSG_BLOCO` é a frase padrão (a tela usa `allSettled` por bloco) |
 | RN-001 | smoke + `gestao.test` | matriz: a SF de carga de cada tela (em Usuários, de cada parte) devolve 0 linhas para Ana (VENDEDOR) e para Rita (COORDENADOR sem cadastro) nas telas de coordenador; devolve linhas para o papel certo. Tela: `mensagemBloqueio` de Rita = "Seu cadastro de coordenador não está ativo. Procure a diretoria." |
-| RN-002 | `gestao.test` | bloqueio do Painel para Ana: "Esta tela está disponível apenas para Gestão e TI." + "Seu perfil: Vendedor", sem nome de tabela |
-| RN-003 | smoke | apagar a devolução de 200 de Helena sobe o líquido dela e o da equipe em 200; venda de cliente de Helena em F1·Nutrição não conta |
-| RNT-007 (férias) | smoke | venda de cliente de Helena em 06/10 conta para Igor filtrado; o total da equipe não muda (cada linha uma vez) |
-| RN-005 | smoke | metas 20.000 + 25.000 + 15.000 → 60.000 |
-| RN-006 | `gestao.test` | meta 50.000, realizado 55.000 → 110,0% e "Meta superada em R$ 5.000,00"; meta 0 → "—" |
-| RN-007 | smoke | 70 itens → 60; Igor em andamento com prazo futuro → "Acompanhar andamento"; "Visitas pendentes" de Helena = 1 |
-| RN-011 | `gestao.test` | `calcularComissao(12345.67, 2.5)` = 308.64; `lerValor('1.500,50')` = `lerValor('1500.50')` = 1500.5 |
+| RN-002 | `gestao.test` | bloqueio de Usuários para Ana: "Esta tela está disponível apenas para Diretoria, Gestão e TI." + "Seu perfil: Vendedor", sem nome de tabela |
 | RN-012 | smoke | BU 13 inativada direto na tabela (como a carga do ERP): incluir escopo → 0; escopo de Nina na BU 13 segue ativo; nenhuma SF da 010 tem `INSERT`/`UPDATE`/`DELETE`/`REPLACE` em `BU` |
 | RN-014 | smoke | Olga 10936 → 10937 com `anterior=999` no input: auditoria anterior = 10936 |
 | RN-016 | smoke | Rui {COORDENADOR, GESTOR} − coordenador → {GESTOR}; Tânia com tudo desmarcado continua ADMIN; Sara (COORDENADOR só no legado) desmarcada → sessão sem COORDENADOR e `USUARIO_CARGO` = VENDEDOR |
@@ -329,20 +273,18 @@ RN-023, RN-024.
 | D-010-1 | Gravação de mais de uma tabela = SFs SQL chamadas em sequência pela tela, cada uma idempotente e guardada; mensagem final da releitura. No RCA, a auditoria vem **antes** e a gravação exige a auditoria correspondente | SF JavaScript orquestrando; uma SF por tela | business não grava de dentro de SF JS (`docs/arquitetura.md`); a plataforma não tem transação entre SFs. Assim nenhuma gravação de RCA acontece sem auditoria, e repetir `Salvar` completa o que faltou |
 | D-010-2 | **Papéis: grava nas duas tabelas.** `USUARIO_PAPEL` recebe e perde DIRETORIA/COORDENADOR/VENDEDOR; `USUARIO_CARGO`, quando guarda um desses três, passa ao maior papel editável que ficou (DIRETORIA > COORDENADOR > VENDEDOR; nenhum = VENDEDOR). GESTOR/ADMIN no legado nunca são tocados. A tela salva sempre o conjunto inteiro (inclui os marcados, remove os desmarcados, sincroniza o legado) | (b) ler o legado só para GESTOR/ADMIN; (c) travar a remoção de papel que veio do legado | com a união da D-003, tirar só da tabela nova não tira o papel; (b) apaga papéis dados no antigo enquanto ele está no ar e mexe na guarda da 001; (c) deixa a diretoria sem conseguir remover. **Aprovado pelo usuário em 2026-11-03** |
 | D-010-3 | Motivo da recusa: a tela valida com a regra pura (formato, duplicata na lista carregada, sobreposição de férias) e mostra a mensagem da spec; o servidor recusa de novo com as mesmas condições e responde 0 | SF que devolve código de erro | uma SF SQL de escrita só devolve linhas afetadas; a regra pura é testável e o servidor continua sendo a barreira |
-| D-010-4 | Realizado da equipe soma cada linha de venda uma vez, se atribuída a pelo menos um vendedor do filtro | somar os realizados individuais | o mesmo cliente pode estar na carteira de dois vendedores na mesma BU (C-018), e o substituto herda o titular: somar contaria duas vezes |
-| D-010-5 | Bruto de `PEDIDOS_SEMANAIS_SYNC_RAW` (`ATIVO` e `STATUS_INGESTAO = 'ATIVO'`), devolução de `IMP_DEVOLUCOES_TOTVS` pela data da devolução, ambos pelo fragmento `REALIZADO` de `lib/010-gestao.mjs` | `IMP_VENDAS_DASHBOARD_TOTVS_RCA` | é a fonte do acompanhamento semanal (SF 104) e do Painel atual, com DDL conhecido. Dashboard e Analytics (005, 007) precisam usar o mesmo fragmento para o RF-002 valer |
+| D-010-4 | *Sem efeito desde 2026-11-03 (Painel cancelado, D4).* Realizado da equipe soma cada linha de venda uma vez, se atribuída a pelo menos um vendedor do filtro | somar os realizados individuais | o mesmo cliente pode estar na carteira de dois vendedores na mesma BU (C-018), e o substituto herda o titular: somar contaria duas vezes |
+| D-010-5 | *Sem efeito desde 2026-11-03 (Painel cancelado, D4).* Bruto de `PEDIDOS_SEMANAIS_SYNC_RAW` (`ATIVO` e `STATUS_INGESTAO = 'ATIVO'`), devolução de `IMP_DEVOLUCOES_TOTVS` pela data da devolução, ambos pelo fragmento `REALIZADO` de `lib/010-gestao.mjs` | `IMP_VENDAS_DASHBOARD_TOTVS_RCA` | é a fonte do acompanhamento semanal (SF 104) e do Painel atual, com DDL conhecido. Dashboard e Analytics (005, 007) precisam usar o mesmo fragmento para o RF-002 valer |
 | D-010-6 | Paginação com `COUNT(*) OVER ()` na própria listagem | SF irmã de contagem | metade das SFs; MySQL 8 e SQLite aceitam |
-| D-010-7 | Remoções físicas só onde a tabela não tem `ATIVO`: comissão, vínculo RCA, BU do coordenador, papel | marcador em vez de apagar | as tabelas de produção não têm coluna de estado e C1 proíbe acrescentar; T-003 confirma que SF SQL com `DELETE` roda para business |
+| D-010-7 | Remoções físicas só onde a tabela não tem `ATIVO`: vínculo RCA, BU do coordenador, papel | marcador em vez de apagar | as tabelas de produção não têm coluna de estado e C1 proíbe acrescentar; T-003 confirma que SF SQL com `DELETE` roda para business |
 
 ## Riscos
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
 | Sequência interrompida (aba fechada entre `Criar` e `BuIncluir`, ou entre auditar e vincular) | coordenador sem as BUs; linha de auditoria sem gravação | cada passo é idempotente: abrir e `Salvar` de novo completa. A auditoria órfã registra uma tentativa real e válida; ver `ponytail:` no `add-010` |
-| `DELETE` em SF SQL recusado para business | excluir comissão, remover RCA, BU do coordenador e papel falham | T-003 testa no sandbox antes de publicar; se recusar, volta ao plano (D-010-7) |
-| Estrutura real de `IMP_DEVOLUCOES_TOTVS` e de `USUARIO_CARGO` diferente da declarada | SF falha na publicação | T-002 lê com `listTablesMitra` e corrige `schema-producao/010-gestao.mjs` |
-| Painel lento em produção (comparação por `CAST`, sem índice) | RNF-001 (5 s) | T-104 mede com outubro/2026 de produção; se passar, filtro prévio por mês no CTE |
-| Dashboard e Analytics calcularem realizado de outro jeito | RF-002 | fragmento único `REALIZADO`; relatório pede que 005 e 007 o importem |
+| `DELETE` em SF SQL recusado para business | remover RCA, BU do coordenador e papel falham | T-003 testa no sandbox antes de publicar; se recusar, volta ao plano (D-010-7) |
+| Estrutura real de `USUARIO_CARGO`, `VENDEDOR_RCA_AUDITORIA` ou `RCA_TOTVS` diferente da declarada | SF falha na publicação | T-002 lê com `listTablesMitra` e corrige `schema-producao/010-gestao.mjs` |
 | Tabelas declaradas aqui também declaradas por 002/009 em paralelo | duplicata no merge | lista publicada na pasta de notas das sessões; quem chegar depois usa a já declarada |
 
 ## Complexity Tracking
