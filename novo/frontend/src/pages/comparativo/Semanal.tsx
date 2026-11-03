@@ -2,8 +2,8 @@
 // cliente × semana operacional do mês. Mês, ano e escopo recarregam a
 // s360SemanalMatriz; Ramo e "Abaixo da expectativa" filtram na tela.
 
-import { useMemo, useState } from 'react'
-import { Download } from 'lucide-react'
+import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, ChevronRight, Download } from 'lucide-react'
 import { acao, linha, linhas } from '@/lib/mitra-api'
 import { moeda } from '@/lib/formato'
 import {
@@ -28,7 +28,18 @@ export function Semanal({ escopo, hoje }: { escopo: Record<string, string>; hoje
   const [mes, setMes] = useState(Number(hoje.slice(5, 7)))
   const [ramo, setRamo] = useState('')
   const [abaixo, setAbaixo] = useState(0)
-  const [aberto, setAberto] = useState<LinhaMatriz | null>(null)
+  // RF-006: um cliente aberto por vez, com o detalhe logo abaixo da linha.
+  const [aberto, setAberto] = useState<LinhaMatriz['CLIENTE_ID'] | null>(null)
+  // O detalhe acompanha a largura visível da tabela, não a largura rolável.
+  const caixa = useRef<HTMLDivElement>(null)
+  const [largura, setLargura] = useState(0)
+  useLayoutEffect(() => {
+    const el = caixa.current
+    if (!el) return
+    const obs = new ResizeObserver(([e]) => setLargura(e.contentRect.width))
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
   const [aviso, setAviso] = useState<string | null>(null)
   const [exportando, setExportando] = useState(false)
 
@@ -91,6 +102,7 @@ export function Semanal({ escopo, hoje }: { escopo: Record<string, string>; hoje
           {ramo ? <FilterChip label="Ramo" value={ramo} onClear={() => setRamo('')} /> : null}
           {abaixo ? <FilterChip label="Abaixo da expectativa" value={tituloSemana(abaixo)} onClear={() => setAbaixo(0)} /> : null}
         </Toolbar>
+        <div ref={caixa}>
         {matriz.erro || (matriz.dados && !matriz.dados.ok) ? (
           <div className="p-4"><Alert tone="error">Não foi possível carregar o acompanhamento semanal. <button type="button" className="underline" onClick={matriz.recarregar}>Tentar de novo</button></Alert></div>
         ) : !m ? (
@@ -115,13 +127,19 @@ export function Semanal({ escopo, hoje }: { escopo: Record<string, string>; hoje
               </tr>
             </thead>
             <tbody>
-              {visiveis.map(l => (
-                <Tr key={l.CLIENTE_ID} className="group">
-                  <Td className="sticky left-0 z-10 bg-card group-hover:bg-accent">
-                    <button type="button" className="text-left hover:underline" onClick={() => setAberto(l)} title="Abrir detalhe do cliente">
-                      <RowTitle>{l.CLIENTE}</RowTitle>
+              {visiveis.map(l => {
+                const expandido = aberto === l.CLIENTE_ID
+                return (
+                <Fragment key={l.CLIENTE_ID}>
+                <Tr className={cn('group', expandido && 'bg-accent/60')}>
+                  <Td className={cn('sticky left-0 z-10 bg-card group-hover:bg-accent', expandido && 'bg-accent')}>
+                    <button type="button" aria-expanded={expandido} className="flex items-start gap-1.5 text-left" onClick={() => setAberto(expandido ? null : l.CLIENTE_ID)} title={expandido ? 'Fechar detalhe' : 'Abrir detalhe do cliente'}>
+                      {expandido ? <ChevronDown aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-secondary" /> : <ChevronRight aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-secondary" />}
+                      <span>
+                        <span className="hover:underline"><RowTitle>{l.CLIENTE}</RowTitle></span>
+                        <RowMeta>Curva {l.CURVA} · {l.RAMO}{l.DE_TITULAR ? ` · de ${l.DE_TITULAR}` : ''}</RowMeta>
+                      </span>
                     </button>
-                    <RowMeta>Curva {l.CURVA} · {l.RAMO}{l.DE_TITULAR ? ` · de ${l.DE_TITULAR}` : ''}</RowMeta>
                   </Td>
                   {l.SEMANAS.map((s, i) => <CelulaSemana key={i} valor={s.valor} bw={s.bw} />)}
                   <Td numeric>{moeda(l.FECH_ANT)}</Td>
@@ -129,7 +147,18 @@ export function Semanal({ escopo, hoje }: { escopo: Record<string, string>; hoje
                   <Td numeric className={corBw(l.BW_FECH)}>{fmtBw(l.BW_FECH)}</Td>
                   <Td><Status tone={tomStatus(l.STATUS)}>{l.STATUS}</Status></Td>
                 </Tr>
-              ))}
+                {expandido ? (
+                  <tr>
+                    <td colSpan={m.semanas.length + 5} className="p-0">
+                      <div className="sticky left-0" style={{ width: largura || undefined }}>
+                        <DetalheCliente cliente={l} input={input} />
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
+                </Fragment>
+                )
+              })}
               {total ? (
                 <tr className="font-semibold">
                   <Td className="sticky left-0 z-10 bg-card"><RowTitle>TOTAL</RowTitle></Td>
@@ -143,9 +172,9 @@ export function Semanal({ escopo, hoje }: { escopo: Record<string, string>; hoje
             </tbody>
           </Table>
         )}
+        </div>
       </Panel>
       {sessao.papeis.includes('ADMIN') ? <ErrosIngestao /> : null}
-      {aberto && m ? <DetalheCliente cliente={aberto} input={input} fechar={() => setAberto(null)} /> : null}
     </Stack>
   )
 }
