@@ -72,8 +72,8 @@ Uma task por linha da seção Testes do plan. Backend em `simulator/smoke/002-ca
 
 - [x] **T-110** — `cd novo/backend && npm test` verde
 - [x] **T-111** — `cd novo/frontend && npm test`, `npm run build` e `npm run lint` limpos
-- [x] **T-112** — No simulador (porta própria da sessão): Ana em `/clientes` (cards, filtros, temperatura, adicionar Q), `/clientes/2471`, `/clientes?clienteId=2001`, Carlos em `/gestao-titulares` (feito com outra adição que não Q; o diálogo de temperatura ficou sem abrir no navegador)
-- [ ] **T-113** — Verificação manual da spec: 360 px nas 4 abas; legenda, temperatura e Titulares em tema escuro
+- [x] **T-112** — No simulador (porta própria da sessão): Ana em `/clientes` (cards, filtros, temperatura, adicionar Q), `/clientes/2471`, `/clientes?clienteId=2001`, Carlos em `/gestao-titulares` (feito com outra adição que não Q)
+- [x] **T-113** — Verificação manual da spec: 360 px nas 4 abas; legenda, temperatura e Titulares em tema escuro (layout revisto: abas rolam dentro da lista, cartões no celular, linha compacta)
 - [ ] **T-114** `[sandbox]` — Publicar `add-002` e `add-000-perfil-acesso`, `sync:function-map`; medir a carteira de um coordenador no modo Time inteiro (RNF-001/002)
 
 ## Dependências

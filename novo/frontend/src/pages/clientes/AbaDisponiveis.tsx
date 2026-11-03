@@ -86,7 +86,7 @@ export function AbaDisponiveis({ aoAdicionar }: { aoAdicionar: () => void }) {
 
   return (
     <Panel>
-      <PanelHeader title="Clientes disponíveis" hint="Pessoas jurídicas sem responsável em cada escopo seu." />
+      <PanelHeader title="Clientes disponíveis" hint="Pessoas jurídicas sem responsável em cada escopo seu. Esta lista usa sempre o seu escopo, não o do botão Escopo." />
       <Toolbar>
         <Field label="Buscar">
           <SearchInput placeholder="Nome, CNPJ, código ou cidade" value={textoBusca} onChange={e => setTextoBusca(e.target.value)} />

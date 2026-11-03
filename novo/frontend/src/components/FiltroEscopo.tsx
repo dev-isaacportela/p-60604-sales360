@@ -5,8 +5,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { linhas } from '@/lib/mitra-api'
 import { getSession } from '@/lib/mitra-auth'
-import { lembrar, mostraFiltro, opcoesEscopo, recuperar, trocar, valorVisao, visoes } from '@/lib/escopo'
-import { Field, SelectMenu, Toolbar } from '@/components/page'
+import { escopoPadrao, lembrar, mostraFiltro, opcoesEscopo, recuperar, trocar, valorVisao, visoes } from '@/lib/escopo'
+import { Field, MoreFilters, SelectMenu } from '@/components/page'
 import { useSessao } from '@/components/sessao-contexto'
 
 // Um pedaço do token: login novo = marca nova = volta ao padrão do perfil.
@@ -37,18 +37,27 @@ export function useEscopo() {
     lembrar(novo, marca(), sessionStorage)
   }
 
-  return { escopo, opcoes, mudar }
+  function limpar() {
+    const padrao = escopoPadrao(sessao)
+    setEscopo(padrao)
+    lembrar(padrao, marca(), sessionStorage)
+  }
+
+  return { escopo, opcoes, mudar, limpar }
 }
 
-export function FiltroEscopo({ escopo, opcoes, mudar }: ReturnType<typeof useEscopo>) {
+/** Botão-resumo do escopo ("Escopo: Meu painel" + quantos recortes) que abre os seletores. */
+export function FiltroEscopo({ escopo, opcoes, mudar, limpar }: ReturnType<typeof useEscopo>) {
   const { sessao } = useSessao()
   const lista = useMemo(() => opcoes ?? [], [opcoes])
   const op = useMemo(() => opcoesEscopo(lista, escopo), [lista, escopo])
   if (!opcoes || !mostraFiltro(sessao, lista)) return null
   const listaVisoes = visoes(sessao, lista)
+  const visao = listaVisoes.find(v => v.value === valorVisao(escopo))?.label ?? 'Meu painel'
+  const recortes = [escopo.vendedor, escopo.filial, escopo.depto, escopo.secao].filter(Boolean).length
 
   return (
-    <Toolbar>
+    <MoreFilters label={`Escopo: ${visao}`} count={recortes} onClear={limpar}>
       {listaVisoes.length > 1 ? (
         <Field label="Visão">
           <SelectMenu label="Visão" value={valorVisao(escopo)} options={listaVisoes} onChange={v => mudar('visao', v)} />
@@ -68,6 +77,6 @@ export function FiltroEscopo({ escopo, opcoes, mudar }: ReturnType<typeof useEsc
       <Field label="Seção">
         <SelectMenu label="Seção" value={escopo.secao} options={[TODOS, ...op.secoes]} onChange={v => mudar('secao', v)} />
       </Field>
-    </Toolbar>
+    </MoreFilters>
   )
 }

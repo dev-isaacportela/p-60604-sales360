@@ -1,9 +1,10 @@
-// Minha Carteira (RF-001..008, RF-011, RF-012, RF-016, RF-017). Curva,
-// temperatura, indicadores e busca vêm prontos do s360CarteiraCarregar; a
-// tela só filtra, pagina e abre os diálogos.
+// Minha Carteira (RF-001..008, RF-011, RF-016, RF-017). Curva, temperatura,
+// indicadores e busca vêm prontos do s360CarteiraCarregar; a tela só filtra,
+// pagina e abre os diálogos. Linha compacta: tudo de um cliente em duas
+// linhas de texto, ações secundárias no menu ⋯; no celular, cartões.
 
 import { useEffect, useState } from 'react'
-import { Bell, FileText, History, MessageSquarePlus, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Bell, CalendarCheck, FileText, History, MessageSquarePlus, Pencil, ShoppingCart, Trash2 } from 'lucide-react'
 import { acao, linhas, linhasAfetadas } from '@/lib/mitra-api'
 import { agoraBrasilia, moeda } from '@/lib/formato'
 import {
@@ -12,10 +13,13 @@ import {
 } from '@/lib/carteira'
 import {
   Actions, Alert, Button, Code, Dash, Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, EmptyState, Field,
-  IconButton, InfoGrid, InfoTile, Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput, SelectMenu,
-  Stack, Status, Table, Td, TextLink, Th, Toolbar, Tr,
+  FilterChip, IconButton, MoreFilters, Pagination, Panel, PanelBody, PanelHeader, RowMeta, RowTitle, SearchInput,
+  SelectMenu, Stack, Status, Table, Td, TextLink, Th, Toolbar, Tr,
 } from '@/components/page'
-import { ConfirmarRemocao, CurvaManual, DetalheTemperatura, FichaCliente, NovoProspect, RegistrarRelato } from './dialogos'
+import { ConfirmarRemocao, CurvaManual, DetalheTemperatura, FichaCliente, RegistrarRelato } from './dialogos'
+import {
+  BarrasRamo, Cartao, Cresce, FaixaIndicadores, GradeResumo, ListaCartoes, MenuAcoes, Recolhivel, SoCelular, SoDesktop,
+} from './layout'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Linha = Record<string, any>
@@ -33,27 +37,41 @@ export async function recalcularTitulares(clienteId: number) {
   }
 }
 
+/** "13 d", em vermelho acima do limite da RN-011; sem data = traço. */
 function Dias({ tipo, dias }: { tipo: 'visita' | 'compra'; dias: number | null }) {
   if (dias === null || dias === undefined) return <Dash />
-  const texto = `${dias} ${dias === 1 ? 'dia' : 'dias'}`
-  return alertaDias(tipo, dias) ? <Status tone="alert">{texto}</Status> : <>{texto}</>
+  return alertaDias(tipo, dias) ? <Status tone="alert">{dias} d</Status> : <>{dias} d</>
 }
 
-/* RF-017: soma das barras = total da carteira filtrada. */
-function BarrasRamo({ ramos, total }: { ramos: { ramo: string; n: number }[]; total: number }) {
-  if (!ramos.length) return null
+/** Visita e compra numa linha só; com curta, troca as palavras por ícones (cartão do celular). */
+function Atividade({ c, curta }: { c: Linha; curta?: boolean }) {
+  if (curta) {
+    return (
+      <>
+        <span className="inline-flex items-center gap-1 whitespace-nowrap" title="Dias sem visita">
+          <CalendarCheck aria-label="Dias sem visita" className="size-3" /><Dias tipo="visita" dias={c.DIAS_SEM_VISITA} />
+        </span>
+        <span className="inline-flex items-center gap-1 whitespace-nowrap" title="Dias desde a última compra">
+          <ShoppingCart aria-label="Dias desde a última compra" className="size-3" /><Dias tipo="compra" dias={c.DIAS_ULTIMA_COMPRA} />
+        </span>
+      </>
+    )
+  }
   return (
-    <ul className="flex flex-col gap-2">
-      {ramos.map(r => (
-        <li key={r.ramo} className="grid grid-cols-[10rem_1fr_3rem] items-center gap-3 text-[12px]">
-          <span className="truncate text-ink-secondary">{r.ramo}</span>
-          <span className="h-2 rounded-full bg-muted">
-            <span className="block h-2 rounded-full bg-primary" style={{ width: `${total ? (r.n / total) * 100 : 0}%` }} />
-          </span>
-          <span className="text-right font-semibold text-ink">{r.n}</span>
-        </li>
-      ))}
-    </ul>
+    <span className="whitespace-nowrap">
+      Visita <Dias tipo="visita" dias={c.DIAS_SEM_VISITA} /> · Compra <Dias tipo="compra" dias={c.DIAS_ULTIMA_COMPRA} />
+    </span>
+  )
+}
+
+/** Sino, Queda e cobertura, na mesma linha do código do cliente. */
+function Selos({ c }: { c: Linha }) {
+  return (
+    <>
+      {c.ALERTA ? <Status tone="alert"><Bell aria-label="Alerta não lido" className="size-3" />Alerta</Status> : null}
+      {c.QUEDA ? <Status tone="attention">Queda</Status> : null}
+      {c.COBERTURA ? <Status tone="off">Cobertura</Status> : null}
+    </>
   )
 }
 
@@ -78,7 +96,6 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
   const [remover, setRemover] = useState<Linha | null>(null)
   const [removendo, setRemovendo] = useState(false)
   const [relato, setRelato] = useState<Linha | null>(null)
-  const [prospect, setProspect] = useState(false)
   const [legenda, setLegenda] = useState(false)
 
   useEffect(() => {
@@ -132,7 +149,6 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
   function concluido(texto: string) {
     setCurva(null)
     setRelato(null)
-    setProspect(false)
     setAviso({ tom: 'success', texto })
     setRecarga(n => n + 1)
   }
@@ -155,55 +171,99 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
     }
   }
 
+  const acoesDe = (c: Linha, comHistorico: boolean) => [
+    ...(comHistorico ? [{ rotulo: 'Histórico do cliente', icone: <History aria-hidden />, onClick: () => abrirHistorico(c.ID) }] : []),
+    { rotulo: 'Ficha do cliente', icone: <FileText aria-hidden />, onClick: () => setFicha(c.ID) },
+    { rotulo: 'Registrar contato', icone: <MessageSquarePlus aria-hidden />, onClick: () => setRelato(c) },
+    { rotulo: 'Fixar curva', icone: <Pencil aria-hidden />, onClick: () => setCurva(c) },
+    ...(c.PODE_REMOVER ? [{ rotulo: 'Remover da carteira', icone: <Trash2 aria-hidden />, onClick: () => setRemover(c), perigo: true }] : []),
+  ]
+
   const ind = dados?.indicadores
   const lista: Linha[] = dados?.linhas ?? []
   const total = Number(dados?.total) || 0
+  const nomeStatus = OPCOES_STATUS.find(o => o.value === filtros.status)?.label ?? filtros.status
+  const filtrosNaLinha = [filtros.ramo, filtros.status].filter(Boolean).length + (filtros.ordem !== 'RANK_AD' ? 1 : 0)
   const temFiltro = !!(filtros.busca || filtros.ramo || filtros.status || filtros.pendentes || filtros.ordem !== 'RANK_AD')
+
+  const graficoRamo = (
+    <BarrasRamo ramos={dados?.ramos ?? []} total={total} ativo={filtros.ramo} escolher={v => mudar('ramo', v)} />
+  )
+  const seletorRamo = (
+    <Field label="Ramo">
+      <SelectMenu label="Ramo" value={filtros.ramo} options={[{ value: '', label: 'Todos os ramos' }, ...ramos]} onChange={v => mudar('ramo', v)} />
+    </Field>
+  )
+  const seletorStatus = (
+    <Field label="Status">
+      <SelectMenu label="Status" value={filtros.status} options={OPCOES_STATUS} onChange={v => mudar('status', v)} />
+    </Field>
+  )
+  const seletorOrdem = (
+    <Field label="Ordenar por">
+      <SelectMenu label="Ordenar por" value={filtros.ordem} options={ORDENS} onChange={v => mudar('ordem', v)} />
+    </Field>
+  )
 
   return (
     <Stack>
-      <InfoGrid>
-        <InfoTile label="Clientes">{ind ? ind.total : <Dash />}</InfoTile>
-        <InfoTile label="Ativos">{ind ? ind.ativos : <Dash />}</InfoTile>
-        <InfoTile label="Receita do mês">{ind ? moeda(ind.receita) : <Dash />}</InfoTile>
-        <InfoTile label="Ticket médio">{ind?.ticket != null ? moeda(ind.ticket) : <Dash />}</InfoTile>
-        <InfoTile label="Temperatura média">{ind?.score != null ? `${ind.classe} (${ind.score})` : <Dash />}</InfoTile>
-      </InfoGrid>
-
-      <Panel>
-        <PanelHeader title="Distribuição por ramo de segmento">
+      <GradeResumo>
+        <FaixaIndicadores itens={[
+          { rotulo: 'Clientes', valor: ind ? ind.total : <Dash /> },
+          { rotulo: 'Ativos', valor: ind ? ind.ativos : <Dash /> },
+          { rotulo: 'Receita do mês', valor: ind ? moeda(ind.receita) : <Dash /> },
+          { rotulo: 'Ticket médio', valor: ind?.ticket != null ? moeda(ind.ticket) : <Dash /> },
+          { rotulo: 'Temperatura média', valor: ind?.score != null ? `${ind.classe} (${ind.score})` : <Dash /> },
+        ]} />
+        <SoDesktop>
+          <Panel>
+            <PanelHeader title="Por ramo · clique para filtrar">
+              <TextLink onClick={() => setLegenda(true)}>Legenda</TextLink>
+            </PanelHeader>
+            <PanelBody>{dados?.ramos?.length ? graficoRamo : <RowMeta>Sem clientes para distribuir.</RowMeta>}</PanelBody>
+          </Panel>
+        </SoDesktop>
+      </GradeResumo>
+      <SoCelular>
+        <Recolhivel titulo="Distribuição por ramo">
+          {graficoRamo}
           <TextLink onClick={() => setLegenda(true)}>Legenda</TextLink>
-        </PanelHeader>
-        <PanelBody>
-          <BarrasRamo ramos={dados?.ramos ?? []} total={total} />
-          {!dados?.ramos?.length ? <RowMeta>Sem clientes para distribuir.</RowMeta> : null}
-        </PanelBody>
-      </Panel>
+        </Recolhivel>
+      </SoCelular>
 
       {aviso ? <Alert tone={aviso.tom}>{aviso.texto}</Alert> : null}
 
       <Panel>
-        <PanelHeader title="Minha carteira" hint={`${total.toLocaleString('pt-BR')} clientes no filtro`}>
-          <Button variant={filtros.pendentes ? 'primary' : 'secondary'} onClick={() => mudar('pendentes', filtros.pendentes ? 0 : 1)}>
-            Visitas pendentes{ind ? ` (${ind.pendentes})` : ''}
-          </Button>
-          <Button variant="primary" onClick={() => setProspect(true)}><Plus aria-hidden />Novo cliente prospecto</Button>
-        </PanelHeader>
         <Toolbar>
-          <Field label="Buscar">
-            <SearchInput placeholder="Nome, CNPJ, código ou cidade" value={textoBusca} onChange={e => setTextoBusca(e.target.value)} />
-          </Field>
-          <Field label="Ramo">
-            <SelectMenu label="Ramo" value={filtros.ramo} options={[{ value: '', label: 'Todos os ramos' }, ...ramos]} onChange={v => mudar('ramo', v)} />
-          </Field>
-          <Field label="Status">
-            <SelectMenu label="Status" value={filtros.status} options={OPCOES_STATUS} onChange={v => mudar('status', v)} />
-          </Field>
-          <Field label="Ordenar por">
-            <SelectMenu label="Ordenar por" value={filtros.ordem} options={ORDENS} onChange={v => mudar('ordem', v)} />
-          </Field>
-          {temFiltro ? <Button onClick={limpar}>Limpar filtros</Button> : null}
+          <Cresce>
+            <Field label="Buscar">
+              <SearchInput placeholder="Nome, CNPJ, código ou cidade" value={textoBusca} onChange={e => setTextoBusca(e.target.value)} />
+            </Field>
+          </Cresce>
+          <SoDesktop>
+            {seletorRamo}
+            {seletorStatus}
+          </SoDesktop>
+          <Button variant={filtros.pendentes ? 'primary' : 'secondary'} aria-pressed={!!filtros.pendentes} onClick={() => mudar('pendentes', filtros.pendentes ? 0 : 1)}>
+            Visitas pendentes{ind ? ` · ${ind.pendentes}` : ''}
+          </Button>
+          <SoDesktop>{seletorOrdem}</SoDesktop>
+          <SoCelular>
+            <MoreFilters label="Filtros" count={filtrosNaLinha} onClear={() => setFiltros(f => ({ ...aoMudarFiltro(f, 'ramo', ''), status: '', ordem: 'RANK_AD' }))}>
+              {seletorRamo}
+              {seletorStatus}
+              {seletorOrdem}
+            </MoreFilters>
+          </SoCelular>
         </Toolbar>
+        {temFiltro ? (
+          <Toolbar>
+            {filtros.ramo ? <FilterChip label="Ramo" value={filtros.ramo} onClear={() => mudar('ramo', '')} /> : null}
+            {filtros.status ? <FilterChip label="Status" value={nomeStatus} onClear={() => mudar('status', '')} /> : null}
+            {filtros.pendentes ? <FilterChip label="Visitas" value="pendentes" onClear={() => mudar('pendentes', 0)} /> : null}
+            <TextLink onClick={limpar}>Limpar filtros</TextLink>
+          </Toolbar>
+        ) : null}
 
         {falhou ? (
           <PanelBody><Alert tone="error">Não foi possível carregar a carteira. Tente de novo.</Alert></PanelBody>
@@ -214,64 +274,81 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
             action={temFiltro ? <Button onClick={limpar}>Limpar filtros</Button> : undefined}
           />
         ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Curva</Th>
-                <Th>Cliente</Th>
-                <Th>Ramo</Th>
-                <Th>Sem visita</Th>
-                <Th>Última compra</Th>
-                <Th>Temperatura</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map(c => (
-                <Tr key={c.ID}>
-                  <Td>
-                    <Actions>
-                      <RowTitle>{c.CURVA}</RowTitle>
-                      <IconButton label={`Fixar curva de ${c.NOME}`} onClick={() => setCurva(c)}><Pencil aria-hidden /></IconButton>
-                    </Actions>
-                    {c.CURVA_MANUAL ? <RowMeta>manual</RowMeta> : null}
-                  </Td>
-                  <Td>
-                    <RowTitle>{c.NOME}</RowTitle>
-                    <RowMeta>
-                      <Code prefix="#">{c.ID}</Code>
-                      {c.CIDADE ? ` · ${c.CIDADE}${c.UF ? `/${c.UF}` : ''}` : ''}
-                    </RowMeta>
-                    <Actions>
-                      {c.ALERTA ? <Status tone="alert"><Bell aria-label="Alerta não lido" className="size-3" />Alerta</Status> : null}
-                      {c.QUEDA ? <Status tone="attention">Queda</Status> : null}
-                      {c.COBERTURA ? <Status tone="off">Cobertura de férias</Status> : null}
-                    </Actions>
-                  </Td>
-                  <Td>{c.RAMO}</Td>
-                  <Td><Dias tipo="visita" dias={c.DIAS_SEM_VISITA} /></Td>
-                  <Td><Dias tipo="compra" dias={c.DIAS_ULTIMA_COMPRA} /></Td>
-                  <Td>
-                    <TextLink onClick={() => setTemperatura(c)}>
-                      <Status tone={tomTemperatura(c.TEMPERATURA.classe)}>{rotuloTemperatura(c.TEMPERATURA)}</Status>
-                    </TextLink>
-                  </Td>
-                  <Td><Status tone={tomStatus(c.STATUS)}>{rotuloStatus(c.STATUS)}</Status></Td>
-                  <Td>
-                    <Actions>
-                      <IconButton label="Ficha do cliente" onClick={() => setFicha(c.ID)}><FileText aria-hidden /></IconButton>
-                      <IconButton label="Histórico do cliente" onClick={() => abrirHistorico(c.ID)}><History aria-hidden /></IconButton>
-                      <IconButton label="Registrar contato" onClick={() => setRelato(c)}><MessageSquarePlus aria-hidden /></IconButton>
-                      {c.PODE_REMOVER ? (
-                        <IconButton label="Remover da carteira" tone="danger" onClick={() => setRemover(c)}><Trash2 aria-hidden /></IconButton>
-                      ) : null}
-                    </Actions>
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
+          <>
+            <SoDesktop>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Curva</Th>
+                    <Th>Cliente</Th>
+                    <Th>Ramo</Th>
+                    <Th>Atividade</Th>
+                    <Th>Temperatura</Th>
+                    <Th>Status</Th>
+                    <Th>Ações</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lista.map(c => (
+                    <Tr key={c.ID}>
+                      <Td>
+                        <Actions>
+                          <RowTitle>{c.CURVA}</RowTitle>
+                          {c.CURVA_MANUAL ? <Code>manual</Code> : null}
+                          <IconButton label={`Fixar curva de ${c.NOME}`} onClick={() => setCurva(c)}><Pencil aria-hidden /></IconButton>
+                        </Actions>
+                      </Td>
+                      <Td>
+                        <RowTitle>{c.NOME}</RowTitle>
+                        <RowMeta>
+                          <Actions>
+                            <Code prefix="#">{c.ID}</Code>
+                            {c.CIDADE ? <span>{c.CIDADE}{c.UF ? `/${c.UF}` : ''}</span> : null}
+                            <Selos c={c} />
+                          </Actions>
+                        </RowMeta>
+                      </Td>
+                      <Td>{c.RAMO}</Td>
+                      <Td><Atividade c={c} /></Td>
+                      <Td>
+                        <TextLink onClick={() => setTemperatura(c)}>
+                          <Status tone={tomTemperatura(c.TEMPERATURA.classe)}>{rotuloTemperatura(c.TEMPERATURA)}</Status>
+                        </TextLink>
+                      </Td>
+                      <Td><Status tone={tomStatus(c.STATUS)}>{rotuloStatus(c.STATUS)}</Status></Td>
+                      <Td>
+                        <Actions>
+                          <Button size="sm" onClick={() => abrirHistorico(c.ID)}>Histórico</Button>
+                          <MenuAcoes label={`Mais ações para ${c.NOME}`} acoes={acoesDe(c, false)} />
+                        </Actions>
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </Table>
+            </SoDesktop>
+            <SoCelular>
+              <ListaCartoes>
+                {lista.map(c => (
+                  <Cartao
+                    key={c.ID}
+                    lado={<RowTitle>{c.CURVA}</RowTitle>}
+                    titulo={c.NOME}
+                    meta={
+                      <>
+                        <TextLink onClick={() => setTemperatura(c)}>
+                          <Status tone={tomTemperatura(c.TEMPERATURA.classe)}>{rotuloTemperatura(c.TEMPERATURA)}</Status>
+                        </TextLink>
+                        <Atividade c={c} curta />
+                        <Selos c={c} />
+                      </>
+                    }
+                    acoes={<MenuAcoes label={`Ações para ${c.NOME}`} acoes={acoesDe(c, true)} />}
+                  />
+                ))}
+              </ListaCartoes>
+            </SoCelular>
+          </>
         )}
         {total > 0 ? (
           <Pagination
@@ -291,7 +368,6 @@ export function AbaCarteira({ escopo, buscaInicial, aoTotal, abrirHistorico }: {
       <CurvaManual cliente={curva} fechar={() => setCurva(null)} salvo={concluido} />
       <ConfirmarRemocao cliente={remover} fechar={() => setRemover(null)} confirmar={confirmarRemocao} removendo={removendo} />
       <RegistrarRelato cliente={relato} fechar={() => setRelato(null)} salvo={concluido} />
-      <NovoProspect aberto={prospect} fechar={() => setProspect(false)} salvo={concluido} />
 
       <Dialog open={legenda} onOpenChange={setLegenda}>
         <DialogContent>
