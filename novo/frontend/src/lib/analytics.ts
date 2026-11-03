@@ -119,6 +119,9 @@ export function metaBatidaEm(pontos: Ponto[], meta: number): string | null {
   return pontos.find(p => (acumulado += p.valor) >= meta)?.rotulo ?? null;
 }
 
+/** RF-010: item sem cadastro (sem ramo, sem segmento, sem fornecedor, produto sem descrição) aparece em cinza. */
+export const semCadastro = (nome: string) => /^sem /i.test(nome) || nome === 'Produto sem descrição';
+
 /** "80,0%" a partir de uma fração. */
 export const fmtPct = (fracao: number) =>
   `${(Math.round(fracao * 1000) / 10).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;

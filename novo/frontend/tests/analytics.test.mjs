@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  periodo, validarIntervalo, periodoAnterior, diasUteis, projecao, pontosEvolucao, cardsResumo, fmtPct, metaBatidaEm,
+  periodo, validarIntervalo, periodoAnterior, diasUteis, projecao, pontosEvolucao, cardsResumo, fmtPct, metaBatidaEm, semCadastro,
   ordenar, listaParam, filtroDoClique, abas, visitas, MSG_ORDEM, MSG_24_MESES,
 } from '../src/lib/analytics.ts';
 
@@ -95,4 +95,12 @@ test('RN-009: 12 visitas em 30 dias → média 2,8', () => {
   assert.equal(v.media, 2.8);
   assert.equal(v.tipos.find(t => t.tipo === 'Positivação').n, 8);
   assert.equal(v.tipos.find(t => t.tipo === 'Outros tipos').n, 1);
+});
+
+test('RF-010: sem cadastro fica em cinza; nome que só contém "sem" não', () => {
+  assert.equal(semCadastro('Sem ramo'), true);
+  assert.equal(semCadastro('Sem fornecedor'), true);
+  assert.equal(semCadastro('Produto sem descrição'), true);
+  assert.equal(semCadastro('CLINICA'), false);
+  assert.equal(semCadastro('Semeadora Ltda'), false);
 });
