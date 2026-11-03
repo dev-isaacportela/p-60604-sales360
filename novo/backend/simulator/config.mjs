@@ -81,4 +81,6 @@ export const CHECK_INPUT = {
   busca: 'whey', buscaDigitos: '', clienteId: '9001', produtos: '9714,9715', offset: '0', mixId: '0',
   // spec 003
   pessoas: '[]',
+  // spec 004
+  status: '', prioridade: '', prazo: '', id: '0',
 };

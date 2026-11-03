@@ -86,6 +86,7 @@ export function registerMysqlFunctions(db, { now = () => new Date() } = {}) {
   const def = (name, arity, fn) => db.function(name, { deterministic: false, varargs: arity == null }, fn);
 
   def('NOW', 0, () => formatDate(now(), ISO));
+  def('UTC_TIMESTAMP', 0, () => formatDate(now(), ISO));
   def('CURDATE', 0, () => formatDate(now(), '%Y-%m-%d'));
   // Relogio do simulador ja e UTC; a 003 tira 3 h para Brasilia (DATE_SUB).
   def('UTC_TIMESTAMP', 0, () => formatDate(now(), ISO));
