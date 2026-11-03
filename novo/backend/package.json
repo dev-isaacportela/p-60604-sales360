@@ -5,6 +5,7 @@
   "scripts": {
     "publish:001": "node add-001-acesso.mjs",
     "publish:002": "node add-002-carteira.mjs",
+    "publish:004": "node add-004-atividades.mjs",
     "publish:009": "node add-009-mix.mjs",
     "publish:010": "node add-010-gestao.mjs",
     "publish:perfil": "node add-000-perfil-acesso.mjs",

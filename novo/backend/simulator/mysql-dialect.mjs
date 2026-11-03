@@ -86,6 +86,7 @@ export function registerMysqlFunctions(db, { now = () => new Date() } = {}) {
   const def = (name, arity, fn) => db.function(name, { deterministic: false, varargs: arity == null }, fn);
 
   def('NOW', 0, () => formatDate(now(), ISO));
+  def('UTC_TIMESTAMP', 0, () => formatDate(now(), ISO));
   def('CURDATE', 0, () => formatDate(now(), '%Y-%m-%d'));
 
   def('STR_TO_DATE', 2, (text, format) => {

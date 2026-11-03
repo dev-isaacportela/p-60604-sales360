@@ -79,4 +79,6 @@ export const CHECK_INPUT = {
   vendedorId: 0, filtro: '', papel: '', limite: 50,
   // spec 009
   busca: 'whey', buscaDigitos: '', clienteId: '9001', produtos: '9714,9715', offset: '0', mixId: '0',
+  // spec 004
+  status: '', prioridade: '', prazo: '', id: '0',
 };

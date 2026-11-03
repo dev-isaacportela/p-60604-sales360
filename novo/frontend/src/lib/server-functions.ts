@@ -17,6 +17,15 @@
 // tudo pelos ids reais.
 
 export const SERVER_FUNCTION_NAMES = {
+  atividadeAtualizar: 's360AtividadeAtualizar',
+  atividadeClientes: 's360AtividadeClientes',
+  atividadeCriar: 's360AtividadeCriar',
+  atividadeExcluir: 's360AtividadeExcluir',
+  atividadeLog: 's360AtividadeLog',
+  atividadeStatus: 's360AtividadeStatus',
+  atividadesAbertas: 's360AtividadesAbertas',
+  atividadesConcluidas: 's360AtividadesConcluidas',
+  atividadesResumo: 's360AtividadesResumo',
   carteiraCarregar: 's360CarteiraCarregar',
   carteiraCurvaFixar: 's360CarteiraCurvaFixar',
   carteiraRemover: 's360CarteiraRemover',
@@ -87,6 +96,15 @@ export const SERVER_FUNCTION_NAMES = {
 };
 
 export const SERVER_FUNCTIONS = {
+  atividadeAtualizar: '401',
+  atividadeClientes: '402',
+  atividadeCriar: '403',
+  atividadeExcluir: '404',
+  atividadeLog: '405',
+  atividadeStatus: '406',
+  atividadesAbertas: '407',
+  atividadesConcluidas: '408',
+  atividadesResumo: '409',
   carteiraCarregar: '202',
   carteiraCurvaFixar: '205',
   carteiraRemover: '206',
