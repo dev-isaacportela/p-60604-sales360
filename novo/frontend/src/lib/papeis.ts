@@ -27,7 +27,9 @@ export function mensagemPapeis(nome: string, papeis: string[]): string {
 }
 
 /** Usuários (RN-001 da 010): cada papel edita só a sua parte do painel do usuário. */
-export function partesUsuarios(papeis: string[]) {
+export function partesUsuarios(papeis: string[], coordenadorAtivo = false) {
   const tem = (...p: string[]) => p.some(x => papeis.includes(x));
-  return { papeis: tem('DIRETORIA', 'ADMIN'), rcaEscopo: tem('GESTOR', 'ADMIN') };
+  const global = tem('GESTOR', 'DIRETORIA', 'ADMIN');
+  // Coordenador ativo sem papel global vê só a equipe e só o acesso das executivas.
+  return { papeis: tem('DIRETORIA', 'ADMIN'), rcaEscopo: tem('GESTOR', 'ADMIN'), acesso: global || coordenadorAtivo, soEquipe: !global };
 }

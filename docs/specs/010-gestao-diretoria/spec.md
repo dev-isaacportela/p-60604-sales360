@@ -28,7 +28,7 @@ que mudou.
 
 | Perfil | O que precisa fazer | Frequência |
 |---|---|---|
-| Gestão (GESTOR/ADMIN) | Manter código de vendedor do ERP e escopos | diária / sob demanda |
+| Gestão (GESTOR/ADMIN) | Manter código de vendedor do ERP e escopos; acesso de executivas de qualquer equipe | diária / sob demanda |
 | Diretoria (DIRETORIA/ADMIN) | Papéis e coordenadores; férias e acesso de executivas de qualquer equipe | semanal |
 | Coordenador (cadastro ativo) | Mover carteira da equipe, cadastrar férias, desativar acesso de executiva da equipe | semanal |
 | TI | Mesmos acessos de gestão às telas de acesso de executivas | sob demanda |
@@ -125,7 +125,7 @@ que mudou.
 
 ### Usuários
 
-Uma tela só para papéis, vínculo RCA e escopo de cada usuário (antes Papéis de Usuários, Governança RCA e Escopo Usuários; fundidas em 2026-11-03). A lista mostra cada usuário uma vez; `Editar` abre o painel do usuário com as partes que o papel de quem abre pode editar (RN-001).
+Uma tela só para papéis, vínculo RCA, escopo e acesso de cada usuário (antes Papéis de Usuários, Governança RCA, Escopo Usuários e Executivas de Venda; fundidas em 2026-11-03). A lista mostra cada usuário uma vez; `Editar` abre o painel do usuário com as partes que o papel de quem abre pode editar (RN-001).
 
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
@@ -154,12 +154,12 @@ Uma tela só para papéis, vínculo RCA e escopo de cada usuário (antes Papéis
 |---|---|---|---|
 | RF-030 | O sistema DEVE cadastrar férias (vendedor, substituto, início, fim por calendário) e listar "Férias ativas e futuras" com `Encerrar` | C-021, C-022 | must |
 
-### Executivas de Venda (acesso)
+### Usuários: acesso das executivas
 
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
-| RF-031 | O sistema DEVE listar executivas pela RN-021 com busca por nome ou e-mail, filtro Todas / Com acesso / Desativadas, 20 por página, desativadas primeiro | Coordenador vê "Você vê as executivas do seu departamento." | must |
-| RF-032 | O sistema DEVE `Desativar acesso` (motivo opcional) e `Reativar acesso` com confirmação e bloquear a executiva no servidor | C-023, C-024 | must |
+| RF-031 | O sistema DEVE mostrar na lista de Usuários a situação de acesso (Com acesso / Desativada), com filtro Todas / Com acesso / Desativadas, 20 por página, desativadas primeiro; o coordenador ativo vê só a equipe | Coordenador vê "Você vê as executivas do seu departamento." | must |
+| RF-032 | O sistema DEVE, no painel do usuário, `Desativar acesso` (motivo opcional) e `Reativar acesso` com confirmação das executivas da RN-021, e bloquear a executiva no servidor | C-023, C-024 | must |
 
 ### Rotinas automáticas
 
@@ -195,11 +195,10 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 
   | Tela | Libera | Recorte |
   |---|---|---|
-  | Usuários | GESTOR, DIRETORIA ou ADMIN; vínculo RCA e escopo: GESTOR ou ADMIN; papéis: DIRETORIA ou ADMIN | todos os usuários |
+  | Usuários | GESTOR, DIRETORIA, ADMIN ou coordenador ativo; vínculo RCA e escopo: GESTOR ou ADMIN; papéis: DIRETORIA ou ADMIN; acesso de executivas: GESTOR, DIRETORIA, ADMIN ou coordenador ativo | todos os usuários; coordenador ativo: a equipe (RNT-004) |
   | Gestão Coordenadores | DIRETORIA ou ADMIN | todas as BUs |
   | Gestão de Carteira | coordenador com cadastro ativo e usuário vinculado | equipe (RNT-004) |
   | Férias de Vendedores | coordenador ativo; DIRETORIA ou ADMIN | equipe; todas as BUs |
-  | Executivas de Venda | DIRETORIA ou ADMIN; coordenador ativo | todas; equipe |
 
   Em Usuários, quem não edita uma parte não a vê no painel do usuário. Papel COORDENADOR sem cadastro ativo não abre as telas do coordenador e vê "Seu cadastro de coordenador não está ativo. Procure a diretoria." O menu mostra exatamente as telas liberadas (spec 001).
 - **RN-002 — Mensagem de bloqueio.** "Esta tela está disponível apenas para <papéis>." seguida de "Seu perfil: <papéis do usuário>", sem nome de cadastro interno.
@@ -212,7 +211,7 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 - **RN-018 — Transferência.** Origem e destino na equipe; o destino precisa ter escopo ativo na filial + departamento (+ seção, se o escopo definir) do vínculo transferido, senão "Nada foi alterado: <destino> não atua em <filial · departamento>."; o vínculo mantém filial e seção; se o destino já tem o cliente na mesma filial e seção, não duplica. Carteira inteira é tudo ou nada e responde transferidos e já existentes.
 - **RN-019 — Adicionar cliente.** Só cliente disponível (regras da spec 002), nunca pessoa física; busca até 8 resultados (RNT-014); com mais de um escopo do vendedor, o coordenador escolhe filial/seção.
 - **RN-020 — Férias.** RNT-010. Titular e substituto da equipe do coordenador (diretoria: qualquer), ambos com RCA, diferentes; datas por calendário. Encerrar ATIVA → fim = hoje; encerrar FUTURA → cancelada. É o único cadastro de férias.
-- **RN-021 — Executivas visíveis.** Usuários sem papel DIRETORIA ou ADMIN, sem cadastro ativo de coordenador e diferentes de quem abre a tela, que tenham escopo ativo (coordenador: nas suas BUs) ou, para os perfis globais, RCA vinculado.
+- **RN-021 — Executivas visíveis.** Usuários sem papel DIRETORIA ou ADMIN, sem cadastro ativo de coordenador e diferentes de quem abre a tela, que tenham escopo ativo (coordenador: nas suas BUs) ou, para os perfis globais (GESTOR, DIRETORIA, ADMIN), RCA vinculado.
 - **RN-022 — Bloqueio de acesso.** Motivo opcional até 500 caracteres. Executiva desativada é recusada pelo servidor em qualquer ação e na entrada, e a sessão aberta é encerrada na próxima ação, com a mensagem de acesso desativado no login. Reativar libera na hora. Carteira, histórico e vendas não mudam. Grava quem e quando.
 - **RN-023 — Rotina de metas do planejamento.** Segundas às 7h (Brasília): atualiza as metas por BU, UF e mês e registra a execução; a data da última atualização aparece na aba Metas do Analytics (spec 007, RNT-015).
 - **RN-024 — Rotina de clientes e BUs do ERP.** Diária às 4h: inclui clientes novos e atualiza ramo, UF e cidade; inclui departamentos novos como BU e atualiza nome e status das existentes; valor vazio no ERP não apaga o atual; registra a execução.
@@ -306,6 +305,7 @@ Verificação manual:
 - [x] Decidido em 2026-10-30: o bloco de vínculo vendedor ↔ departamento e filial sai, e o registro só é aposentado depois de confirmado que nada mais o usa.
 - [x] Decidido em 2026-10-30: escopo é cadastrado só em Escopo Usuários; sai o bloco duplicado de BUs e Vendedores.
 - [x] Decidido em 2026-11-03: Papéis de Usuários, Governança RCA e Escopo Usuários viram uma tela só, Usuários (`/governanca-rca`); cada papel edita a sua parte (RN-001). `/configuracao-escopo-usuarios` e `/gestao-cargos-usuarios` saem do menu.
+- [x] Decidido em 2026-11-03: Executivas de Venda (`/gestao-acesso-executivas`) entra em Usuários; o coordenador ativo abre Usuários com a equipe e só a parte Acesso, e o GESTOR passa a desativar e reativar o acesso de qualquer executiva.
 - [x] Decidido em 2026-11-03 (D4): Painel de Gestão (`/painel-gestao`) e Gestão Cadastros (`/gestao-cadastros`) são cancelados, com o cadastro manual de comissão.
 - [x] Decidido em 2026-11-03: BUs e Vendedores (`/gestao-bus-vendedores`) deixa de existir; a BU vem direto do ERP (Winthor) pela rotina da RN-024.
 - [x] Decidido em 2026-10-30: não há histórico de alterações da meta da BU; guarda só o último valor e quem lançou, como hoje. *Sem efeito desde 2026-11-03: a tela Gestão de Metas foi cancelada e a meta vem só do planejamento.*
@@ -347,7 +347,7 @@ Páginas atuais: `PainelGestaoPage.tsx`, `AnaliseDiretoriaPage.tsx`, `Faturament
 | RF-027, RN-016 | gestaoCargosUsuariosResumo 205 · gestaoCargosUsuariosListar 206 · gestaoCargosUsuariosSalvar 207 | USUARIO_CARGO (hoje 1 papel por usuário) |
 | RF-028, RF-029, RN-017–RN-019 | gestaoCarteiraCoordenadorVendedores 158 · Ramos 159 · Listar 160 · Contar 161 · TransferirCliente 162 · TransferirToda 163 · ClientesDisponiveis 248 · ContarClientesDisponiveis 249 · AdicionarCliente 250 | EQUIPE_CLIENTE, BU_VENDEDOR, COORDENADORES_BU, VENDEDOR_RCA |
 | RF-030, RN-020 | feriasVendedorListar 164 · feriasVendedorCadastrar 165 · feriasVendedorEncerrar 166; vendedores via 158 | FERIAS_VENDEDOR, FUNCIONARIOS.ID_SUBSTITUTO (segunda fonte, spec 001) |
-| RF-031, RF-032, RN-021, RN-022 | gestaoAcessoExecutivasListar 384 · gestaoAcessoExecutivasAlterar 385 · meuAcessoBloqueado 386 | USUARIO_BLOQUEIO |
+| RF-031, RF-032, RN-021, RN-022 (hoje tela própria; agora parte de Usuários) | gestaoAcessoExecutivasListar 384 · gestaoAcessoExecutivasAlterar 385 · meuAcessoBloqueado 386 | USUARIO_BLOQUEIO |
 | RF-033, RN-023 | syncIntegrationBillingTargets 288 (JS, cita projeto 44515) · listIntegrationBillingDimensionsLocal 289 · listIntegrationMonthlyBillingTargetsLocal 290 · getIntegrationBillingTargetSummaryLocal 291 · listIntegrationBillingSyncLogs 292 — 289–292 **sem uso** em tela | INTG_BUSINESS_UNIT, INTG_REGION, INTG_ACTIVITY_SEGMENT, INTG_MONTHLY_BILLING_TARGET, INTG_BILLING_SYNC_LOG |
 | RF-034, RN-024 | SF de sincronização criada por `backend/import-clientes-winthor.mjs` (cron `0 0 4 */2 * *`) · sincronizarClientesUfRamoTotvs 294 (**sem uso** em tela; registro mais recente sem cron) | IMP_CLIENTES_TOTVS, CLIENTES, CLIENTE_BU_VENDEDOR |
 

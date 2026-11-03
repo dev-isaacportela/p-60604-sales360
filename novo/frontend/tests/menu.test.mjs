@@ -13,9 +13,9 @@ const ana = { papeis: ['VENDEDOR'], coordenadorAtivo: false, pagina: '/agenda' }
 
 test('C-007 / RN-005: Diretoria + coordenador ativo veem as duas seções, Titulares uma vez só', () => {
   const menu = montarMenu(gil);
-  // Executivas de Venda (coordenador ativo e Diretoria) e Usuários (Diretoria, spec 010) ficam em Gestão.
+  // Usuários (coordenador ativo e Diretoria, spec 010; inclui o acesso das executivas) fica em Gestão.
   assert.deepEqual(menu.map(s => s.id), ['principal', 'coordenador', 'diretoria', 'gestao', 'final']);
-  assert.deepEqual(rotulos(porId(menu, 'gestao')), ['Executivas de Venda', 'Usuários']);
+  assert.deepEqual(rotulos(porId(menu, 'gestao')), ['Usuários']);
   assert.equal(rotulos(porId(menu, 'principal')).at(-1), 'Direcionamento Semanal');
   assert.deepEqual(rotulos(porId(menu, 'coordenador')),
     ['Gestão de Carteira', 'Titulares de Clientes', 'Férias de Vendedores']);
@@ -35,7 +35,7 @@ test('RN-005 (permissões): Gestão por papel, telas canceladas nunca aparecem',
 
   const ti = montarMenu({ papeis: ['ADMIN'] });
   const gestaoTi = rotulos(porId(ti, 'gestao'));
-  assert.deepEqual(gestaoTi, ['Executivas de Venda', 'Usuários']);
+  assert.deepEqual(gestaoTi, ['Usuários']); // 010: Executivas de Venda entrou em Usuários
   // Férias de Vendedores abre para Diretoria/TI desde a spec 010 (RN-001).
   assert.deepEqual(rotulos(porId(ti, 'diretoria')), ['Gestão Coordenadores', 'Titulares de Clientes', 'Férias de Vendedores']);
 

@@ -180,6 +180,11 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     for (const fora of ['Gil Prado', 'Carlos Viana', 'Renata Costa']) assert.ok(!nomes.includes(fora), fora);
     const globais = (await executivas(DIRETORIA)).map((e) => e.NOME);
     assert.ok(globais.includes('Renata Costa') && !globais.includes('Gil Prado'));
+    // Gestor também é perfil global de acesso (Executivas em Usuários, 2026-11-03).
+    assert.ok((await executivas(GESTOR)).some((e) => e.NOME === 'Renata Costa'));
+    // Em Usuários, o coordenador ativo vê a equipe e não quem está fora das BUs dele.
+    const equipe = (await linhas('s360PapelListar', PAGINA, P.CARLOS)).map((u) => u.NOME);
+    assert.ok(equipe.includes('Joana Prates') && !equipe.includes('Renata Costa'));
   });
 
   await teste('C-023: Carlos desativa Joana; ela é recusada em tudo e a carteira não muda', async () => {
@@ -193,6 +198,8 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     const [primeira] = await executivas(P.CARLOS);
     assert.equal(primeira.NOME, 'Joana Prates'); // desativadas primeiro
     assert.equal((await executivas(P.CARLOS, { filtro: 'DESATIVADAS' })).length, 1);
+    const [primeiro] = await linhas('s360PapelListar', { ...PAGINA, filtro: 'DESATIVADAS' }, P.CARLOS);
+    assert.deepEqual([primeiro.NOME, Number(primeiro.BLOQUEADO)], ['Joana Prates', 1]);
     assert.equal(banco(`SELECT COUNT(*) AS N FROM EQUIPE_CLIENTE WHERE ID_VENDEDOR = ${P.JOANA}`)[0].N, carteira);
   });
 
@@ -217,6 +224,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
       ['s360PapelListar', PAGINA, GESTOR],
       ['s360CoordenadorListar', {}, DIRETORIA],
       ['s360PapelListar', PAGINA, DIRETORIA],
+      ['s360PapelListar', PAGINA, P.CARLOS],
       ['s360PapelResumo', {}, DIRETORIA],
       ['s360FeriasPessoas', {}, P.CARLOS],
       ['s360ExecutivaListar', PAGINA, P.CARLOS],
@@ -239,6 +247,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     // COORDENADOR sem cadastro ativo (Rita, spec 001) não abre as telas do coordenador.
     assert.equal((await linhas('s360FeriasPessoas', {}, ID.RITA)).length, 0);
     assert.equal((await linhas('s360ExecutivaListar', PAGINA, ID.RITA)).length, 0);
+    assert.equal((await linhas('s360PapelListar', PAGINA, ID.RITA)).length, 0);
     // Bloqueado não lê nada (RN-016 da 001).
     assert.equal((await linhas('s360PapelListar', PAGINA, ID.FABIO)).length, 0);
   });
