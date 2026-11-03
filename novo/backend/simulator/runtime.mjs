@@ -8,7 +8,7 @@
 // ele estaria testando a si mesmo.
 
 import { PUBLISH_ORDER } from './config.mjs';
-import { toSqlite, planUpdateJoin } from './mysql-dialect.mjs';
+import { toSqlite, planUpdateJoin, splitStatements } from './mysql-dialect.mjs';
 
 /**
  * Carrega as definicoes reais dos scripts de publicacao.
@@ -61,6 +61,12 @@ export function createRunner(db, { resolveById = () => null, onQuery } = {}) {
   // Leitura devolve as linhas; escrita devolve { affectedRows }, como a
   // plataforma faz com SF SQL de DML (a tela usa isso na RNT-013).
   const run = (sql) => {
+    // Varias instrucoes: uma a uma, sem transacao (como a plataforma), e a
+    // soma das linhas afetadas (D-904 da spec 009; T-902 confere no sandbox).
+    const instrucoes = splitStatements(String(sql));
+    if (instrucoes.length > 1) {
+      return { affectedRows: instrucoes.reduce((total, uma) => total + (run(uma).affectedRows ?? 0), 0) };
+    }
     const translated = toSqlite(sql);
     if (onQuery) onQuery(translated, sql);
     const plano = planUpdateJoin(translated);

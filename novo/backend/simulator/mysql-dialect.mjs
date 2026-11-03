@@ -157,6 +157,9 @@ export function registerMysqlFunctions(db, { now = () => new Date() } = {}) {
   def('CHAR_LENGTH', 1, (value) => (value == null ? null : [...String(value)].length));
   def('LCASE', 1, (value) => (value == null ? null : String(value).toLowerCase()));
   def('UCASE', 1, (value) => (value == null ? null : String(value).toUpperCase()));
+
+  // Comparacao sem acento nem caixa (COLLATE utf8mb4_0900_ai_ci, ver toSqlite).
+  def('MITRA_SEM_ACENTO', 1, (value) => (value == null ? null : String(value).normalize('NFD').replace(/\p{M}/gu, '').toUpperCase()));
 }
 
 /**
@@ -164,8 +167,11 @@ export function registerMysqlFunctions(db, { now = () => new Date() } = {}) {
  * string, para nunca alterar um dado que por acaso pareca SQL.
  */
 export function toSqlite(sql) {
-  return mapOutsideStrings(String(sql), (chunk) => {
+  return mapOutsideStrings(traduzirComLiterais(String(sql)), (chunk) => {
     let out = chunk;
+
+    // LAST_INSERT_ID() -> last_insert_rowid(): o mesmo "ultimo id desta conexao".
+    out = out.replace(/\bLAST_INSERT_ID\s*\(\s*\)/gi, 'last_insert_rowid()');
 
     // DATE_SUB(x, INTERVAL 30 DAY) -> MITRA_DATE_ADD(x, -30, 'DAY')
     out = out.replace(/\bDATE_SUB\s*\(([^,]+?),\s*INTERVAL\s+(-?\d+)\s+(SECOND|MINUTE|HOUR|DAY)\s*\)/gi,
@@ -196,6 +202,56 @@ export function toSqlite(sql) {
 
     return out;
   });
+}
+
+/**
+ * Traducoes cujo padrao atravessa literais de string (por isso nao cabem em
+ * mapOutsideStrings): os literais sao mascarados, o padrao casa e eles voltam.
+ *  - JSON_TABLE(json, '$[*]' COLUMNS (A T PATH '$.a', ...)) ->
+ *    (SELECT json_extract(value, '$.a') AS A, ... FROM json_each(json));
+ *    so a raiz '$[*]', que e o que as SFs usam.
+ *  - CONVERT(x USING utf8mb4) COLLATE utf8mb4_0900_ai_ci -> MITRA_SEM_ACENTO(x):
+ *    os dois lados da comparacao sao escritos assim, e o SQLite ja ignora caixa
+ *    ASCII no LIKE.
+ */
+function traduzirComLiterais(sql) {
+  const literais = [];
+  const mascarado = sql.replace(/'(?:[^']|'')*'/g, (lit) => `\u0000${literais.push(lit) - 1}\u0000`);
+  const restaurar = (texto) => texto.replace(/\u0000(\d+)\u0000/g, (_, i) => literais[Number(i)]);
+  const traduzido = mascarado
+    .replace(/\bJSON_TABLE\s*\(\s*(\u0000\d+\u0000)\s*,\s*\u0000\d+\u0000\s+COLUMNS\s*\(([\s\S]*?)\)\s*\)/gi, (_, json, colunas) => {
+      const campos = splitTopLevelCommas(colunas).map((coluna) => {
+        const m = coluna.trim().match(/^(\w+)\s+[\s\S]+?\s+PATH\s+(\u0000\d+\u0000)$/i);
+        if (!m) throw new Error(`JSON_TABLE: coluna nao reconhecida: ${restaurar(coluna)}`);
+        return `json_extract(value, ${m[2]}) AS ${m[1]}`;
+      });
+      return `(SELECT ${campos.join(', ')} FROM json_each(${json}))`;
+    })
+    .replace(/\bCONVERT\s*\(([\s\S]+?)\s+USING\s+utf8mb4\s*\)\s*COLLATE\s+utf8mb4_0900_ai_ci\b/gi, 'MITRA_SEM_ACENTO($1)');
+  return restaurar(traduzido);
+}
+
+/**
+ * Divide uma SF com varias instrucoes (`;` fora de literais). A plataforma
+ * aceita assim (o mixCriar do antigo e um exemplo) e roda uma a uma.
+ */
+export function splitStatements(sql) {
+  const partes = [];
+  let atual = '';
+  let quote = null;
+  for (let i = 0; i < sql.length; i += 1) {
+    const char = sql[i];
+    if (quote) {
+      atual += char;
+      if (char === quote && sql[i + 1] === quote) { atual += sql[i + 1]; i += 1; continue; }
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === "'" || char === '"') quote = char;
+    if (char === ';') { partes.push(atual); atual = ''; continue; }
+    atual += char;
+  }
+  return [...partes, atual].filter((parte) => parte.trim());
 }
 
 /** Aplica `fn` apenas aos trechos fora de literais 'assim' e "assim". */
