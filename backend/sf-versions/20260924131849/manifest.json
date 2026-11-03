@@ -1,0 +1,198 @@
+{
+  "timestamp": "20260924131849",
+  "projectId": 60604,
+  "motivo": "Versionamento manual.",
+  "criadoEm": "2026-09-24T13:18:49.639Z",
+  "serverFunctions": [
+    {
+      "serverFunctionId": 130,
+      "name": "alertasInteligentesPopular",
+      "type": "JAVASCRIPT",
+      "description": "Gera alertas inteligentes processando novos clientes em modo incremental sem duplicar avisos existentes.",
+      "file": "sf-130-alertasinteligentespopular.sql",
+      "bytes": 19195,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 208,
+      "name": "alertasInteligentesEnviarResumoSemanal",
+      "type": "JAVASCRIPT",
+      "description": "Envia por email, de forma agrupada por vendedor, os avisos comerciais gerados nos ultimos 7 dias. Agendada para quinta-feira de madrugada.",
+      "file": "sf-208-alertasinteligentesenviarresumosemanal.sql",
+      "bytes": 8346,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 212,
+      "name": "googleAgendaSincronizarItem",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza visita, atividade, prospeccao ou compromisso interno (incl. deslocamento) para o Google Agenda de cada usuario envolvido.",
+      "file": "sf-212-googleagendasincronizaritem.sql",
+      "bytes": 17748,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 237,
+      "name": "enviarRelatorioSemanalCoordenadores",
+      "type": "JAVASCRIPT",
+      "description": "<p>Envia toda segunda pela manhã o relatório de vendas da semana anterior para coordenadores ativos, com gráficos, KPIs e análises por escopo de BU.</p>",
+      "file": "sf-237-enviarrelatoriosemanalcoordenadores.sql",
+      "bytes": 30038,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 238,
+      "name": "ce360AplicarCustoPadrao",
+      "type": "JAVASCRIPT",
+      "description": "Recebe custo padrão do projeto de custos e atualiza CUSTO_PADRAO_PRODUTO.",
+      "file": "sf-238-ce360aplicarcustopadrao.sql",
+      "bytes": 974,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 239,
+      "name": "ce360AplicarCustosEspeciais",
+      "type": "JAVASCRIPT",
+      "description": "Recebe custos especiais do projeto de custos e atualiza CUSTO_ESPECIAL_PRODUTO.",
+      "file": "sf-239-ce360aplicarcustosespeciais.sql",
+      "bytes": 2154,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 251,
+      "name": "mixAtualizarCustosSeNecessario",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza o cache de custos do Mix Builder. Roda por CRON (a cada 30min) — NAO chamar da tela: e JAVASCRIPT e faz DDL/DML, negado para acesso BUSINESS.",
+      "file": "sf-251-mixatualizarcustossenecessario.sql",
+      "bytes": 12882,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 264,
+      "name": "alertasInteligentesProcessarFila",
+      "type": "JAVASCRIPT",
+      "description": "Inicializa e processa a fila de alertas inteligentes em pequenos lotes para evitar timeout.",
+      "file": "sf-264-alertasinteligentesprocessarfila.sql",
+      "bytes": 7846,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 268,
+      "name": "mixSincronizarProdutosCustosSemanal",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza produtos do projeto de gestao de custos toda segunda-feira pela manha.",
+      "file": "sf-268-mixsincronizarprodutoscustossemanal.sql",
+      "bytes": 3908,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 277,
+      "name": "solicitacoesComprasEnviarItemCompras",
+      "type": "JAVASCRIPT",
+      "description": "Envia um item de solicitacao comercial para o projeto de compras e grava o vinculo remoto.",
+      "file": "sf-277-solicitacoescomprasenviaritemcompras.sql",
+      "bytes": 5460,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 278,
+      "name": "solicitacoesComprasSincronizarStatusCompras",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza status das solicitacoes enviadas ao projeto de compras de volta para o projeto comercial.",
+      "file": "sf-278-solicitacoescomprassincronizarstatuscompras.sql",
+      "bytes": 3106,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 288,
+      "name": "syncIntegrationBillingTargets",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza localmente dimensoes e metas de faturamento do projeto de planejamento estrategico.",
+      "file": "sf-288-syncintegrationbillingtargets.sql",
+      "bytes": 7104,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 294,
+      "name": "sincronizarClientesUfRamoTotvs",
+      "type": "JAVASCRIPT",
+      "description": "Atualiza ramos, UF e cidade dos clientes a partir da fonte Winthor para metas por ramo/UF.",
+      "file": "sf-294-sincronizarclientesuframototvs.sql",
+      "bytes": 1025,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 303,
+      "name": "sincronizarCarteiraComunicacaoDepto9",
+      "type": "JAVASCRIPT",
+      "description": "Sincroniza automaticamente a carteira do usuario comunicacao com clientes do departamento 9 nas filiais 1, 2 e 6.",
+      "file": "sf-303-sincronizarcarteiracomunicacaodepto9.sql",
+      "bytes": 3262,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 365,
+      "name": "googleAgendaTrocarCodigo",
+      "type": "JAVASCRIPT",
+      "description": "Troca o codigo de autorizacao do Google pelo refresh token e guarda na ponte temporaria indexada pelo state.",
+      "file": "sf-365-googleagendatrocarcodigo.sql",
+      "bytes": 3013,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 370,
+      "name": "googleAgendaListarCalendarios",
+      "type": "JAVASCRIPT",
+      "description": "Lista os calendarios com permissao de escrita da conta Google do usuario dono do ticket.",
+      "file": "sf-370-googleagendalistarcalendarios.sql",
+      "bytes": 6296,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 371,
+      "name": "googleAgendaTrocarCalendario",
+      "type": "JAVASCRIPT",
+      "description": "Troca a agenda de destino: remove os eventos da agenda anterior e zera os vinculos para recriar no destino novo.",
+      "file": "sf-371-googleagendatrocarcalendario.sql",
+      "bytes": 5910,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 372,
+      "name": "googleAgendaManutencao",
+      "type": "JAVASCRIPT",
+      "description": "CRON: remove linhas vencidas das tabelas-ponte do Google Agenda e provisiona a integracao por usuario. Roda como Administrator porque acesso BUSINESS nao executa DELETE nem cria integracao.",
+      "file": "sf-372-googleagendamanutencao.sql",
+      "bytes": 2096,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 375,
+      "name": "googleAgendaProcessarFila",
+      "type": "JAVASCRIPT",
+      "description": "Processa a fila de sincronizacao do Google Agenda chamando a SF 212. Roda em cron como Administrator porque a SF 212 grava no banco.",
+      "file": "sf-375-googleagendaprocessarfila.sql",
+      "bytes": 5348,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    }
+  ]
+}

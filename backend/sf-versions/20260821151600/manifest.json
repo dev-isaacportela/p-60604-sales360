@@ -1,0 +1,58 @@
+{
+  "timestamp": "20260821151600",
+  "projectId": 45654,
+  "motivo": "Antes de reaplicar deducao de devolucoes no acompanhamento semanal.",
+  "criadoEm": "2026-08-21T15:16:02.033Z",
+  "serverFunctions": [
+    {
+      "serverFunctionId": 104,
+      "name": "calcular-bw-semanal",
+      "type": "SQL",
+      "description": "Calcula B/W semanal com semanas sexta-quinta recortadas ao mes, incluindo sexta semana parcial quando houver.",
+      "file": "sf-104-calcular-bw-semanal.sql",
+      "bytes": 19981,
+      "copiaPlataformaId": 353,
+      "copiaPlataformaNome": "calcular-bw-semanal-v20260821151600"
+    },
+    {
+      "serverFunctionId": 110,
+      "name": "clienteDetalheItensSemana",
+      "type": "SQL",
+      "description": "Detalha itens da semana usando semanas sexta-quinta recortadas ao mes.",
+      "file": "sf-110-clientedetalheitenssemana.sql",
+      "bytes": 16786,
+      "copiaPlataformaId": 354,
+      "copiaPlataformaNome": "clienteDetalheItensSemana-v20260821151600"
+    },
+    {
+      "serverFunctionId": 146,
+      "name": "adminAcompSemanalListar",
+      "type": "SQL",
+      "description": "Admin: lista compras semanais por vendedor usando semanas sexta-quinta recortadas ao mes.",
+      "file": "sf-146-adminacompsemanallistar.sql",
+      "bytes": 8730,
+      "copiaPlataformaId": 355,
+      "copiaPlataformaNome": "adminAcompSemanalListar-v20260821151600"
+    },
+    {
+      "serverFunctionId": 109,
+      "name": "clienteDetalheVendasSemanais",
+      "type": "SQL",
+      "description": "Detalha semanas do cliente com faturamento liquido e semanas sexta-quinta recortadas ao mes.",
+      "file": "sf-109-clientedetalhevendassemanais.sql",
+      "bytes": 21965,
+      "copiaPlataformaId": 356,
+      "copiaPlataformaNome": "clienteDetalheVendasSemanais-v20260821151600"
+    },
+    {
+      "serverFunctionId": 111,
+      "name": "clienteDetalheResumoPedidosSemana",
+      "type": "SQL",
+      "description": "Resume pedidos da semana com faturamento liquido e semanas sexta-quinta recortadas ao mes.",
+      "file": "sf-111-clientedetalheresumopedidossemana.sql",
+      "bytes": 13204,
+      "copiaPlataformaId": 357,
+      "copiaPlataformaNome": "clienteDetalheResumoPedidosSemana-v20260821151600"
+    }
+  ]
+}

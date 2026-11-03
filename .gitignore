@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.e2b/
+backend/migrations/SKILL.md
+
+# Arquivos enviados ao projeto: planilhas com dados de clientes (pessoa física),
+# divisão de carteira, imagens e credenciais OAuth. Ficam só na máquina.
+uploads/
+
+# Sistema novo: banco do simulador local (regerado por npm run sim:seed)
+novo/backend/simulator/data/

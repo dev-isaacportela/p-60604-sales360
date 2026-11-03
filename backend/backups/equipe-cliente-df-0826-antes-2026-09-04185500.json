@@ -1,0 +1,884 @@
+[
+  {
+    "ID": 2401,
+    "ID_CLIENTE": 15,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2402,
+    "ID_CLIENTE": 16,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2403,
+    "ID_CLIENTE": 84,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2404,
+    "ID_CLIENTE": 169,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 457,
+    "ID_CLIENTE": 231,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-21 13:07:20"
+  },
+  {
+    "ID": 634,
+    "ID_CLIENTE": 426,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-29 13:37:56"
+  },
+  {
+    "ID": 2405,
+    "ID_CLIENTE": 550,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 630,
+    "ID_CLIENTE": 3246,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-29 13:36:28"
+  },
+  {
+    "ID": 635,
+    "ID_CLIENTE": 9758,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-29 13:38:10"
+  },
+  {
+    "ID": 2406,
+    "ID_CLIENTE": 100127,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2407,
+    "ID_CLIENTE": 100128,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 465,
+    "ID_CLIENTE": 100528,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-21 13:22:00"
+  },
+  {
+    "ID": 2408,
+    "ID_CLIENTE": 100552,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 447,
+    "ID_CLIENTE": 101343,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-20 20:22:20"
+  },
+  {
+    "ID": 464,
+    "ID_CLIENTE": 101602,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-21 13:21:29"
+  },
+  {
+    "ID": 2409,
+    "ID_CLIENTE": 101785,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 460,
+    "ID_CLIENTE": 102075,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-21 13:12:15"
+  },
+  {
+    "ID": 2410,
+    "ID_CLIENTE": 102302,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2411,
+    "ID_CLIENTE": 102349,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2412,
+    "ID_CLIENTE": 102606,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2413,
+    "ID_CLIENTE": 103174,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2414,
+    "ID_CLIENTE": 104425,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2415,
+    "ID_CLIENTE": 104440,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2416,
+    "ID_CLIENTE": 104991,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 450,
+    "ID_CLIENTE": 105421,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-20 20:23:27"
+  },
+  {
+    "ID": 2417,
+    "ID_CLIENTE": 105628,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2418,
+    "ID_CLIENTE": 105707,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 467,
+    "ID_CLIENTE": 105984,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-21 13:24:30"
+  },
+  {
+    "ID": 2419,
+    "ID_CLIENTE": 106424,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 442,
+    "ID_CLIENTE": 107332,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-05-20 20:17:29"
+  },
+  {
+    "ID": 2420,
+    "ID_CLIENTE": 107900,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2421,
+    "ID_CLIENTE": 107955,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2422,
+    "ID_CLIENTE": 108174,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2423,
+    "ID_CLIENTE": 108213,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2424,
+    "ID_CLIENTE": 108309,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2425,
+    "ID_CLIENTE": 108461,
+    "ID_VENDEDOR": 28,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2432,
+    "ID_CLIENTE": 21,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2433,
+    "ID_CLIENTE": 52,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2434,
+    "ID_CLIENTE": 71,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2435,
+    "ID_CLIENTE": 108,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2436,
+    "ID_CLIENTE": 128,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2437,
+    "ID_CLIENTE": 139,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2438,
+    "ID_CLIENTE": 166,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2439,
+    "ID_CLIENTE": 175,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2440,
+    "ID_CLIENTE": 232,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2441,
+    "ID_CLIENTE": 259,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2442,
+    "ID_CLIENTE": 420,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2443,
+    "ID_CLIENTE": 430,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2444,
+    "ID_CLIENTE": 474,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2445,
+    "ID_CLIENTE": 629,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2446,
+    "ID_CLIENTE": 671,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2447,
+    "ID_CLIENTE": 680,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2448,
+    "ID_CLIENTE": 1528,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2449,
+    "ID_CLIENTE": 2548,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2450,
+    "ID_CLIENTE": 2863,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2451,
+    "ID_CLIENTE": 3019,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2452,
+    "ID_CLIENTE": 9211,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2453,
+    "ID_CLIENTE": 100273,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2454,
+    "ID_CLIENTE": 100578,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2455,
+    "ID_CLIENTE": 101175,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2456,
+    "ID_CLIENTE": 101562,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2457,
+    "ID_CLIENTE": 102229,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2458,
+    "ID_CLIENTE": 103997,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2459,
+    "ID_CLIENTE": 104682,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2460,
+    "ID_CLIENTE": 105328,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2461,
+    "ID_CLIENTE": 105470,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2462,
+    "ID_CLIENTE": 105506,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2463,
+    "ID_CLIENTE": 107968,
+    "ID_VENDEDOR": 44,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2495,
+    "ID_CLIENTE": 9,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2496,
+    "ID_CLIENTE": 11,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2497,
+    "ID_CLIENTE": 39,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2498,
+    "ID_CLIENTE": 42,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2499,
+    "ID_CLIENTE": 100,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2500,
+    "ID_CLIENTE": 102,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2501,
+    "ID_CLIENTE": 116,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2502,
+    "ID_CLIENTE": 190,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2503,
+    "ID_CLIENTE": 212,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2504,
+    "ID_CLIENTE": 235,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2505,
+    "ID_CLIENTE": 472,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2506,
+    "ID_CLIENTE": 473,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2507,
+    "ID_CLIENTE": 531,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2508,
+    "ID_CLIENTE": 661,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2509,
+    "ID_CLIENTE": 761,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2510,
+    "ID_CLIENTE": 1180,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2511,
+    "ID_CLIENTE": 2541,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2512,
+    "ID_CLIENTE": 9211,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2513,
+    "ID_CLIENTE": 9321,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2514,
+    "ID_CLIENTE": 12720,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2515,
+    "ID_CLIENTE": 100808,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2516,
+    "ID_CLIENTE": 100946,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2517,
+    "ID_CLIENTE": 101404,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2518,
+    "ID_CLIENTE": 104811,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2519,
+    "ID_CLIENTE": 105343,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2520,
+    "ID_CLIENTE": 105501,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2521,
+    "ID_CLIENTE": 105671,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2522,
+    "ID_CLIENTE": 108382,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2523,
+    "ID_CLIENTE": 108688,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  },
+  {
+    "ID": 2524,
+    "ID_CLIENTE": 108689,
+    "ID_VENDEDOR": 45,
+    "CODFILIAL": "5",
+    "ID_SECAO": 101,
+    "CURVA_CLASSIFICACAO": null,
+    "CRIADO_EM": "2026-09-04 18:52:28"
+  }
+]

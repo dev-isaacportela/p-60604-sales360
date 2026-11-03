@@ -1,0 +1,118 @@
+{
+  "timestamp": "20260921192152",
+  "projectId": 45654,
+  "motivo": "Versionamento manual.",
+  "criadoEm": "2026-09-21T19:21:52.611Z",
+  "serverFunctions": [
+    {
+      "serverFunctionId": 123,
+      "name": "metaRealizadoProjecao",
+      "type": "SQL",
+      "description": "Retorna meta, realizado e projeção usando realizado por CODFILIAL + CODEPTO + CODSEC via BU_VENDEDOR.",
+      "file": "sf-123-metarealizadoprojecao.sql",
+      "bytes": 10349,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 124,
+      "name": "metaListarHistorico",
+      "type": "SQL",
+      "description": "Histórico de meta vs realizado usando realizado por CODFILIAL + CODEPTO + CODSEC via BU_VENDEDOR.",
+      "file": "sf-124-metalistarhistorico.sql",
+      "bytes": 9043,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 136,
+      "name": "dicaProObter",
+      "type": "SQL",
+      "description": "Retorna a dica comercial mais relevante do dia para a carteira do vendedor.",
+      "file": "sf-136-dicaproobter.sql",
+      "bytes": 13052,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 155,
+      "name": "painelCoordenadorPerformanceVendedores",
+      "type": "SQL",
+      "description": "Performance por RCA considerando carteira dos vendedores do coordenador e clientes sem carteira. Atribui vendas por RCA com escopo ativo antes de classificar como sem carteira.",
+      "file": "sf-155-painelcoordenadorperformancevendedores.sql",
+      "bytes": 16832,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 190,
+      "name": "painelCoordenadorVendedoresRisco",
+      "type": "SQL",
+      "description": "Ranking dos vendedores que mais exigem acao do coordenador por gap de meta, devolucao e baixo atingimento. Atribui vendas por RCA com escopo ativo antes de classificar como sem carteira.",
+      "file": "sf-190-painelcoordenadorvendedoresrisco.sql",
+      "bytes": 17386,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 192,
+      "name": "painelCoordenadorGapMetaVendedor",
+      "type": "SQL",
+      "description": "Gap de meta por vendedor com leitura de valor faltante, percentual atingido e ritmo necessario. Atribui vendas por RCA com escopo ativo antes de classificar como sem carteira.",
+      "file": "sf-192-painelcoordenadorgapmetavendedor.sql",
+      "bytes": 16676,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 193,
+      "name": "painelCoordenadorDevolucoesCriticasRca",
+      "type": "SQL",
+      "description": "Ranking de devolucoes criticas por RCA com percentual sobre venda bruta e devolucoes acima de 30 dias. Atribui vendas por RCA com escopo ativo antes de classificar como sem carteira.",
+      "file": "sf-193-painelcoordenadordevolucoescriticasrca.sql",
+      "bytes": 16402,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 195,
+      "name": "painelCoordenadorMetasBuRecebidas",
+      "type": "SQL",
+      "description": "Lista metas recebidas da diretoria por BU do coordenador ou por escopo da diretoria.",
+      "file": "sf-195-painelcoordenadormetasburecebidas.sql",
+      "bytes": 4831,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 196,
+      "name": "painelCoordenadorMetasVendedoresBu",
+      "type": "SQL",
+      "description": "Lista vendedores da BU selecionada com meta redistribuida por coordenador ou escopo da diretoria.",
+      "file": "sf-196-painelcoordenadormetasvendedoresbu.sql",
+      "bytes": 9369,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 237,
+      "name": "enviarRelatorioSemanalCoordenadores",
+      "type": "JAVASCRIPT",
+      "description": "<p>Envia toda segunda pela manhã o relatório de vendas da semana anterior para coordenadores ativos, com gráficos, KPIs e análises por escopo de BU.</p>",
+      "file": "sf-237-enviarrelatoriosemanalcoordenadores.sql",
+      "bytes": 30032,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    },
+    {
+      "serverFunctionId": 295,
+      "name": "metasVendedorRamoUfAplicadas",
+      "type": "SQL",
+      "description": "Aplica metas de vendas por vendedor, ramo consolidado e UF, usando UF de localizacao do cliente para Orgao Publico.",
+      "file": "sf-295-metasvendedorramoufaplicadas.sql",
+      "bytes": 8859,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    }
+  ]
+}

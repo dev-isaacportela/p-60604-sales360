@@ -1,0 +1,576 @@
+import 'dotenv/config';
+import {
+  configureSdkMitra,
+  runDdlMitra,
+  listServerFunctionsMitra,
+  createServerFunctionMitra,
+  updateServerFunctionMitra,
+} from 'mitra-sdk';
+
+function decodeTokenPayload(token) {
+  try {
+    const raw = String(token || '').replace(/^Bearer\s+/i, '');
+    const parts = raw.split('.');
+    if (parts.length < 2) return null;
+    const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'));
+  } catch {
+    return null;
+  }
+}
+
+const tokenPayload = decodeTokenPayload(process.env.MITRA_TOKEN);
+const baseURL = process.env.MITRA_BASE_URL || tokenPayload?.backURL || process.env.MITRA_BASE_URL_SPACE;
+const integrationURL = process.env.MITRA_BASE_URL_INTEGRATIONS || baseURL;
+
+configureSdkMitra({
+  baseURL,
+  token: process.env.MITRA_TOKEN,
+  integrationURL,
+});
+
+const projectId = Number(process.env.MITRA_PROJECT_ID);
+
+const CREATE_TABLE_SQL = `CREATE TABLE IF NOT EXISTS DICAS_PRO_LOG (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  ID_VENDEDOR INT NOT NULL,
+  CODFILIAL INT NOT NULL,
+  ID_SECAO VARCHAR(20),
+  TIPO_DICA VARCHAR(50) NOT NULL,
+  TITULO VARCHAR(200) NOT NULL,
+  DESCRICAO TEXT NOT NULL,
+  DATA_GERACAO DATE NOT NULL,
+  VISUALIZADA TINYINT(1) DEFAULT 0,
+  INDEX idx_vendedor_data (ID_VENDEDOR, CODFILIAL, DATA_GERACAO)
+)`;
+
+const SQL_DICA_PRO_OBTER = `
+WITH INPUTS AS (
+  SELECT
+    CASE
+      WHEN LOCATE('{', '{{idVendedor}}') = 0 AND '{{idVendedor}}' REGEXP '^[0-9]+$'
+        THEN CAST('{{idVendedor}}' AS UNSIGNED)
+      ELSE :VAR_USER
+    END AS ID_VENDEDOR_REF,
+    CASE
+      WHEN LOCATE('{', '{{codFilial}}') = 0 AND '{{codFilial}}' REGEXP '^[0-9]+$'
+        THEN CAST('{{codFilial}}' AS UNSIGNED)
+      ELSE NULL
+    END AS CODFILIAL_PARAM,
+    CASE
+      WHEN LOCATE('{', '{{idSecao}}') = 0 AND TRIM('{{idSecao}}') <> ''
+        THEN LEFT(TRIM('{{idSecao}}'), 20)
+      ELSE NULL
+    END AS ID_SECAO_PARAM
+),
+CARTEIRA_RAW AS (
+  SELECT DISTINCT
+    I.ID_VENDEDOR_REF,
+    EC.ID_CLIENTE,
+    EC.ID_VENDEDOR,
+    CAST(TRIM(CAST(EC.CODFILIAL AS CHAR)) AS UNSIGNED) AS CODFILIAL,
+    CASE WHEN EC.ID_SECAO IS NULL THEN NULL ELSE LEFT(TRIM(CAST(EC.ID_SECAO AS CHAR)), 20) END AS ID_SECAO,
+    LEFT(COALESCE(NULLIF(TRIM(C.NOME_FANTASIA), ''), NULLIF(TRIM(C.RAZAO_SOCIAL), ''), CONCAT('Cliente ', EC.ID_CLIENTE)), 200) AS NOME_CLIENTE,
+    COALESCE(NULLIF(TRIM(C.SEGMENTO), ''), 'Sem segmento') AS SEGMENTO,
+    NULLIF(UPPER(TRIM(COALESCE(EC.CURVA_CLASSIFICACAO, ''))), '') AS CURVA_MANUAL
+  FROM INPUTS I
+  JOIN EQUIPE_CLIENTE EC ON 1 = 1
+  LEFT JOIN FUNCIONARIOS F ON F.ID = EC.ID_VENDEDOR
+  JOIN CLIENTES C ON C.ID = EC.ID_CLIENTE
+  WHERE (EC.ID_VENDEDOR = I.ID_VENDEDOR_REF OR F.ID_SUBSTITUTO = I.ID_VENDEDOR_REF)
+    AND EC.ID_CLIENTE IS NOT NULL
+    AND EC.CODFILIAL IS NOT NULL
+    AND TRIM(CAST(EC.CODFILIAL AS CHAR)) REGEXP '^[0-9]+$'
+),
+PARAMS AS (
+  SELECT
+    I.ID_VENDEDOR_REF,
+    COALESCE(I.CODFILIAL_PARAM, MIN(CR.CODFILIAL), 0) AS CODFILIAL_REF,
+    I.ID_SECAO_PARAM
+  FROM INPUTS I
+  LEFT JOIN CARTEIRA_RAW CR
+    ON (I.CODFILIAL_PARAM IS NULL OR CR.CODFILIAL = I.CODFILIAL_PARAM)
+   AND (I.ID_SECAO_PARAM IS NULL OR CR.ID_SECAO = I.ID_SECAO_PARAM)
+  GROUP BY I.ID_VENDEDOR_REF, I.CODFILIAL_PARAM, I.ID_SECAO_PARAM
+),
+CARTEIRA AS (
+  SELECT DISTINCT
+    CR.ID_VENDEDOR_REF,
+    CR.ID_CLIENTE,
+    CR.ID_VENDEDOR,
+    CR.CODFILIAL,
+    CR.ID_SECAO,
+    CR.NOME_CLIENTE,
+    CR.SEGMENTO,
+    CR.CURVA_MANUAL,
+    TRIM(CAST(BV.BU_CODIGO AS CHAR)) AS CODEPTO
+  FROM CARTEIRA_RAW CR
+  JOIN PARAMS P ON P.ID_VENDEDOR_REF = CR.ID_VENDEDOR_REF
+  JOIN BU_VENDEDOR BV
+    ON BV.VENDEDOR_ID = CR.ID_VENDEDOR
+   AND COALESCE(BV.ATIVO, TRUE) = TRUE
+   AND TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) = CAST(CR.CODFILIAL AS CHAR)
+   AND (
+     (CR.ID_SECAO IS NULL AND BV.ID_SECAO IS NULL)
+     OR TRIM(CAST(BV.ID_SECAO AS CHAR)) = CR.ID_SECAO
+     OR LPAD(TRIM(CAST(BV.ID_SECAO AS CHAR)), 2, '0') = CR.ID_SECAO
+   )
+  WHERE CR.CODFILIAL = P.CODFILIAL_REF
+    AND (P.ID_SECAO_PARAM IS NULL OR CR.ID_SECAO = P.ID_SECAO_PARAM)
+),
+BASE_VENDAS AS (
+  SELECT
+    C.ID_VENDEDOR_REF,
+    C.ID_VENDEDOR,
+    C.CODFILIAL,
+    C.ID_SECAO,
+    C.ID_CLIENTE,
+    C.NOME_CLIENTE,
+    C.SEGMENTO,
+    C.CURVA_MANUAL,
+    C.CODEPTO,
+    R.CODPROD,
+    LEFT(COALESCE(NULLIF(TRIM(R.DESCRICAO), ''), CONCAT('Produto ', R.CODPROD)), 200) AS PRODUTO,
+    COALESCE(PR.CATEGORIA, LEFT(COALESCE(NULLIF(TRIM(R.DESCRICAO), ''), CONCAT('Produto ', R.CODPROD)), 80)) AS CATEGORIA,
+    COALESCE(R.TOTAL, 0) AS VALOR,
+    COALESCE(R.QT, 0) AS QT,
+    STR_TO_DATE(R.DATA_SAIDA, '%Y-%m-%d') AS DATA_REF,
+    COALESCE(NULLIF(CAST(R.NUMPED AS CHAR), ''), NULLIF(CAST(R.NUMTRANSVENDA AS CHAR), ''), NULLIF(CAST(R.NUMNOTA AS CHAR), ''), CONCAT('AUTO-', R.ID)) AS PEDIDO_CHAVE
+  FROM CARTEIRA C
+  JOIN PEDIDOS_SEMANAIS_SYNC_RAW R
+    ON R.CLIENTE_ID = C.ID_CLIENTE
+   AND CAST(TRIM(COALESCE(CAST(R.CODFILIAL AS CHAR), '0')) AS UNSIGNED) = C.CODFILIAL
+   AND TRIM(CAST(R.CODEPTO AS CHAR)) = C.CODEPTO
+   AND (C.ID_SECAO IS NULL OR LEFT(TRIM(CAST(R.ID_SECAO AS CHAR)), 20) = C.ID_SECAO OR LPAD(LEFT(TRIM(CAST(R.ID_SECAO AS CHAR)), 20), 2, '0') = C.ID_SECAO)
+  LEFT JOIN PRODUTOS PR ON CAST(PR.ID AS CHAR) = CAST(R.CODPROD AS CHAR)
+  WHERE R.ATIVO = TRUE
+    AND R.STATUS_INGESTAO = 'ATIVO'
+    AND R.CODPROD IS NOT NULL
+    AND R.DATA_SAIDA IS NOT NULL
+    AND R.DATA_SAIDA <> ''
+    AND R.DATA_SAIDA REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+),
+DATAS_PRODUTO AS (
+  SELECT DISTINCT ID_CLIENTE, NOME_CLIENTE, CODPROD, PRODUTO, DATA_REF
+  FROM BASE_VENDAS
+  WHERE DATA_REF >= DATE_SUB(CURRENT_DATE, INTERVAL 12 MONTH)
+),
+INTERVALOS_PRODUTO AS (
+  SELECT
+    DP.*,
+    DATEDIFF(DP.DATA_REF, LAG(DP.DATA_REF) OVER (PARTITION BY DP.ID_CLIENTE, DP.CODPROD ORDER BY DP.DATA_REF)) AS INTERVALO_DIAS
+  FROM DATAS_PRODUTO DP
+),
+REPOSICAO_BASE AS (
+  SELECT
+    IP.ID_CLIENTE,
+    IP.NOME_CLIENTE,
+    IP.CODPROD,
+    IP.PRODUTO,
+    MAX(IP.DATA_REF) AS ULTIMA_COMPRA,
+    ROUND(AVG(IP.INTERVALO_DIAS)) AS CICLO_MEDIO_DIAS,
+    DATE_ADD(MAX(IP.DATA_REF), INTERVAL ROUND(AVG(IP.INTERVALO_DIAS)) DAY) AS DATA_PREVISTA
+  FROM INTERVALOS_PRODUTO IP
+  WHERE IP.INTERVALO_DIAS IS NOT NULL
+    AND IP.INTERVALO_DIAS > 0
+  GROUP BY IP.ID_CLIENTE, IP.NOME_CLIENTE, IP.CODPROD, IP.PRODUTO
+  HAVING DATA_PREVISTA BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY)
+),
+REPOSICAO_DICA AS (
+  SELECT COUNT(DISTINCT ID_CLIENTE) AS TOTAL_CLIENTES
+  FROM REPOSICAO_BASE
+),
+CLIENTE_METRICAS AS (
+  SELECT
+    C.ID_CLIENTE,
+    C.NOME_CLIENTE,
+    C.SEGMENTO,
+    C.CURVA_MANUAL,
+    MAX(BV.DATA_REF) AS ULTIMA_COMPRA,
+    DATEDIFF(CURRENT_DATE, MAX(BV.DATA_REF)) AS DIAS_SEM_COMPRA,
+    ROUND(SUM(CASE WHEN BV.DATA_REF >= DATE_SUB(CURRENT_DATE, INTERVAL 3 MONTH) THEN BV.VALOR ELSE 0 END), 2) AS VALOR_3M,
+    ROUND(SUM(CASE WHEN YEAR(BV.DATA_REF) = YEAR(CURRENT_DATE) AND MONTH(BV.DATA_REF) = MONTH(CURRENT_DATE) THEN BV.VALOR ELSE 0 END), 2) AS VALOR_MES
+  FROM CARTEIRA C
+  LEFT JOIN BASE_VENDAS BV ON BV.ID_CLIENTE = C.ID_CLIENTE
+  GROUP BY C.ID_CLIENTE, C.NOME_CLIENTE, C.SEGMENTO, C.CURVA_MANUAL
+),
+CLIENTE_RANKING AS (
+  SELECT
+    CM.*,
+    COALESCE(
+      CASE WHEN CM.CURVA_MANUAL IN ('A','B','C') THEN CM.CURVA_MANUAL END,
+      CASE WHEN COALESCE(CM.VALOR_3M, 0) >= 15000 THEN 'A' WHEN COALESCE(CM.VALOR_3M, 0) >= 7000 THEN 'B' ELSE 'C' END
+    ) AS RANKING
+  FROM CLIENTE_METRICAS CM
+),
+CLIENTES_A_INATIVOS_DICA AS (
+  SELECT COUNT(*) AS TOTAL_CLIENTES
+  FROM CLIENTE_RANKING
+  WHERE RANKING = 'A'
+    AND COALESCE(DIAS_SEM_COMPRA, 9999) > 10
+),
+CAT_MENSAL AS (
+  SELECT
+    CATEGORIA,
+    YEAR(DATA_REF) AS ANO,
+    MONTH(DATA_REF) AS MES,
+    ROUND(SUM(VALOR), 2) AS VALOR_MES
+  FROM BASE_VENDAS
+  WHERE DATA_REF >= DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 12 MONTH)
+    AND DATA_REF < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+  GROUP BY CATEGORIA, YEAR(DATA_REF), MONTH(DATA_REF)
+),
+PICO_SAZONAL_BASE AS (
+  SELECT
+    CATEGORIA,
+    ROUND(AVG(CASE WHEN MES = MONTH(CURRENT_DATE) THEN VALOR_MES END), 2) AS MEDIA_MES_ATUAL,
+    ROUND(AVG(VALOR_MES), 2) AS MEDIA_MENSAL_ANUAL,
+    ROW_NUMBER() OVER (
+      ORDER BY (AVG(CASE WHEN MES = MONTH(CURRENT_DATE) THEN VALOR_MES END) / NULLIF(AVG(VALOR_MES), 0)) DESC,
+               AVG(CASE WHEN MES = MONTH(CURRENT_DATE) THEN VALOR_MES END) DESC
+    ) AS RN
+  FROM CAT_MENSAL
+  GROUP BY CATEGORIA
+  HAVING MEDIA_MES_ATUAL > (MEDIA_MENSAL_ANUAL * 1.2)
+),
+META_ATUAL AS (
+  SELECT COALESCE(MAX(M.VALOR_META), 0) AS VALOR_META
+  FROM METAS_VENDEDOR M
+  JOIN PARAMS P ON P.ID_VENDEDOR_REF = M.USER_ID
+  WHERE M.ANO = YEAR(CURRENT_DATE)
+    AND M.MES = MONTH(CURRENT_DATE)
+),
+REALIZADO_MES AS (
+  SELECT ROUND(SUM(CASE WHEN YEAR(DATA_REF) = YEAR(CURRENT_DATE) AND MONTH(DATA_REF) = MONTH(CURRENT_DATE) THEN VALOR ELSE 0 END), 2) AS VALOR_REALIZADO
+  FROM BASE_VENDAS
+),
+META_DICA AS (
+  SELECT
+    M.VALOR_META,
+    COALESCE(R.VALOR_REALIZADO, 0) AS VALOR_REALIZADO,
+    CASE WHEN M.VALOR_META > 0 THEN ROUND((COALESCE(R.VALOR_REALIZADO, 0) / M.VALOR_META) * 100, 1) ELSE 0 END AS PCT_META,
+    GREATEST(DAY(LAST_DAY(CURRENT_DATE)) - DAY(CURRENT_DATE), 0) AS DIAS_RESTANTES,
+    (SELECT COUNT(*) FROM CLIENTE_RANKING CR WHERE CR.RANKING = 'A' AND COALESCE(CR.VALOR_MES, 0) = 0) AS CLIENTES_A_SEM_COMPRA
+  FROM META_ATUAL M
+  JOIN REALIZADO_MES R ON 1 = 1
+),
+PEDIDOS_DIA AS (
+  SELECT
+    DAYOFWEEK(DATA_REF) AS DIA_SEMANA,
+    COUNT(DISTINCT PEDIDO_CHAVE) AS TOTAL_PEDIDOS,
+    ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT PEDIDO_CHAVE) DESC, DAYOFWEEK(DATA_REF)) AS RN
+  FROM BASE_VENDAS
+  WHERE DATA_REF >= DATE_SUB(CURRENT_DATE, INTERVAL 12 MONTH)
+  GROUP BY DAYOFWEEK(DATA_REF)
+),
+MELHOR_DIA_DICA AS (
+  SELECT
+    DIA_SEMANA,
+    TOTAL_PEDIDOS,
+    CASE DIA_SEMANA
+      WHEN 1 THEN 'domingos'
+      WHEN 2 THEN 'segundas-feiras'
+      WHEN 3 THEN 'terças-feiras'
+      WHEN 4 THEN 'quartas-feiras'
+      WHEN 5 THEN 'quintas-feiras'
+      WHEN 6 THEN 'sextas-feiras'
+      ELSE 'sábados'
+    END AS DIA_LABEL
+  FROM PEDIDOS_DIA
+  WHERE RN = 1
+),
+PRODUTO_BU AS (
+  SELECT
+    CODPROD,
+    PRODUTO,
+    COUNT(DISTINCT ID_CLIENTE) AS CLIENTES_COMPRARAM,
+    ROUND(SUM(VALOR), 2) AS VALOR_TOTAL,
+    ROW_NUMBER() OVER (ORDER BY SUM(VALOR) DESC) AS RN
+  FROM BASE_VENDAS
+  WHERE DATA_REF >= DATE_SUB(CURRENT_DATE, INTERVAL 12 MONTH)
+  GROUP BY CODPROD, PRODUTO
+),
+MIX_DICA AS (
+  SELECT
+    PB.CODPROD,
+    PB.PRODUTO,
+    COUNT(DISTINCT C.ID_CLIENTE) AS CLIENTES_NUNCA_COMPRARAM,
+    ROUND((PB.VALOR_TOTAL / GREATEST(PB.CLIENTES_COMPRARAM, 1)) * COUNT(DISTINCT C.ID_CLIENTE) / 12, 2) AS POTENCIAL_MENSAL,
+    ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT C.ID_CLIENTE) DESC, PB.VALOR_TOTAL DESC) AS RN
+  FROM PRODUTO_BU PB
+  JOIN CARTEIRA C ON 1 = 1
+  WHERE PB.RN <= 20
+    AND NOT EXISTS (
+      SELECT 1
+      FROM BASE_VENDAS OWN
+      WHERE OWN.ID_CLIENTE = C.ID_CLIENTE
+        AND OWN.CODPROD = PB.CODPROD
+    )
+  GROUP BY PB.CODPROD, PB.PRODUTO, PB.VALOR_TOTAL, PB.CLIENTES_COMPRARAM
+  HAVING CLIENTES_NUNCA_COMPRARAM >= 3
+),
+SEGMENTO_TOP AS (
+  SELECT COALESCE((
+    SELECT SEGMENTO
+    FROM (
+      SELECT SEGMENTO, COUNT(*) AS TOTAL
+      FROM CARTEIRA
+      GROUP BY SEGMENTO
+      ORDER BY TOTAL DESC, SEGMENTO
+      LIMIT 1
+    ) S
+  ), 'sua carteira') AS SEGMENTO
+),
+CANDIDATAS AS (
+  SELECT
+    1 AS PRIORIDADE,
+    'REPOSICAO_URGENTE' AS TIPO_DICA,
+    'Dica Pro' AS TITULO,
+    CONCAT(TOTAL_CLIENTES, ' clientes com reposição prevista esta semana — priorize hoje') AS DESCRICAO,
+    'clock' AS ICONE,
+    '/alertas?tipo=REPOSICAO_PREVISTA' AS ACTION_ROUTE
+  FROM REPOSICAO_DICA
+  WHERE TOTAL_CLIENTES >= 3
+
+  UNION ALL
+
+  SELECT
+    2,
+    'CLIENTES_A_INATIVOS',
+    'Dica Pro',
+    CONCAT(TOTAL_CLIENTES, ' clientes Ranking A sem pedido há mais de 10 dias — acione antes do fim do mês'),
+    'alert',
+    '/clientes?dica=clientes-a-inativos'
+  FROM CLIENTES_A_INATIVOS_DICA
+  WHERE TOTAL_CLIENTES > 0
+
+  UNION ALL
+
+  SELECT
+    3,
+    'PICO_SAZONAL',
+    'Dica Pro',
+    CONCAT(
+      CASE MONTH(CURRENT_DATE)
+        WHEN 1 THEN 'Janeiro' WHEN 2 THEN 'Fevereiro' WHEN 3 THEN 'Março' WHEN 4 THEN 'Abril'
+        WHEN 5 THEN 'Maio' WHEN 6 THEN 'Junho' WHEN 7 THEN 'Julho' WHEN 8 THEN 'Agosto'
+        WHEN 9 THEN 'Setembro' WHEN 10 THEN 'Outubro' WHEN 11 THEN 'Novembro' ELSE 'Dezembro'
+      END,
+      ' é seu melhor mês para ', CATEGORIA, ' — explore o pico'
+    ),
+    'trending',
+    '/alertas?tipo=SAZONALIDADE_NAO_REPETIDA'
+  FROM PICO_SAZONAL_BASE
+  WHERE RN = 1
+
+  UNION ALL
+
+  SELECT
+    4,
+    'META_RISCO',
+    'Dica Pro',
+    CONCAT('Você está em ', PCT_META, '% da meta. ', CLIENTES_A_SEM_COMPRA, ' clientes A ainda não compraram este mês'),
+    'target',
+    '/minha-meta'
+  FROM META_DICA
+  WHERE VALOR_META > 0
+    AND PCT_META < 80
+    AND DIAS_RESTANTES < 10
+
+  UNION ALL
+
+  SELECT
+    5,
+    'MELHOR_DIA',
+    'Dica Pro',
+    CONCAT('Seus melhores fechamentos acontecem às ', DIA_LABEL, ' — hoje é um bom dia para acionar'),
+    'calendar',
+    '/agenda'
+  FROM MELHOR_DIA_DICA
+  WHERE TOTAL_PEDIDOS > 0
+
+  UNION ALL
+
+  SELECT
+    6,
+    'MIX_OPORTUNIDADE',
+    'Dica Pro',
+    CONCAT(CLIENTES_NUNCA_COMPRARAM, ' clientes da sua carteira nunca compraram ', PRODUTO, ' — potencial de R$ ', FORMAT(POTENCIAL_MENSAL, 2), '/mês'),
+    'package',
+    '/simulacao'
+  FROM MIX_DICA
+  WHERE RN = 1
+
+  UNION ALL
+
+  SELECT
+    7,
+    'PADRAO_CONTATO',
+    'Dica Pro',
+    CONCAT('Clientes do segmento ', SEGMENTO, ' costumam responder melhor a contatos realizados nas terças-feiras pela manhã'),
+    'lightbulb',
+    '/clientes'
+  FROM SEGMENTO_TOP
+),
+ESCOLHIDA AS (
+  SELECT C.*
+  FROM CANDIDATAS C
+  JOIN PARAMS P ON 1 = 1
+  WHERE C.TIPO_DICA = 'PADRAO_CONTATO'
+     OR NOT EXISTS (
+       SELECT 1
+       FROM DICAS_PRO_LOG L
+       WHERE L.ID_VENDEDOR = P.ID_VENDEDOR_REF
+         AND L.CODFILIAL = COALESCE(P.CODFILIAL_REF, 0)
+         AND ((L.ID_SECAO IS NULL AND P.ID_SECAO_PARAM IS NULL) OR L.ID_SECAO = P.ID_SECAO_PARAM)
+         AND L.TIPO_DICA = C.TIPO_DICA
+         AND L.DATA_GERACAO = CURRENT_DATE
+         AND L.VISUALIZADA = 1
+     )
+  ORDER BY C.PRIORIDADE
+  LIMIT 1
+)
+SELECT
+  E.TIPO_DICA AS tipo,
+  E.TIPO_DICA,
+  E.TITULO AS titulo,
+  E.TITULO,
+  E.DESCRICAO AS descricao,
+  E.DESCRICAO,
+  E.ICONE AS icone,
+  E.ICONE,
+  E.ACTION_ROUTE AS actionRoute,
+  E.ACTION_ROUTE,
+  E.PRIORIDADE,
+  P.ID_VENDEDOR_REF AS ID_VENDEDOR,
+  COALESCE(P.CODFILIAL_REF, 0) AS CODFILIAL,
+  P.ID_SECAO_PARAM AS ID_SECAO
+FROM ESCOLHIDA E
+JOIN PARAMS P ON 1 = 1
+`;
+
+const SQL_DICA_PRO_MARCAR_VISUALIZADA = `
+INSERT INTO DICAS_PRO_LOG (
+  ID_VENDEDOR,
+  CODFILIAL,
+  ID_SECAO,
+  TIPO_DICA,
+  TITULO,
+  DESCRICAO,
+  DATA_GERACAO,
+  VISUALIZADA
+)
+SELECT
+  P.ID_VENDEDOR_REF,
+  COALESCE(P.CODFILIAL_PARAM, (
+    SELECT MIN(CAST(TRIM(CAST(EC.CODFILIAL AS CHAR)) AS UNSIGNED))
+    FROM EQUIPE_CLIENTE EC
+    LEFT JOIN FUNCIONARIOS F ON F.ID = EC.ID_VENDEDOR
+    WHERE (EC.ID_VENDEDOR = P.ID_VENDEDOR_REF OR F.ID_SUBSTITUTO = P.ID_VENDEDOR_REF)
+      AND EC.CODFILIAL IS NOT NULL
+      AND TRIM(CAST(EC.CODFILIAL AS CHAR)) REGEXP '^[0-9]+$'
+  ), 0) AS CODFILIAL,
+  P.ID_SECAO_PARAM,
+  P.TIPO_DICA_REF,
+  'Dica Pro',
+  CONCAT('Dica visualizada pelo usuário: ', P.TIPO_DICA_REF),
+  CURRENT_DATE,
+  1
+FROM (
+  SELECT
+    CASE
+      WHEN LOCATE('{', '{{idVendedor}}') = 0 AND '{{idVendedor}}' REGEXP '^[0-9]+$'
+        THEN CAST('{{idVendedor}}' AS UNSIGNED)
+      ELSE :VAR_USER
+    END AS ID_VENDEDOR_REF,
+    CASE
+      WHEN LOCATE('{', '{{codFilial}}') = 0 AND '{{codFilial}}' REGEXP '^[0-9]+$'
+        THEN CAST('{{codFilial}}' AS UNSIGNED)
+      ELSE NULL
+    END AS CODFILIAL_PARAM,
+    CASE
+      WHEN LOCATE('{', '{{idSecao}}') = 0 AND TRIM('{{idSecao}}') <> ''
+        THEN LEFT(TRIM('{{idSecao}}'), 20)
+      ELSE NULL
+    END AS ID_SECAO_PARAM,
+    CASE
+      WHEN LOCATE('{', '{{tipoDica}}') = 0 AND TRIM('{{tipoDica}}') <> ''
+        THEN LEFT(TRIM('{{tipoDica}}'), 50)
+      ELSE 'PADRAO_CONTATO'
+    END AS TIPO_DICA_REF
+) P
+`;
+
+const serverFunctions = [
+  {
+    name: 'dicaProObter',
+    type: 'SQL',
+    description: 'Retorna a dica comercial mais relevante do dia para a carteira do vendedor.',
+    code: SQL_DICA_PRO_OBTER,
+  },
+  {
+    name: 'dicaProMarcarVisualizada',
+    type: 'SQL',
+    description: 'Registra que o vendedor visualizou uma Dica Pro para permitir carregar a próxima sugestão.',
+    code: SQL_DICA_PRO_MARCAR_VISUALIZADA,
+  },
+];
+
+async function ensureSchema() {
+  await runDdlMitra({ projectId, sql: CREATE_TABLE_SQL });
+  console.log('Tabela DICAS_PRO_LOG garantida.');
+}
+
+async function upsertServerFunctions() {
+  const listed = await listServerFunctionsMitra({ projectId });
+  const existing = listed?.result || [];
+  const ids = {};
+
+  for (const sf of serverFunctions) {
+    const current = existing.find((item) => item.name === sf.name);
+    if (current) {
+      await updateServerFunctionMitra({
+        projectId,
+        serverFunctionId: current.id,
+        code: sf.code,
+        description: sf.description,
+      });
+      ids[sf.name] = current.id;
+      console.log(`SF ${sf.name}: atualizada (ID ${current.id})`);
+      continue;
+    }
+
+    const created = await createServerFunctionMitra({
+      projectId,
+      name: sf.name,
+      type: sf.type,
+      code: sf.code,
+      description: sf.description,
+    });
+
+    const sfId = created?.result?.serverFunctionId
+      || created?.result?.id
+      || created?.serverFunctionId
+      || created?.id
+      || null;
+
+    ids[sf.name] = sfId;
+    console.log(`SF ${sf.name}: criada (ID ${sfId})`);
+  }
+
+  return ids;
+}
+
+async function main() {
+  await ensureSchema();
+  const ids = await upsertServerFunctions();
+  console.log('Dica Pro dinâmica configurada com sucesso.');
+  console.log(JSON.stringify(ids, null, 2));
+}
+
+main().catch((error) => {
+  console.error('Falha ao configurar Dica Pro dinâmica:');
+  console.error(error?.message || error);
+  process.exit(1);
+});

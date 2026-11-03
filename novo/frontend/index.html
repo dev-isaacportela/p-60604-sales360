@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#156b16" />
+    <!-- Tema antes do React montar (design.md §2.1, RNF-003): sem isto a tela
+         pisca clara e depois escurece. Mesma regra de resolverTema em
+         src/lib/tema.ts (RN-009): ?tema= do painel aplica SEM gravar; senão a
+         escolha salva em sales360:tema (compartilhada com o sistema antigo);
+         senão o sistema operacional. Na primeira carga dentro do iframe a
+         origem do painel vai para sessionStorage (o referrer se perde ao navegar). -->
+    <script>
+      (function () {
+        try {
+          var ler = function (v) {
+            v = String(v || '').toLowerCase();
+            return v === 'dark' || v === 'escuro' ? 'escuro' : v === 'light' || v === 'claro' ? 'claro' : null;
+          };
+          var tema = ler(new URLSearchParams(location.search).get('tema')) || ler(localStorage.getItem('sales360:tema'));
+          if (!tema) tema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+          if (tema === 'escuro') document.documentElement.classList.add('dark');
+          if (window.parent !== window && document.referrer && !sessionStorage.getItem('painel-origem')) {
+            sessionStorage.setItem('painel-origem', new URL(document.referrer).origin);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap"
+    />
+    <title>Sales 360</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

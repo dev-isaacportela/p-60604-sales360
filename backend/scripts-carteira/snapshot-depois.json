@@ -1,0 +1,982 @@
+[
+ {
+  "EC_ID": 1094,
+  "ID_VENDEDOR": 27,
+  "VENDEDOR": "Isabella M",
+  "EMAIL": "isabella.melo@benenutri.com",
+  "CODCLI": 2596,
+  "RAZAO_SOCIAL": "VIVACOM PLANOS DE SAUDE",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2496,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 11,
+  "RAZAO_SOCIAL": "SECRETARIA DE SAUDE DO DISTRITO FEDERAL",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2401,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 15,
+  "RAZAO_SOCIAL": "HOSPITAL SANTA MARTA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2402,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 16,
+  "RAZAO_SOCIAL": "NOVITA HOME CARE SERVICOS EM SAUDE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2498,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 42,
+  "RAZAO_SOCIAL": "HOSPITAL SÃO MATEUS",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2403,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 84,
+  "RAZAO_SOCIAL": "HOSPITAL LAGO SUL S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2404,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 169,
+  "RAZAO_SOCIAL": "GEROCLINICA ASSISTENCIA GERIATRICA LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2502,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 190,
+  "RAZAO_SOCIAL": "HOSPITAL SANTA LUCIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2503,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 212,
+  "RAZAO_SOCIAL": "ASSOCIACAO DAS PIONEIRAS SOCIAIS",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 457,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 231,
+  "RAZAO_SOCIAL": "QUALITY HEALTH CARE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2504,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 235,
+  "RAZAO_SOCIAL": "PRIME HOME CARE ASSISTENCIA MEDICA DOMIC",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 634,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 426,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAUDE DE SAO JOAO D A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2505,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 472,
+  "RAZAO_SOCIAL": "HOSPITAL PRONTONORTE S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2506,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 473,
+  "RAZAO_SOCIAL": "HOSPITAL MARIA AUXILIADORA S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2405,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 550,
+  "RAZAO_SOCIAL": "COMANDO DA AERONAUTICA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2449,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 2548,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAUDE DE CRISTALINA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 630,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 3246,
+  "RAZAO_SOCIAL": "HOSPITAL NAVAL DE BRASILIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2513,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 9321,
+  "RAZAO_SOCIAL": "VIVER E CUIDAR HOME CARE  ASSISTENCIA A SAUDE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 635,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 9758,
+  "RAZAO_SOCIAL": "PREFEITURA MUNICIPAL DE UNAI",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2406,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 100127,
+  "RAZAO_SOCIAL": "JUSTICA FEDERAL DE PRIMEIRO GRAU NO DISTRITO FEDERAL",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2407,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 100128,
+  "RAZAO_SOCIAL": "TRIBUNAL REGIONAL FEDERAL DA 1 REGIAO",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 465,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 100528,
+  "RAZAO_SOCIAL": "PIONEIRA ATENDIMENTO DOMICILIAR EM SAUDE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2408,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 100552,
+  "RAZAO_SOCIAL": "INFINITE SAUDE HOME CARE ASSISTECIA ENFERMAGEM DOMICILIAR LT",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 447,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 101343,
+  "RAZAO_SOCIAL": "SMD SERVICOS HOSPITALARES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 464,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 101602,
+  "RAZAO_SOCIAL": "REHABILITA ATENDIMENTOS DOMICILIARES ESPECIALIZADOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2409,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 101785,
+  "RAZAO_SOCIAL": "HOSPITAL MILAGRES SERVICOS DE SAUDE EIRELI",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 460,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 102075,
+  "RAZAO_SOCIAL": "MEDICARE SERVICO DE EMERGENCIA MOVEL E HOME CARE LTDA.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2410,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 102302,
+  "RAZAO_SOCIAL": "HAPVIDA ASSISTENCIA MEDICA S.A.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2411,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 102349,
+  "RAZAO_SOCIAL": "TOTAL HEALTH BRASIL SAUDE E PARTICIPACOES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2412,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 102606,
+  "RAZAO_SOCIAL": "GRATIDAO LIFE SERVICOS DE SAUDE DOMICILIAR LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2413,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 103174,
+  "RAZAO_SOCIAL": "DF CARE HOSPITAL DE ESPECIALIDADES CRONICAS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2414,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 104425,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAÚDE DE NIQUELÂNDIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2415,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 104440,
+  "RAZAO_SOCIAL": "CONSÓRCIO INTERESTADUAL DE DESENVOLVIMENTO BRASIL CENTRAL",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2518,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 104811,
+  "RAZAO_SOCIAL": "CENTRAL NACIONAL UNIMED - COOPERATIVA CENTRAL",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2416,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 104991,
+  "RAZAO_SOCIAL": "CEIMED HOSPITALAR PRODUTOS PARA SAUDE",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 450,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 105421,
+  "RAZAO_SOCIAL": "HOSPITAL E MATERNIDADE THEREZINHA DE JESUS",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2417,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 105628,
+  "RAZAO_SOCIAL": "O UNIVERSITARIO RESTAURANTE IND COM E AGROPECUARIA LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2418,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 105707,
+  "RAZAO_SOCIAL": "ATS HOSPITALAR SAUDE TOTAL LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 467,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 105984,
+  "RAZAO_SOCIAL": "MAXIMA FACILITY E SOLUCOES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2419,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 106424,
+  "RAZAO_SOCIAL": "COMPLEXO HOSPITALAR DA UFRJ",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 442,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 107332,
+  "RAZAO_SOCIAL": "MANTEVIDA SERVIÇOS HOSPITALARES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2420,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 107900,
+  "RAZAO_SOCIAL": "DROGARIA SOUZA & FARMA MED EXPRESS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2421,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 107955,
+  "RAZAO_SOCIAL": "INSTITUTO FLEUR DE LIS- BEM ESTAR E QUALIDADE DE VIDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2422,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108174,
+  "RAZAO_SOCIAL": "GRUPO DE PESQUISA E ASSISTENCIA AO CANCER INFANTIL",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2423,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108213,
+  "RAZAO_SOCIAL": "COMERCIAL RC PRODUTOS HOSPITALARES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2424,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108309,
+  "RAZAO_SOCIAL": "QUALITYLIFE ASSISTENCIA MEDICA DOMICILIAR LIMITADA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2522,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108382,
+  "RAZAO_SOCIAL": "MDE SERVIÇOS E EVENTOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2425,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108461,
+  "RAZAO_SOCIAL": "HOSP UNIV DA UNIVERSIDADE FED DE SAO JOAO DEL REY",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2523,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108688,
+  "RAZAO_SOCIAL": "SAVVY SERVICOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2524,
+  "ID_VENDEDOR": 28,
+  "VENDEDOR": "Fernanda B",
+  "EMAIL": "fernanda.borges@benenutri.com",
+  "CODCLI": 108689,
+  "RAZAO_SOCIAL": "SAVVY SERVICOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2495,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 9,
+  "RAZAO_SOCIAL": "SERVICOS HOSPITALARES YUGE S.A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2432,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 21,
+  "RAZAO_SOCIAL": "HOSPITAL DAS CLINICAS E PRONTO SOCORRO D",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2497,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 39,
+  "RAZAO_SOCIAL": "HOSPITAL ANCHIETA S.A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2433,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 52,
+  "RAZAO_SOCIAL": "IMPAR SERVIÇOS HOSPITALARES SA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2434,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 71,
+  "RAZAO_SOCIAL": "HOME HOSP. ORTOPÉDICO E MEDICINA ESPECIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2499,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 100,
+  "RAZAO_SOCIAL": "REDE DOR SAO LUIZ S.A.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2500,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 102,
+  "RAZAO_SOCIAL": "VITAL CARE SERVIÇOS DE SAÚDE LTDA-ME",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2435,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 108,
+  "RAZAO_SOCIAL": "FUNDACAO UNIVERSITARIA DE CARDIOLOGIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2501,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 116,
+  "RAZAO_SOCIAL": "INSTITUTO DO CANCER INFANTIL E PEDIATRIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2436,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 128,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL SAUDE PLANALTINA GO",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2437,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 139,
+  "RAZAO_SOCIAL": "SOCIEDADE MEDICA LUZIANIA LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2438,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 166,
+  "RAZAO_SOCIAL": "CAPTAMED CUIDADOS CONTINUADOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2439,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 175,
+  "RAZAO_SOCIAL": "PLENO SAUDE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2440,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 232,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAUDE DE LUZIANIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2441,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 259,
+  "RAZAO_SOCIAL": "HOSPITAL DAS FORÇAS ARMADAS",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2442,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 420,
+  "RAZAO_SOCIAL": "VIP HOME CARE ATENDIMENTO DOMICILIAR LTD",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2443,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 430,
+  "RAZAO_SOCIAL": "VIVENTI HOME CARE HOSPITAL DOMICILIAR LT",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2444,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 474,
+  "RAZAO_SOCIAL": "ESHO EMPRESA DE SERVICOS HOSPITALARES S.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2445,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 629,
+  "RAZAO_SOCIAL": "HOSPITAL MILITAR DE AREA DE BRASILIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2508,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 661,
+  "RAZAO_SOCIAL": "REDE DOR SAO LUIZ S.A.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2446,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 671,
+  "RAZAO_SOCIAL": "LAR CECILIA FERRAZ DE ANDRADE",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2447,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 680,
+  "RAZAO_SOCIAL": "UNIDADE DE TERAPIA INTENSIVA SANTA LUZIA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2509,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 761,
+  "RAZAO_SOCIAL": "HOME ASSISTANCE EIRELI - ME",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2510,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 1180,
+  "RAZAO_SOCIAL": "COOK EMPREENDIMENTOS EM ALIMENTACAO COLE",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2448,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 1528,
+  "RAZAO_SOCIAL": "INDOOR EMPRESAS DE ASSISTENCIA MED DOM",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2511,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 2541,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAUDE DE FORMOSA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2450,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 2863,
+  "RAZAO_SOCIAL": "VIZONI HOMECARE EIRELI",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2451,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 3019,
+  "RAZAO_SOCIAL": "SOC BENEFICIENTE DE SENHORAS HOSP SIRIO",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2452,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 9211,
+  "RAZAO_SOCIAL": "DOMED PRODUTOS E SERVIÇOS DE SAUDE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2514,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 12720,
+  "RAZAO_SOCIAL": "REDE DOR SAO LUIZ S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2453,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 100273,
+  "RAZAO_SOCIAL": "FUNDO MUNICIPAL DE SAUDE NOVO GAMA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2454,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 100578,
+  "RAZAO_SOCIAL": "GLOBAL CARE ASSISTENCIA DOMICILIAR LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2515,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 100808,
+  "RAZAO_SOCIAL": "RC NUTRY ALIMENTACAO LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2516,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 100946,
+  "RAZAO_SOCIAL": "REDE DOR SAO LUIZ S.A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2455,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 101175,
+  "RAZAO_SOCIAL": "HOSPITAL LUCIANO CHAVES LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2517,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 101404,
+  "RAZAO_SOCIAL": "HDIA CENTRO DE ATENDIMENTO MEDICO HOSPITALAR LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2456,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 101562,
+  "RAZAO_SOCIAL": "IMPAR SERVICOS HOSPITALARES S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2457,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 102229,
+  "RAZAO_SOCIAL": "SAMEDIL - SERVICOS DE ATENDIMENTO MEDICO S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2458,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 103997,
+  "RAZAO_SOCIAL": "INSTITUTO PATRIS",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2459,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 104682,
+  "RAZAO_SOCIAL": "HOSPITAL PLACI BRASILIA LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2460,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105328,
+  "RAZAO_SOCIAL": "LABI EXAMES S.A.",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2519,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105343,
+  "RAZAO_SOCIAL": "HDIA HOME CARE LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2461,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105470,
+  "RAZAO_SOCIAL": "CABRAL VIDA ASSISTENCIA DOMICILIAR A SAUDE",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2520,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105501,
+  "RAZAO_SOCIAL": "ISM GOMES DE MATTOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2462,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105506,
+  "RAZAO_SOCIAL": "SAMEDIL - SERVICOS DE ATENDIMENTO MEDICO S/A",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2521,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 105671,
+  "RAZAO_SOCIAL": "ISM GOMES DE MATTOS LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2463,
+  "ID_VENDEDOR": 44,
+  "VENDEDOR": "Amanda",
+  "EMAIL": "amanda@benenutri.com",
+  "CODCLI": 107968,
+  "RAZAO_SOCIAL": "THE ONE HOSPITAL LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ },
+ {
+  "EC_ID": 2507,
+  "ID_VENDEDOR": 45,
+  "VENDEDOR": "Tathiana",
+  "EMAIL": "tathiana@benenutri.com",
+  "CODCLI": 531,
+  "RAZAO_SOCIAL": "VOGUE - ALIMENTACAO E NUTRICAO LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101
+ }
+]

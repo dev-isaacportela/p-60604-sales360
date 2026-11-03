@@ -1,0 +1,486 @@
+{
+ "fernanda": [
+  {
+   "codcli": 105984,
+   "nome": "MAXIMA REFEICOES E SEGURANCA ELETRONICA LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 105628,
+   "nome": "O UNIVERSITARIO RESTAURANTE IND COM E AGROPECUARIA LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 108382,
+   "nome": "MDE SERVIÇOS E EVENTOS LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 108689,
+   "nome": "SAVVY SERVICOS LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 108688,
+   "nome": "SAVVY SERVICOS LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 84,
+   "nome": "HOSPITAL LAGO SUL S/A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 15,
+   "nome": "HOSPITAL SANTA MARTA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 103174,
+   "nome": "DF CARE HOSPITAL DE ESPECIALIDADES CRONICAS LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 101343,
+   "nome": "SMD SERVICOS HOSPITALARES LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 102349,
+   "nome": "TOTAL HEALTH BRASIL SAUDE E PARTICIPACOES LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 105421,
+   "nome": "HOSPITAL E MATERNIDADE THEREZINHA DE JESUS",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 107332,
+   "nome": "MANTEVIDA SERVIÇOS HOSPITALARES LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 102302,
+   "nome": "HAPVIDA ASSISTENCIA MEDICA S.A.",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 108174,
+   "nome": "GRUPO DE PESQUISA E ASSISTENCIA AO CANCER INFANTIL",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 42,
+   "nome": "HOSPITAL SÃO MATEUS",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 212,
+   "nome": "ASSOCIACAO DAS PIONEIRAS SOCIAIS",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 472,
+   "nome": "HOSPITAL PRONTONORTE S/A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 473,
+   "nome": "HOSPITAL MARIA AUXILIADORA S/A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 190,
+   "nome": "HOSPITAL SANTA LUCIA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 231,
+   "nome": "QUALITY HEALTH CARE LTDA ME",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 102075,
+   "nome": "MEDICARE SERVICO DE EMERGENCIA MOVEL E HOME CARE LTDA.",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 101602,
+   "nome": "REHABILITA ATENDIMENTOS DOMICILIARES ESPECIALIZADOS LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 16,
+   "nome": "NOVITA HOME CARE SERVICOS EM SAUDE LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 100552,
+   "nome": "INFINITE SAUDE HOME CARE ASSISTECIA ENFERMAGEM DOMICILIAR LT",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 105707,
+   "nome": "ATS HOSPITALAR SAUDE TOTAL LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 108309,
+   "nome": "QUALITYLIFE ASSISTENCIA MEDICA DOMICILIAR LIMITADA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 100528,
+   "nome": "PIONEIRA ATENDIMENTO DOMICILIAR EM SAUDE LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 101785,
+   "nome": "HOSPITAL MILAGRES SERVICOS DE SAUDE EIRELI",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 102606,
+   "nome": "GRATIDAO LIFE SERVICOS DE SAUDE DOMICILIAR LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 169,
+   "nome": "GEROCLINICA ASSISTENCIA GERIATRICA LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 235,
+   "nome": "PRIME HOME CARE ASSISTENCIA MEDICA DOMIC",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 9321,
+   "nome": "VIVER E CUIDAR HOME CARE ASSISTENCIA A SAUDE LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 107955,
+   "nome": "INSTITUTO FLEUR DE LIS- BEM ESTAR E QUALIDADE DE VIDA",
+   "categoria": "ILP"
+  },
+  {
+   "codcli": 104991,
+   "nome": "CEIMED HOSPITALAR PRODUTOS PARA SAUDE",
+   "categoria": "DISTRIBUIDOR"
+  },
+  {
+   "codcli": 108213,
+   "nome": "COMERCIAL RC PRODUTOS HOSPITALARES LTDA",
+   "categoria": "PDV"
+  },
+  {
+   "codcli": 107900,
+   "nome": "DROGARIA SOUZA & FARMA MED EXPRESS LTDA",
+   "categoria": "PDV"
+  },
+  {
+   "codcli": 100128,
+   "nome": "TRIBUNAL REGIONAL FEDERAL DA 1 REGIAO",
+   "categoria": "OPERADORA DE SAÚDE"
+  },
+  {
+   "codcli": 100127,
+   "nome": "JUSTICA FEDERAL DE PRIMEIRO GRAU NO DISTRITO FEDERAL",
+   "categoria": "OPERADORA DE SAÚDE"
+  },
+  {
+   "codcli": 104811,
+   "nome": "CENTRAL NACIONAL UNIMED - COOPERATIVA CENTRAL",
+   "categoria": "OPERADORA DE SAÚDE"
+  },
+  {
+   "codcli": 2548,
+   "nome": "FUNDO MUNICIPAL DE SAUDE DE CRISTALINA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 104440,
+   "nome": "CONSÓRCIO INTERESTADUAL DE DESENVOLVIMENTO BRASIL CENTRAL",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 104425,
+   "nome": "FUNDO MUNICIPAL DE SAÚDE DE NIQUELÂNDIA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 9758,
+   "nome": "PREFEITURA MUNICIPAL DE UNAI",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 426,
+   "nome": "FUNDO MUNICIPAL DE SAUDE DE SAO JOAO D A",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 3246,
+   "nome": "HOSPITAL NAVAL DE BRASILIA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 108461,
+   "nome": "HOSP UNIV DA UNIVERSIDADE FED DE SAO JOAO DEL REY",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 106424,
+   "nome": "COMPLEXO HOSPITALAR DA UFRJ",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 550,
+   "nome": "COMANDO DA AERONAUTICA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 11,
+   "nome": "SECRETARIA DE SAUDE DO DISTRITO FEDERAL",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  }
+ ],
+ "amanda": [
+  {
+   "codcli": 1180,
+   "nome": "COOK EMPREENDIMENTOS EM ALIMENTACAO",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 100808,
+   "nome": "RC NUTRY ALIMENTACAO LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 105671,
+   "nome": "ISM GOMES DE MATTOS LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 105501,
+   "nome": "ISM GOMES DE MATTOS LTDA",
+   "categoria": "CONCESSIONÁRIAS"
+  },
+  {
+   "codcli": 71,
+   "nome": "HOME HOSP. ORTOPÉDICO E MEDICINA ESPECIA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 108,
+   "nome": "FUNDACAO UNIVERSITARIA DE CARDIOLOGIA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 680,
+   "nome": "UNIDADE DE TERAPIA INTENSIVA SANTA LUZIA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 3019,
+   "nome": "SOC BENEFICIENTE DE SENHORAS HOSP SIRIO",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 474,
+   "nome": "ESHO EMPRESA DE SERVICOS HOSPITALARES S.",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 139,
+   "nome": "SOCIEDADE MEDICA LUZIANIA LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 52,
+   "nome": "IMPAR SERVIÇOS HOSPITALARES SA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 101562,
+   "nome": "IMPAR SERVICOS HOSPITALARES S/A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 104682,
+   "nome": "HOSPITAL PLACI BRASILIA LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 107968,
+   "nome": "THE ONE HOSPITAL LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 103997,
+   "nome": "INSTITUTO PATRIS",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 9,
+   "nome": "SERVICOS HOSPITALARES YUGE S.A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 39,
+   "nome": "HOSPITAL ANCHIETA LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 21,
+   "nome": "HOSPITAL DAS CLINICAS E PRONTO SOCORRO",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 9211,
+   "nome": "DOMED PRODUTOS E SERVIÇOS DE SAUDE LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 101404,
+   "nome": "HDIA CENTRO DE ATENDIMENTO MEDICO HOSPITALAR LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 100946,
+   "nome": "REDE DOR SAO LUIZ S.A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 12720,
+   "nome": "REDE DOR SAO LUIZ S/A",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 661,
+   "nome": "REDE DOR SAO LUIZ S.A.",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 100,
+   "nome": "REDE DOR SAO LUIZ S.A.",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 101175,
+   "nome": "HOSPITAL LUCIANO CHAVES LTDA",
+   "categoria": "HOSPITAL PRIVADO"
+  },
+  {
+   "codcli": 430,
+   "nome": "VIVENTI HOME CARE HOSPITAL DOMICILIAR LT",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 175,
+   "nome": "PLENO SAUDE LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 1528,
+   "nome": "INDOOR EMPRESAS DE ASSISTENCIA MED DOM",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 420,
+   "nome": "VIP HOME CARE ATENDIMENTO DOMICILIAR LTD",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 105470,
+   "nome": "CABRAL VIDA ASSISTENCIA DOMICILIAR A SAUDE",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 166,
+   "nome": "CAPTAMED CUIDADOS CONTINUADOS LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 100578,
+   "nome": "GLOBAL CARE ASSISTENCIA DOMICILIAR LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 2863,
+   "nome": "VIZONI HOMECARE EIRELI",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 102,
+   "nome": "VITAL CARE SERVIÇOS DE SAÚDE LTDA-ME",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 105343,
+   "nome": "HDIA HOME CARE LTDA",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 761,
+   "nome": "HOME ASSISTANCE EIRELI - ME",
+   "categoria": "HOME CARE"
+  },
+  {
+   "codcli": 671,
+   "nome": "LAR CECILIA FERRAZ DE ANDRADE",
+   "categoria": "ILP"
+  },
+  {
+   "codcli": 105506,
+   "nome": "SAMEDIL - SERVICOS DE ATENDIMENTO MEDICO S/A",
+   "categoria": "OPERADORA DE SAÚDE"
+  },
+  {
+   "codcli": 102229,
+   "nome": "SAMEDIL - SERVICOS DE ATENDIMENTO MEDICO S/A",
+   "categoria": "OPERADORA DE SAÚDE"
+  },
+  {
+   "codcli": 629,
+   "nome": "HOSPITAL MILITAR DE AREA DE BRASILIA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 128,
+   "nome": "FUNDO MUNICIPAL SAUDE PLANALTINA GO",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 259,
+   "nome": "HOSPITAL DAS FORÇAS ARMADAS",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 100273,
+   "nome": "FUNDO MUNICIPAL DE SAUDE NOVO GAMA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 232,
+   "nome": "FUNDO MUNICIPAL DE SAUDE DE LUZIANIA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 116,
+   "nome": "INSTITUTO DO CANCER INFANTIL E PEDIATRIA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 2541,
+   "nome": "FUNDO MUNICIPAL DE SAUDE DE FORMOSA",
+   "categoria": "ÓRGÃO PÚBLICO (LICITAÇÃO)"
+  },
+  {
+   "codcli": 105328,
+   "nome": "LABI EXAMES S.A.",
+   "categoria": "DEMAIS CLIENTES"
+  }
+ ]
+}

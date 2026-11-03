@@ -1,0 +1,18 @@
+{
+  "timestamp": "20260924172934",
+  "projectId": 60604,
+  "motivo": "Versionamento manual.",
+  "criadoEm": "2026-09-24T17:29:34.243Z",
+  "serverFunctions": [
+    {
+      "serverFunctionId": 195,
+      "name": "painelCoordenadorMetasBuRecebidas",
+      "type": "SQL",
+      "description": "Meta que o coordenador recebe da diretoria, vinda do planejamento estrategico por BU + UF da filial (METAS_BU manual tem precedencia)",
+      "file": "sf-195-painelcoordenadormetasburecebidas.sql",
+      "bytes": 9559,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    }
+  ]
+}

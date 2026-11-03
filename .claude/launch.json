@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "s360-simulador",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "sim", "--prefix", "novo/backend"],
+      "port": 3105
+    },
+    {
+      "name": "s360-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "novo/frontend"],
+      "port": 5175
+    }
+  ]
+}

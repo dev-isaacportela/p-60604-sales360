@@ -1,0 +1,18 @@
+{
+  "timestamp": "20261005120000",
+  "projectId": 60604,
+  "motivo": "Antes de trocar a gravacao de erros da sincronizacao semanal (ACOMP_SEMANAL_SYNC_ERRO -> ACOMP_SEMANAL_SYNC_ERRO_ATUAL).",
+  "criadoEm": "2026-10-05T12:00:00.000Z",
+  "serverFunctions": [
+    {
+      "serverFunctionId": 107,
+      "name": "acompanhamento-semanal-sincronizar-manual",
+      "type": "JAVASCRIPT",
+      "description": "Dispara sincronizacao manual TOTVS do Acompanhamento Semanal e retorna metricas.",
+      "file": "sf-107-acompanhamento-semanal-sincronizar-manual.js",
+      "bytes": 18691,
+      "copiaPlataformaId": null,
+      "copiaPlataformaNome": null
+    }
+  ]
+}

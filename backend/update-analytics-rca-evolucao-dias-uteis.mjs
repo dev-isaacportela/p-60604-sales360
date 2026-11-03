@@ -1,0 +1,281 @@
+import 'dotenv/config';
+import {
+  configureSdkMitra,
+  listServerFunctionsMitra,
+  updateServerFunctionMitra,
+} from 'mitra-sdk';
+
+configureSdkMitra({
+  baseURL: process.env.MITRA_BASE_URL,
+  token: process.env.MITRA_TOKEN,
+  integrationURL: process.env.MITRA_BASE_URL_INTEGRATIONS,
+});
+
+const projectId = Number(process.env.MITRA_PROJECT_ID);
+
+const commonCtes = `
+TARGET_USERS AS (
+  SELECT :VAR_USER AS USER_ID
+
+  UNION
+
+  SELECT F.ID AS USER_ID
+  FROM FUNCIONARIOS F
+  WHERE F.ID_SUBSTITUTO = :VAR_USER
+
+  UNION
+
+  SELECT VR_DONO.USER_ID AS USER_ID
+  FROM VENDEDOR_RCA VR_SUB
+  JOIN FERIAS_VENDEDOR FV ON FV.COD_RCA_SUBSTITUTO = VR_SUB.COD_RCA
+  JOIN VENDEDOR_RCA VR_DONO ON VR_DONO.COD_RCA = FV.COD_RCA
+  WHERE VR_SUB.USER_ID = :VAR_USER
+    AND COALESCE(FV.ATIVO, TRUE) = TRUE
+    AND CURRENT_DATE BETWEEN FV.DT_INICIO AND FV.DT_FIM
+),
+BU_SCOPE AS (
+  SELECT DISTINCT
+    TU.USER_ID AS USER_ID,
+    BV.VENDEDOR_ID,
+    TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) AS CODFILIAL,
+    TRIM(CAST(BV.BU_CODIGO AS CHAR)) AS ID_BU,
+    BV.ID_SECAO
+  FROM TARGET_USERS TU
+  JOIN BU_VENDEDOR BV ON BV.VENDEDOR_ID = TU.USER_ID
+  WHERE COALESCE(BV.ATIVO, TRUE) = TRUE
+    AND TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) <> ''
+    AND TRIM(COALESCE(CAST(BV.BU_CODIGO AS CHAR), '')) <> ''
+),
+CARTEIRA_SCOPE AS (
+  SELECT DISTINCT
+    TU.USER_ID,
+    C.ID AS CLIENTE_ID,
+    COALESCE(C.WINTHOR_CODCLI, C.ID) AS CODCLI
+  FROM EQUIPE_CLIENTE EC
+  JOIN TARGET_USERS TU ON TU.USER_ID = EC.ID_VENDEDOR
+  JOIN CLIENTES C ON C.ID = EC.ID_CLIENTE
+  WHERE C.ID IS NOT NULL
+),
+INPUTS AS (
+  SELECT
+    CASE
+      WHEN '{{dataInicio}}' REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN '{{dataInicio}}'
+      ELSE DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+    END AS DATA_INICIO,
+    CASE
+      WHEN '{{dataFim}}' REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN '{{dataFim}}'
+      ELSE DATE_FORMAT(LAST_DAY(CURRENT_DATE), '%Y-%m-%d')
+    END AS DATA_FIM,
+    CASE
+      WHEN '{{departamentos}}' = '' OR LOCATE('{', '{{departamentos}}') > 0 THEN NULL
+      ELSE TRIM('{{departamentos}}')
+    END AS DEPARTAMENTOS_PARAM,
+    CASE
+      WHEN '{{ramos}}' = '' OR LOCATE('{', '{{ramos}}') > 0 THEN NULL
+      ELSE TRIM('{{ramos}}')
+    END AS RAMOS_PARAM,
+    CASE
+      WHEN '{{cliente}}' = '' OR LOCATE('{', '{{cliente}}') > 0 THEN NULL
+      ELSE REPLACE(TRIM('{{cliente}}'), '|', ',')
+    END AS CLIENTE_PARAM,
+    CASE WHEN '{{limit}}' REGEXP '^[0-9]+$' THEN CAST('{{limit}}' AS UNSIGNED) ELSE 100 END AS LIMIT_PARAM,
+    CASE WHEN '{{offset}}' REGEXP '^[0-9]+$' THEN CAST('{{offset}}' AS UNSIGNED) ELSE 0 END AS OFFSET_PARAM
+),
+PERIODO_BASE AS (
+  SELECT
+    I.*, 
+    STR_TO_DATE(I.DATA_INICIO, '%Y-%m-%d') AS DT_INICIO,
+    STR_TO_DATE(I.DATA_FIM, '%Y-%m-%d') AS DT_FIM
+  FROM INPUTS I
+),
+PERIODO AS (
+  SELECT
+    PB.*, 
+    GREATEST(DATEDIFF(PB.DT_FIM, PB.DT_INICIO) + 1, 1) AS DIAS_PERIODO,
+    DATE_SUB(PB.DT_INICIO, INTERVAL GREATEST(DATEDIFF(PB.DT_FIM, PB.DT_INICIO) + 1, 1) DAY) AS DT_INICIO_ANTERIOR,
+    DATE_SUB(PB.DT_INICIO, INTERVAL 1 DAY) AS DT_FIM_ANTERIOR
+  FROM PERIODO_BASE PB
+)
+`;
+
+function buScopeJoin(alias = 'V', scopeAlias = 'B') {
+  return `
+    JOIN BU_SCOPE ${scopeAlias}
+      ON ${scopeAlias}.CODFILIAL = TRIM(COALESCE(CAST(${alias}.CODFILIAL AS CHAR), ''))
+     AND ${scopeAlias}.ID_BU = TRIM(CAST(${alias}.CODEPTO AS CHAR))
+     AND (
+       ${scopeAlias}.ID_SECAO IS NULL
+       OR TRIM(CAST(${scopeAlias}.ID_SECAO AS CHAR)) = TRIM(CAST(${alias}.CODSEC AS CHAR))
+       OR LPAD(TRIM(CAST(${scopeAlias}.ID_SECAO AS CHAR)), 2, '0') = TRIM(CAST(${alias}.CODSEC AS CHAR))
+     )
+  `;
+}
+
+function carteiraScopeJoin(alias = 'V', scopeAlias = 'CS', buScopeAlias = 'BS') {
+  return `
+    JOIN CARTEIRA_SCOPE ${scopeAlias}
+      ON TRIM(CAST(${scopeAlias}.CODCLI AS CHAR)) = TRIM(CAST(${alias}.CODCLI AS CHAR))
+     AND ${scopeAlias}.USER_ID = ${buScopeAlias}.USER_ID
+  `;
+}
+
+function salesFilter(alias = 'V', periodAlias = 'P') {
+  return `
+    AND ${alias}.DTSAIDA >= DATE_FORMAT(${periodAlias}.DT_INICIO, '%Y-%m-%d')
+    AND ${alias}.DTSAIDA <= DATE_FORMAT(${periodAlias}.DT_FIM, '%Y-%m-%d')
+    AND (
+      ${periodAlias}.DEPARTAMENTOS_PARAM IS NULL
+      OR INSTR(CONCAT('|', ${periodAlias}.DEPARTAMENTOS_PARAM, '|'), CONCAT('|', TRIM(CAST(${alias}.CODEPTO AS CHAR)), '|')) > 0
+    )
+    AND (
+      ${periodAlias}.RAMOS_PARAM IS NULL
+      OR INSTR(
+        CONCAT('|', ${periodAlias}.RAMOS_PARAM, '|'),
+        CONCAT('|', REPLACE(COALESCE(NULLIF(TRIM(CAST(${alias}.RAMO_CLIENTE AS CHAR)), ''), 'Sem ramo'), '''', ''), '|')
+      ) > 0
+    )
+    AND (
+      ${periodAlias}.CLIENTE_PARAM IS NULL
+      OR FIND_IN_SET(TRIM(CAST(${alias}.CODCLI AS CHAR)), ${periodAlias}.CLIENTE_PARAM) > 0
+    )
+  `;
+}
+
+function devolucaoFilter(alias = 'D', periodAlias = 'P') {
+  return `
+    AND ${alias}.DATA_DEVOLUCAO >= DATE_FORMAT(${periodAlias}.DT_INICIO, '%Y-%m-%d')
+    AND ${alias}.DATA_DEVOLUCAO <= DATE_FORMAT(${periodAlias}.DT_FIM, '%Y-%m-%d')
+    AND (
+      ${periodAlias}.DEPARTAMENTOS_PARAM IS NULL
+      OR INSTR(CONCAT('|', ${periodAlias}.DEPARTAMENTOS_PARAM, '|'), CONCAT('|', TRIM(CAST(${alias}.CODEPTO AS CHAR)), '|')) > 0
+    )
+    AND (
+      ${periodAlias}.RAMOS_PARAM IS NULL
+      OR INSTR(
+        CONCAT('|', ${periodAlias}.RAMOS_PARAM, '|'),
+        CONCAT('|', REPLACE(COALESCE(NULLIF(TRIM(CAST(${alias}.RAMO_CLIENTE AS CHAR)), ''), 'Sem ramo'), '''', ''), '|')
+      ) > 0
+    )
+    AND (
+      ${periodAlias}.CLIENTE_PARAM IS NULL
+      OR FIND_IN_SET(TRIM(CAST(${alias}.CODCLI AS CHAR)), ${periodAlias}.CLIENTE_PARAM) > 0
+    )
+  `;
+}
+
+const analyticsRcaEvolucao24m = `
+WITH ${commonCtes},
+NUMS AS (
+  SELECT 0 AS N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+  UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+  UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+  UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+  UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19
+  UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23
+  UNION ALL SELECT 24 UNION ALL SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27
+  UNION ALL SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31
+),
+PERIODOS AS (
+  SELECT
+    CASE
+      WHEN P.DIAS_PERIODO <= 31 THEN DATE_ADD(P.DT_INICIO, INTERVAL N.N DAY)
+      ELSE DATE_ADD(DATE_FORMAT(P.DT_INICIO, '%Y-%m-01'), INTERVAL N.N MONTH)
+    END AS DT_REF,
+    CASE WHEN P.DIAS_PERIODO <= 31 THEN 'DIA' ELSE 'MES' END AS GRANULARIDADE
+  FROM NUMS N
+  JOIN PERIODO P ON 1 = 1
+  WHERE (
+      P.DIAS_PERIODO <= 31
+      AND DATE_ADD(P.DT_INICIO, INTERVAL N.N DAY) <= P.DT_FIM
+      AND DAYOFWEEK(DATE_ADD(P.DT_INICIO, INTERVAL N.N DAY)) NOT IN (1, 7)
+    )
+    OR (
+      P.DIAS_PERIODO > 31
+      AND DATE_ADD(DATE_FORMAT(P.DT_INICIO, '%Y-%m-01'), INTERVAL N.N MONTH) <= P.DT_FIM
+    )
+),
+VENDAS AS (
+  SELECT
+    CASE WHEN P.DIAS_PERIODO <= 31 THEN V.DTSAIDA ELSE SUBSTRING(V.DTSAIDA, 1, 7) END AS PERIODO,
+    ROUND(SUM(COALESCE(V.TOTAL, 0)), 2) AS FATURAMENTO_BRUTO,
+    ROUND(SUM(COALESCE(V.QT, 0)), 2) AS QTD,
+    COUNT(DISTINCT V.NUMPED) AS QTD_PEDIDOS
+  FROM IMP_VENDAS_DASHBOARD_TOTVS_RCA V
+  ${buScopeJoin('V', 'BS')}
+  ${carteiraScopeJoin('V', 'CS')}
+  JOIN PERIODO P ON 1 = 1
+  WHERE 1 = 1
+  ${salesFilter('V', 'P')}
+  GROUP BY CASE WHEN P.DIAS_PERIODO <= 31 THEN V.DTSAIDA ELSE SUBSTRING(V.DTSAIDA, 1, 7) END
+),
+DEVOLUCOES AS (
+  SELECT
+    CASE WHEN P.DIAS_PERIODO <= 31 THEN D.DATA_DEVOLUCAO ELSE SUBSTRING(D.DATA_DEVOLUCAO, 1, 7) END AS PERIODO,
+    ROUND(SUM(COALESCE(D.VALOR_DEVOLVIDO, 0)), 2) AS TOTAL_DEVOLVIDO
+  FROM IMP_DEVOLUCOES_TOTVS D
+  ${buScopeJoin('D', 'BS')}
+  ${carteiraScopeJoin('D', 'CS')}
+  JOIN PERIODO P ON 1 = 1
+  WHERE 1 = 1
+  ${devolucaoFilter('D', 'P')}
+  GROUP BY CASE WHEN P.DIAS_PERIODO <= 31 THEN D.DATA_DEVOLUCAO ELSE SUBSTRING(D.DATA_DEVOLUCAO, 1, 7) END
+),
+METAS AS (
+  SELECT MBV.ANO, MBV.MES, ROUND(SUM(MBV.META_VALOR), 2) AS VALOR_META
+  FROM METAS_BU_VENDEDOR MBV
+  JOIN PERIODO P ON 1 = 1
+  WHERE MBV.VENDEDOR_ID = :VAR_USER
+    AND (
+      P.DEPARTAMENTOS_PARAM IS NULL
+      OR INSTR(CONCAT('|', P.DEPARTAMENTOS_PARAM, '|'), CONCAT('|', TRIM(CAST(MBV.CODEPTO AS CHAR)), '|')) > 0
+    )
+  GROUP BY MBV.ANO, MBV.MES
+)
+SELECT
+  CASE WHEN P.GRANULARIDADE = 'DIA' THEN DATE_FORMAT(P.DT_REF, '%Y-%m-%d') ELSE DATE_FORMAT(P.DT_REF, '%Y-%m') END AS PERIODO,
+  YEAR(P.DT_REF) AS ANO,
+  MONTH(P.DT_REF) AS MES,
+  CASE WHEN P.GRANULARIDADE = 'DIA' THEN DATE_FORMAT(P.DT_REF, '%d/%m') ELSE DATE_FORMAT(P.DT_REF, '%m/%Y') END AS MES_ANO,
+  CASE
+    WHEN P.GRANULARIDADE = 'DIA' THEN ROUND(COALESCE(M.VALOR_META, 0) / GREATEST((SELECT COUNT(*) FROM PERIODOS WHERE GRANULARIDADE = 'DIA'), 1), 2)
+    ELSE COALESCE(M.VALOR_META, 0)
+  END AS VALOR_META,
+  ROUND(GREATEST(COALESCE(V.FATURAMENTO_BRUTO, 0) - COALESCE(D.TOTAL_DEVOLVIDO, 0), 0), 2) AS VALOR_REALIZADO,
+  COALESCE(V.QTD, 0) AS QTD,
+  COALESCE(V.QTD_PEDIDOS, 0) AS QTD_PEDIDOS,
+  COALESCE(D.TOTAL_DEVOLVIDO, 0) AS TOTAL_DEVOLVIDO,
+  CASE
+    WHEN COALESCE(M.VALOR_META, 0) <= 0 THEN 0
+    WHEN P.GRANULARIDADE = 'DIA' THEN ROUND((GREATEST(COALESCE(V.FATURAMENTO_BRUTO, 0) - COALESCE(D.TOTAL_DEVOLVIDO, 0), 0) / (M.VALOR_META / GREATEST((SELECT COUNT(*) FROM PERIODOS WHERE GRANULARIDADE = 'DIA'), 1))) * 100, 2)
+    ELSE ROUND((GREATEST(COALESCE(V.FATURAMENTO_BRUTO, 0) - COALESCE(D.TOTAL_DEVOLVIDO, 0), 0) / M.VALOR_META) * 100, 2)
+  END AS PERCENTUAL_META
+FROM PERIODOS P
+LEFT JOIN VENDAS V ON V.PERIODO = CASE WHEN P.GRANULARIDADE = 'DIA' THEN DATE_FORMAT(P.DT_REF, '%Y-%m-%d') ELSE DATE_FORMAT(P.DT_REF, '%Y-%m') END
+LEFT JOIN DEVOLUCOES D ON D.PERIODO = CASE WHEN P.GRANULARIDADE = 'DIA' THEN DATE_FORMAT(P.DT_REF, '%Y-%m-%d') ELSE DATE_FORMAT(P.DT_REF, '%Y-%m') END
+LEFT JOIN METAS M ON M.ANO = YEAR(P.DT_REF) AND M.MES = MONTH(P.DT_REF)
+ORDER BY P.DT_REF ASC
+`;
+
+async function main() {
+  const listed = await listServerFunctionsMitra({ projectId });
+  const existing = (listed?.result || []).find((sf) => sf.name === 'analyticsRcaEvolucao24m');
+
+  if (!existing) {
+    throw new Error("Server Function 'analyticsRcaEvolucao24m' não encontrada no projeto.");
+  }
+
+  await updateServerFunctionMitra({
+    projectId,
+    serverFunctionId: existing.id,
+    code: analyticsRcaEvolucao24m,
+    description: 'Evolução do período aplicado com dias úteis na visão diária e comparação de realizado líquido contra meta.',
+  });
+
+  console.log(`analyticsRcaEvolucao24m atualizada com sucesso (ID ${existing.id}).`);
+}
+
+main().catch((error) => {
+  console.error('Erro ao atualizar analyticsRcaEvolucao24m:');
+  console.error(error?.message || error);
+  process.exit(1);
+});

@@ -1,0 +1,284 @@
+import 'dotenv/config';
+import {
+  configureSdkMitra,
+  executeServerFunctionMitra,
+  updateServerFunctionMitra,
+} from 'mitra-sdk';
+
+configureSdkMitra({
+  baseURL: process.env.MITRA_BASE_URL,
+  token: process.env.MITRA_TOKEN,
+  integrationURL: process.env.MITRA_BASE_URL_INTEGRATIONS,
+});
+
+const projectId = Number(process.env.MITRA_PROJECT_ID);
+
+const RAW_SECTION_MATCH = `
+  B.CODFILIAL = TRIM(COALESCE(CAST(R.CODFILIAL AS CHAR), ''))
+  AND B.CODEPTO = TRIM(CAST(R.CODEPTO AS CHAR))
+  AND (
+    (
+      B.ID_SECAO IS NOT NULL
+      AND (
+        TRIM(CAST(B.ID_SECAO AS CHAR)) = TRIM(CAST(COALESCE(R.ID_SECAO, R.CODSECAO) AS CHAR))
+        OR LPAD(TRIM(CAST(B.ID_SECAO AS CHAR)), 2, '0') = TRIM(CAST(COALESCE(R.ID_SECAO, R.CODSECAO) AS CHAR))
+      )
+    )
+    OR (
+      B.ID_SECAO IS NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM BU_SCOPE B2
+        WHERE B2.TARGET_USER_ID = B.TARGET_USER_ID
+          AND B2.CODFILIAL = B.CODFILIAL
+          AND B2.CODEPTO = B.CODEPTO
+          AND B2.ID_SECAO IS NOT NULL
+          AND (
+            TRIM(CAST(B2.ID_SECAO AS CHAR)) = TRIM(CAST(COALESCE(R.ID_SECAO, R.CODSECAO) AS CHAR))
+            OR LPAD(TRIM(CAST(B2.ID_SECAO AS CHAR)), 2, '0') = TRIM(CAST(COALESCE(R.ID_SECAO, R.CODSECAO) AS CHAR))
+          )
+      )
+    )
+  )
+`;
+
+const RAW_CARTEIRA_MATCH = `
+  CS.TARGET_USER_ID = B.TARGET_USER_ID
+  AND (
+    (R.CLIENTE_ID IS NOT NULL AND CS.CLIENTE_ID = R.CLIENTE_ID)
+    OR TRIM(CAST(CS.CODCLI AS CHAR)) = TRIM(CAST(R.CODCLI AS CHAR))
+  )
+`;
+
+const SCOPE_CTE = `
+INPUT_SCOPE AS (
+  SELECT
+    CASE WHEN '{{scopeCodFilial}}' = '' OR LOCATE('{', '{{scopeCodFilial}}') > 0 THEN NULL ELSE TRIM('{{scopeCodFilial}}') END AS SCOPE_CODFILIAL,
+    CASE WHEN '{{scopeCodepto}}' = '' OR LOCATE('{', '{{scopeCodepto}}') > 0 THEN NULL ELSE TRIM('{{scopeCodepto}}') END AS SCOPE_CODEPTO,
+    CASE WHEN '{{scopeIdSecao}}' = '' OR LOCATE('{', '{{scopeIdSecao}}') > 0 THEN NULL ELSE TRIM('{{scopeIdSecao}}') END AS SCOPE_ID_SECAO
+),
+TARGET_USERS AS (
+  SELECT :VAR_USER AS USER_ID
+
+  UNION
+
+  SELECT F.ID AS USER_ID
+  FROM FUNCIONARIOS F
+  WHERE F.ID_SUBSTITUTO = :VAR_USER
+
+  UNION
+
+  SELECT VR_DONO.USER_ID AS USER_ID
+  FROM VENDEDOR_RCA VR_SUB
+  JOIN FERIAS_VENDEDOR FV ON FV.COD_RCA_SUBSTITUTO = VR_SUB.COD_RCA
+  JOIN VENDEDOR_RCA VR_DONO ON VR_DONO.COD_RCA = FV.COD_RCA
+  WHERE VR_SUB.USER_ID = :VAR_USER
+    AND COALESCE(FV.ATIVO, TRUE) = TRUE
+    AND CURRENT_DATE BETWEEN FV.DT_INICIO AND FV.DT_FIM
+),
+BU_SCOPE AS (
+  SELECT DISTINCT
+    TU.USER_ID AS TARGET_USER_ID,
+    BV.VENDEDOR_ID,
+    TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) AS CODFILIAL,
+    TRIM(CAST(BV.BU_CODIGO AS CHAR)) AS CODEPTO,
+    BV.ID_SECAO
+  FROM TARGET_USERS TU
+  JOIN BU_VENDEDOR BV ON BV.VENDEDOR_ID = TU.USER_ID
+  JOIN INPUT_SCOPE I ON 1 = 1
+  WHERE COALESCE(BV.ATIVO, TRUE) = TRUE
+    AND TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) <> ''
+    AND TRIM(COALESCE(CAST(BV.BU_CODIGO AS CHAR), '')) <> ''
+    AND (I.SCOPE_CODFILIAL IS NULL OR TRIM(COALESCE(CAST(BV.CODFILIAL AS CHAR), '')) = I.SCOPE_CODFILIAL)
+    AND (I.SCOPE_CODEPTO IS NULL OR TRIM(CAST(BV.BU_CODIGO AS CHAR)) = I.SCOPE_CODEPTO)
+    AND (
+      I.SCOPE_ID_SECAO IS NULL
+      OR TRIM(CAST(BV.ID_SECAO AS CHAR)) = I.SCOPE_ID_SECAO
+      OR LPAD(TRIM(CAST(BV.ID_SECAO AS CHAR)), 2, '0') = I.SCOPE_ID_SECAO
+    )
+),
+CARTEIRA_SCOPE AS (
+  SELECT DISTINCT
+    TU.USER_ID AS TARGET_USER_ID,
+    C.ID AS CLIENTE_ID,
+    TRIM(CAST(COALESCE(C.WINTHOR_CODCLI, C.ID) AS CHAR)) AS CODCLI
+  FROM TARGET_USERS TU
+  JOIN EQUIPE_CLIENTE EC ON EC.ID_VENDEDOR = TU.USER_ID
+  JOIN CLIENTES C ON C.ID = EC.ID_CLIENTE
+  WHERE COALESCE(C.WINTHOR_CODCLI, C.ID) IS NOT NULL
+)
+`;
+
+const metaRealizadoCode = `WITH ${SCOPE_CTE},
+PARAMS AS (
+  SELECT
+    CASE WHEN '{{ANO}}' REGEXP '^[0-9]{4}$' THEN CAST('{{ANO}}' AS UNSIGNED) ELSE YEAR(CURRENT_DATE) END AS ANO_REF,
+    CASE WHEN '{{MES}}' REGEXP '^[0-9]{1,2}$' THEN CAST('{{MES}}' AS UNSIGNED) ELSE MONTH(CURRENT_DATE) END AS MES_REF
+),
+PERIODO AS (
+  SELECT
+    P.ANO_REF,
+    P.MES_REF,
+    DAY(LAST_DAY(STR_TO_DATE(CONCAT(P.ANO_REF, '-', LPAD(P.MES_REF, 2, '0'), '-01'), '%Y-%m-%d'))) AS TOTAL_DIAS_MES,
+    CASE
+      WHEN P.ANO_REF = YEAR(CURRENT_DATE) AND P.MES_REF = MONTH(CURRENT_DATE)
+        THEN GREATEST(DAY(CURRENT_DATE), 1)
+      ELSE DAY(LAST_DAY(STR_TO_DATE(CONCAT(P.ANO_REF, '-', LPAD(P.MES_REF, 2, '0'), '-01'), '%Y-%m-%d')))
+    END AS DIA_ATUAL
+  FROM PARAMS P
+),
+META AS (
+  SELECT ROUND(SUM(COALESCE(MBV.META_VALOR, 0)), 2) AS VALOR_META
+  FROM METAS_BU_VENDEDOR MBV
+  JOIN PARAMS P ON P.ANO_REF = MBV.ANO AND P.MES_REF = MBV.MES
+  JOIN BU_SCOPE B
+    ON B.VENDEDOR_ID = MBV.VENDEDOR_ID
+   AND B.CODFILIAL = TRIM(CAST(MBV.CODFILIAL AS CHAR))
+   AND B.CODEPTO = TRIM(CAST(MBV.CODEPTO AS CHAR))
+),
+REALIZADO AS (
+  SELECT ROUND(SUM(COALESCE(R.TOTAL, 0)), 2) AS VALOR_REALIZADO
+  FROM PEDIDOS_SEMANAIS_SYNC_RAW R
+  JOIN PARAMS P ON 1 = 1
+  JOIN BU_SCOPE B ON ${RAW_SECTION_MATCH}
+  JOIN CARTEIRA_SCOPE CS ON ${RAW_CARTEIRA_MATCH}
+  WHERE R.ATIVO = TRUE
+    AND R.STATUS_INGESTAO = 'ATIVO'
+    AND R.ANO = P.ANO_REF
+    AND R.MES = P.MES_REF
+)
+SELECT
+  P.ANO_REF AS ANO,
+  P.MES_REF AS MES,
+  COALESCE(M.VALOR_META, 0) AS VALOR_META,
+  COALESCE(R.VALOR_REALIZADO, 0) AS VALOR_REALIZADO,
+  CASE WHEN COALESCE(M.VALOR_META, 0) <= 0 THEN 0 ELSE ROUND((COALESCE(R.VALOR_REALIZADO, 0) / M.VALOR_META) * 100, 2) END AS PERCENTUAL_ATINGIDO,
+  P.DIA_ATUAL,
+  P.TOTAL_DIAS_MES,
+  GREATEST(P.TOTAL_DIAS_MES - P.DIA_ATUAL, 0) AS DIAS_RESTANTES,
+  ROUND(CASE WHEN P.DIA_ATUAL <= 0 THEN 0 ELSE (COALESCE(R.VALOR_REALIZADO, 0) / P.DIA_ATUAL) * P.TOTAL_DIAS_MES END, 2) AS PROJECAO_FECHAMENTO,
+  CASE
+    WHEN COALESCE(M.VALOR_META, 0) <= 0 THEN 'abaixo'
+    WHEN (CASE WHEN P.DIA_ATUAL <= 0 THEN 0 ELSE (COALESCE(R.VALOR_REALIZADO, 0) / P.DIA_ATUAL) * P.TOTAL_DIAS_MES END) > M.VALOR_META THEN 'acima'
+    WHEN (CASE WHEN P.DIA_ATUAL <= 0 THEN 0 ELSE (COALESCE(R.VALOR_REALIZADO, 0) / P.DIA_ATUAL) * P.TOTAL_DIAS_MES END) >= (M.VALOR_META * 0.9) THEN 'no_ritmo'
+    ELSE 'abaixo'
+  END AS STATUS,
+  'COORDENADOR' AS ORIGEM_META
+FROM PERIODO P
+LEFT JOIN META M ON 1 = 1
+LEFT JOIN REALIZADO R ON 1 = 1`;
+
+const metaHistoricoCode = `WITH ${SCOPE_CTE},
+MESES AS (
+  SELECT 0 AS N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+  UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+  UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+),
+PERIODOS AS (
+  SELECT
+    YEAR(DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL N MONTH)) AS ANO_REF,
+    MONTH(DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL N MONTH)) AS MES_REF,
+    DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL N MONTH) AS DT_REF
+  FROM MESES
+),
+METAS_POR_PERIODO AS (
+  SELECT
+    MBV.ANO,
+    MBV.MES,
+    ROUND(SUM(COALESCE(MBV.META_VALOR, 0)), 2) AS VALOR_META
+  FROM METAS_BU_VENDEDOR MBV
+  JOIN BU_SCOPE B
+    ON B.VENDEDOR_ID = MBV.VENDEDOR_ID
+   AND B.CODFILIAL = TRIM(CAST(MBV.CODFILIAL AS CHAR))
+   AND B.CODEPTO = TRIM(CAST(MBV.CODEPTO AS CHAR))
+  GROUP BY MBV.ANO, MBV.MES
+),
+REALIZADO_POR_PERIODO AS (
+  SELECT R.ANO, R.MES, ROUND(SUM(COALESCE(R.TOTAL, 0)), 2) AS VALOR_REALIZADO
+  FROM PEDIDOS_SEMANAIS_SYNC_RAW R
+  JOIN BU_SCOPE B ON ${RAW_SECTION_MATCH}
+  JOIN CARTEIRA_SCOPE CS ON ${RAW_CARTEIRA_MATCH}
+  WHERE R.ATIVO = TRUE
+    AND R.STATUS_INGESTAO = 'ATIVO'
+  GROUP BY R.ANO, R.MES
+)
+SELECT
+  P.ANO_REF AS ANO,
+  P.MES_REF AS MES,
+  CONCAT(
+    CASE P.MES_REF
+      WHEN 1 THEN 'Jan' WHEN 2 THEN 'Fev' WHEN 3 THEN 'Mar' WHEN 4 THEN 'Abr'
+      WHEN 5 THEN 'Mai' WHEN 6 THEN 'Jun' WHEN 7 THEN 'Jul' WHEN 8 THEN 'Ago'
+      WHEN 9 THEN 'Set' WHEN 10 THEN 'Out' WHEN 11 THEN 'Nov' WHEN 12 THEN 'Dez'
+    END,
+    '/',
+    RIGHT(CAST(P.ANO_REF AS CHAR), 2)
+  ) AS MES_LABEL,
+  COALESCE(M.VALOR_META, 0) AS VALOR_META,
+  COALESCE(RP.VALOR_REALIZADO, 0) AS VALOR_REALIZADO,
+  CASE WHEN COALESCE(M.VALOR_META, 0) <= 0 THEN 0 ELSE ROUND((COALESCE(RP.VALOR_REALIZADO, 0) / M.VALOR_META) * 100, 2) END AS PERCENTUAL_ATINGIDO,
+  CASE
+    WHEN COALESCE(M.VALOR_META, 0) <= 0 THEN 'abaixo'
+    WHEN COALESCE(RP.VALOR_REALIZADO, 0) > M.VALOR_META THEN 'acima'
+    WHEN COALESCE(RP.VALOR_REALIZADO, 0) >= (M.VALOR_META * 0.9) THEN 'no_ritmo'
+    ELSE 'abaixo'
+  END AS STATUS,
+  'COORDENADOR' AS ORIGEM_META
+FROM PERIODOS P
+LEFT JOIN METAS_POR_PERIODO M
+  ON M.ANO = P.ANO_REF
+ AND M.MES = P.MES_REF
+LEFT JOIN REALIZADO_POR_PERIODO RP
+  ON RP.ANO = P.ANO_REF
+ AND RP.MES = P.MES_REF
+ORDER BY P.DT_REF DESC`;
+
+function extractRows(response) {
+  let output = response?.result?.output;
+  if (typeof output === 'string') {
+    try { output = JSON.parse(output); } catch { return []; }
+  }
+  if (Array.isArray(output?.rows)) return output.rows;
+  if (Array.isArray(output?.result)) return output.result;
+  if (Array.isArray(output)) return output;
+  return [];
+}
+
+async function smoke(serverFunctionId, input) {
+  const response = await executeServerFunctionMitra({ projectId, serverFunctionId, input });
+  const status = String(response?.result?.executionStatus || '');
+  const error = String(response?.result?.error || '').trim();
+  if ((status && status !== 'COMPLETED') || error) throw new Error(`SF ${serverFunctionId}: ${error || status}`);
+  return extractRows(response).length;
+}
+
+async function main() {
+  await updateServerFunctionMitra({
+    projectId,
+    serverFunctionId: 123,
+    code: metaRealizadoCode,
+    description: 'Retorna meta distribuida, realizado, projecao e status do mes/ano respeitando escopo de filial/departamento/secao.',
+  });
+  await updateServerFunctionMitra({
+    projectId,
+    serverFunctionId: 124,
+    code: metaHistoricoCode,
+    description: 'Retorna historico de meta vs realizado respeitando escopo de filial/departamento/secao.',
+  });
+
+  const baseInput = {
+    ANO: String(new Date().getFullYear()),
+    MES: String(new Date().getMonth() + 1),
+    scopeCodFilial: '',
+    scopeCodepto: '',
+    scopeIdSecao: '',
+  };
+  console.log(`SF 123 smoke: ${await smoke(123, baseInput)} linha(s).`);
+  console.log(`SF 124 smoke: ${await smoke(124, baseInput)} linha(s).`);
+}
+
+main().catch((error) => {
+  console.error('Falha ao atualizar Meta vs Realizado por escopo:');
+  console.error(error?.message || error);
+  process.exit(1);
+});

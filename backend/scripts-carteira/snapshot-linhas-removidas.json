@@ -1,0 +1,26 @@
+[
+ {
+  "EC_ID": 400,
+  "ID_CLIENTE": 101175,
+  "ID_VENDEDOR": 45,
+  "EMAIL": "tathiana@benenutri.com",
+  "CODCLI": 101175,
+  "RAZAO_SOCIAL": "HOSPITAL LUCIANO CHAVES LTDA",
+  "CODFILIAL": "1",
+  "ID_SECAO": 104,
+  "CURVA_CLASSIFICACAO": null,
+  "CRIADO_EM": "2026-05-15 17:40:29"
+ },
+ {
+  "EC_ID": 2507,
+  "ID_CLIENTE": 531,
+  "ID_VENDEDOR": 45,
+  "EMAIL": "tathiana@benenutri.com",
+  "CODCLI": 531,
+  "RAZAO_SOCIAL": "VOGUE - ALIMENTACAO E NUTRICAO LTDA",
+  "CODFILIAL": "5",
+  "ID_SECAO": 101,
+  "CURVA_CLASSIFICACAO": null,
+  "CRIADO_EM": "2026-09-04 18:52:28"
+ }
+]
