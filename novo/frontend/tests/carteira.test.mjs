@@ -67,3 +67,31 @@ test('RF-015: rota com cliente abre a carteira buscando; ?clienteId abre o hist�
 test('RF-018: quatro abas na ordem da spec', () => {
   assert.deepEqual(ABAS.map(a => a.rotulo), ['MINHA CARTEIRA', 'CLIENTES DISPONÍVEIS', 'HISTÓRICO DO CLIENTE', 'PROSPECTS']);
 });
+
+test('RN-007 / RN-009: detalhe da temperatura explica cada fator com os números do cliente', async () => {
+  const { fatoresTemperatura, recomendacaoDetalhada } = await import('../src/lib/carteira.ts');
+  // Mercado Santa Clara: 30/25/5/20, compras caíram 18,4% (faixa de −30% a −10%).
+  const t = { total: 80, recencia: 30, frequencia: 25, tendencia: 5, visitas: 20, diasSemComprar: 7, ciclo: 7.5, variacao: -18.4, diasSemVisita: 13 };
+  const [rec, freq, tend, vis] = fatoresTemperatura(t);
+  assert.equal(rec.motivo, 'Última compra há 7 dias.');
+  assert.equal(rec.subir, null);
+  assert.equal(freq.motivo, '7 dias sem comprar para um ciclo médio de 7,5 dias (0,9× o ciclo).');
+  assert.equal(tend.motivo, 'Compras dos últimos 60 dias: −18,4% contra os 60 anteriores.');
+  assert.match(tend.subir, /−10% leva a 15 pontos/);
+  assert.equal(vis.motivo, 'Última visita concluída há 13 dias.');
+  assert.deepEqual(recomendacaoDetalhada(t), {
+    fator: 'Tendência',
+    texto: 'Volume em queda — investigue o motivo na próxima visita.',
+    porque: 'Compras dos últimos 60 dias: −18,4% contra os 60 anteriores.',
+  });
+});
+
+test('RN-007: sem dados, o detalhe diz o que falta; nota 100 não pede correção', async () => {
+  const { fatoresTemperatura, recomendacaoDetalhada } = await import('../src/lib/carteira.ts');
+  const [rec, freq, tend, vis] = fatoresTemperatura({ recencia: 0, frequencia: 0, tendencia: 0, visitas: 0, diasSemComprar: null, ciclo: null, variacao: null, diasSemVisita: null });
+  assert.equal(rec.motivo, 'Nenhuma compra registrada.');
+  assert.match(freq.motivo, /ao menos 2 dias com compra/);
+  assert.equal(tend.motivo, 'Sem compras nos últimos 120 dias.');
+  assert.match(vis.motivo, /Nenhuma visita concluída/);
+  assert.equal(recomendacaoDetalhada({ total: 100, recencia: 30, frequencia: 25, tendencia: 25, visitas: 20 }).fator, null);
+});

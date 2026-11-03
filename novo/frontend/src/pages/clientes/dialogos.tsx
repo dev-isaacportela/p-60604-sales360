@@ -8,27 +8,28 @@ import { acao, linha, linhasAfetadas } from '@/lib/mitra-api'
 import { agoraBrasilia, hojeBrasilia } from '@/lib/formato'
 import {
   CAMPOS_FICHA, CURVAS, MSG_PROSPECT_FALHA, MSG_PROSPECT_OK, MSG_RELATO_FALHA, TIPOS_CONTATO, fatoresTemperatura, perguntaRemover,
-  recomendacao, rotuloTemperatura, validarProspect, validarRelato,
+  recomendacaoDetalhada, rotuloTemperatura, tomTemperatura, validarProspect, validarRelato,
 } from '@/lib/carteira'
 import {
   Alert, Button, Dash, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-  Field, FormRow, InfoGrid, InfoTile, Input, LabelledField, SelectMenu, Stack, Textarea,
+  Field, FormRow, InfoGrid, InfoTile, Input, LabelledField, RowMeta, RowTitle, SelectMenu, Stack, Status, Table, Td, Textarea, Th, Tr,
 } from '@/components/page'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Linha = Record<string, any>
 
-function Moldura({ titulo, descricao, aberto, fechar, children, rodape }: {
+function Moldura({ titulo, descricao, aberto, fechar, children, rodape, largo }: {
   titulo: string
   descricao?: ReactNode
   aberto: boolean
   fechar: () => void
   children: ReactNode
   rodape?: ReactNode
+  largo?: boolean
 }) {
   return (
     <Dialog open={aberto} onOpenChange={a => { if (!a) fechar() }}>
-      <DialogContent>
+      <DialogContent className={largo ? 'sm:max-w-3xl' : undefined}>
         <DialogHeader>
           <DialogTitle>{titulo}</DialogTitle>
           {descricao ? <DialogDescription>{descricao}</DialogDescription> : null}
@@ -40,19 +41,42 @@ function Moldura({ titulo, descricao, aberto, fechar, children, rodape }: {
   )
 }
 
-/* RF-005 / RN-007 / RN-009 */
+/* RF-005 / RN-007 / RN-009: cada fator com o número do cliente e o que leva ao próximo degrau. */
+const tomPontos = (pontos: number, max: number) => (pontos / max >= 0.75 ? 'live' : pontos / max >= 0.4 ? 'attention' : 'alert')
+
 export function DetalheTemperatura({ cliente, fechar }: { cliente: Linha | null; fechar: () => void }) {
   const t = cliente?.TEMPERATURA
+  const rec = t ? recomendacaoDetalhada(t) : null
   return (
-    <Moldura titulo="Temperatura do relacionamento" descricao={cliente?.NOME} aberto={!!cliente} fechar={fechar}>
-      {t ? (
+    <Moldura
+      titulo="Temperatura do relacionamento"
+      largo
+      descricao={cliente ? <>{cliente.NOME} · <Status tone={tomTemperatura(t.classe)}>{rotuloTemperatura(t)}</Status> de 100</> : null}
+      aberto={!!cliente}
+      fechar={fechar}
+    >
+      {t && rec ? (
         <Stack>
-          <InfoGrid>
-            {fatoresTemperatura(t).map(f => (
-              <InfoTile key={f.rotulo} label={f.rotulo}>{f.pontos}/{f.max}</InfoTile>
-            ))}
-          </InfoGrid>
-          <Alert tone="info">Total {rotuloTemperatura(t)}. {recomendacao(t)}</Alert>
+          <Table>
+            <thead>
+              <tr><Th>Fator</Th><Th numeric>Pontos</Th><Th>Por quê</Th></tr>
+            </thead>
+            <tbody>
+              {fatoresTemperatura(t).map(f => (
+                <Tr key={f.rotulo}>
+                  <Td><RowTitle>{f.rotulo}</RowTitle></Td>
+                  <Td numeric><Status tone={tomPontos(f.pontos, f.max)}>{f.pontos}/{f.max}</Status></Td>
+                  <Td>
+                    {f.motivo}
+                    {f.subir ? <RowMeta>{f.subir}</RowMeta> : null}
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+          <Alert tone="info">
+            {rec.fator ? <><strong>Prioridade: {rec.fator}.</strong> {rec.texto} {rec.porque}</> : rec.texto}
+          </Alert>
         </Stack>
       ) : null}
     </Moldura>

@@ -28,6 +28,56 @@ interface Fatores {
   frequencia: number;
   tendencia: number;
   visitas: number;
+  // Os dados que geraram os pontos (RN-007), como o servidor devolve.
+  diasSemComprar?: number | null;
+  ciclo?: number | null;
+  variacao?: number | null;
+  diasSemVisita?: number | null;
+}
+
+const dias = (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`;
+const num1 = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+const pct = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${num1(Math.abs(n))}%`;
+
+/** O porquê de cada fator com os números do cliente, e o que leva ao próximo degrau (RN-007). */
+function explicar(chave: (typeof FATORES)[number]['chave'], t: Fatores): { motivo: string; subir: string | null } {
+  const dc = t.diasSemComprar ?? null;
+  const dv = t.diasSemVisita ?? null;
+  switch (chave) {
+    case 'recencia':
+      if (dc === null) return { motivo: 'Nenhuma compra registrada.', subir: 'Uma compra leva a 30 pontos.' };
+      return {
+        motivo: `Última compra há ${dias(dc)}.`,
+        subir: dc < 30 ? null : 'Uma compra agora leva a 30 pontos (menos de 30 dias).',
+      };
+    case 'frequencia': {
+      if (!t.ciclo || dc === null) return { motivo: 'Sem ciclo de compra: são precisos ao menos 2 dias com compra.', subir: null };
+      const vezes = dc / t.ciclo;
+      return {
+        motivo: `${dias(dc)} sem comprar para um ciclo médio de ${num1(t.ciclo)} dias (${num1(vezes)}× o ciclo).`,
+        subir: vezes <= 1.1 ? null : `Uma compra agora volta a 25 pontos (25 vale até ${Math.floor(t.ciclo * 1.1)} dias sem comprar).`,
+      };
+    }
+    case 'tendencia': {
+      const v = t.variacao ?? null;
+      if (v === null) {
+        return t.tendencia > 0
+          ? { motivo: 'Comprou nos últimos 60 dias e nada nos 60 anteriores.', subir: null }
+          : { motivo: 'Sem compras nos últimos 120 dias.', subir: 'Voltar a comprar leva a 25 pontos.' };
+      }
+      const motivo = `Compras dos últimos 60 dias: ${pct(v)} contra os 60 anteriores.`;
+      if (v > 10) return { motivo, subir: null };
+      if (v >= -10) return { motivo, subir: 'Crescer mais de 10% leva a 25 pontos.' };
+      if (v >= -30) return { motivo, subir: 'Voltar a no máximo −10% leva a 15 pontos; crescer mais de 10%, a 25.' };
+      return { motivo, subir: 'Voltar a no máximo −30% leva a 5 pontos; a no máximo −10%, a 15.' };
+    }
+    default:
+      if (dv === null) return { motivo: 'Nenhuma visita concluída sua para este cliente.', subir: 'Uma visita concluída leva a 20 pontos.' };
+      return {
+        motivo: `Última visita concluída há ${dias(dv)}.`,
+        subir: dv < 30 ? null : 'Uma visita concluída agora leva a 20 pontos (menos de 30 dias).',
+      };
+  }
 }
 
 const FATORES = [
@@ -39,16 +89,27 @@ const FATORES = [
 
 /** Fatores do detalhe da temperatura, na ordem de exibição. */
 export function fatoresTemperatura(t: Fatores) {
-  return FATORES.map(f => ({ rotulo: f.rotulo, pontos: Number(t[f.chave]) || 0, max: f.max }));
+  return FATORES.map(f => ({ rotulo: f.rotulo, pontos: Number(t[f.chave]) || 0, max: f.max, ...explicar(f.chave, t) }));
 }
 
-/** RN-009: pelo fator com menor proporção de pontos; empate segue a ordem Recência, Frequência, Tendência, Visitas. */
-export function recomendacao(t: Fatores): string {
+function fatorMaisFraco(t: Fatores) {
   let melhor: (typeof FATORES)[number] = FATORES[0];
   for (const f of FATORES) {
     if ((Number(t[f.chave]) || 0) / f.max < (Number(t[melhor.chave]) || 0) / melhor.max) melhor = f;
   }
-  return melhor.texto;
+  return melhor;
+}
+
+/** RN-009: pelo fator com menor proporção de pontos; empate segue a ordem Recência, Frequência, Tendência, Visitas. */
+export function recomendacao(t: Fatores): string {
+  return fatorMaisFraco(t).texto;
+}
+
+/** A recomendação da RN-009 com o fato do cliente que a motivou; nota 100 não tem o que corrigir. */
+export function recomendacaoDetalhada(t: Fatores & { total: number }): { fator: string | null; texto: string; porque: string | null } {
+  if (t.total >= 100) return { fator: null, texto: 'Relacionamento no máximo: mantenha a rotina de compras e visitas.', porque: null };
+  const f = fatorMaisFraco(t);
+  return { fator: f.rotulo, texto: f.texto, porque: explicar(f.chave, t).motivo };
 }
 
 /** RN-011: dias sem visita em vermelho acima de 30; última compra acima de 25. */
