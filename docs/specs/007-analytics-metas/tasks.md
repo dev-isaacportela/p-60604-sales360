@@ -25,7 +25,7 @@
 - [ ] **T-022** — `pages/analytics/graficos.tsx` (barras e evolução)
 - [ ] **T-023** — `AnalyticsPage.tsx`: filtros, `Buscar`, abas por perfil
 - [ ] **T-024** — `pages/analytics/Overview.tsx`, `Clientes.tsx`, `Produtos.tsx`
-- [ ] **T-025** — `pages/analytics/Metas.tsx`
+- [ ] **T-025** — `pages/analytics/Metas.tsx` (inclui ramos/UF RF-017, insights e exportar RF-021)
 - [ ] **T-026** — `pages/analytics/Modular.tsx` + exportação
 - [ ] **T-027** — `ComparativoPage.tsx` (Semanal | Mensal) e `pages/comparativo/Mensal.tsx` + PDF
 
@@ -33,10 +33,10 @@
 
 - [ ] **T-080** — smoke: C-001, C-003, C-004, C-005, RN-006, RN-008, RN-009, RF-006
 - [ ] **T-081** — smoke: C-006, C-007, RN-010 (unidade), C-008
-- [ ] **T-082** — smoke: C-009, C-011, C-014
+- [ ] **T-082** — smoke: C-009, C-011, C-013 (gravação de ramos), C-014
 - [ ] **T-083** — smoke: C-015 (SF)
-- [ ] **T-084** `[P]` — `tests/analytics.test.mjs`: C-001, C-002, C-017, RN-006, RF-001, RF-022
-- [ ] **T-085** `[P]` — `tests/metas.test.mjs`: C-009, C-010, C-012, RN-013, RN-014
+- [ ] **T-084** `[P]` — `tests/analytics.test.mjs`: C-001, C-002, C-017, RN-006, RF-001, RF-022, RF-023
+- [ ] **T-085** `[P]` — `tests/metas.test.mjs`: C-009, C-010, C-012, C-013, RN-013, RN-014, RF-021
 - [ ] **T-086** `[P]` — `tests/comparativo.test.mjs`: C-015, C-016
 
 ## Verificação
@@ -73,5 +73,7 @@ T-110 + T-111 → T-112 → T-113 → T-114
 | RF-012 / RN-017 | T-027 | T-086 |
 | RF-013..016, RF-018..020 / RN-010, RN-011, RN-013..015, RN-018, RN-019 | T-012, T-013, T-021, T-025 | T-081, T-082, T-085 |
 | RF-022 | T-021, T-024 | T-084 |
-| RF-017, RF-021, RF-023 / RN-012 | etapa 2 (P-4) | — |
+| RF-017 / RN-012 / C-013 | T-013, T-021, T-025 | T-082, T-085 |
+| RF-021 | T-021, T-025 | T-085 |
+| RF-023 | T-011, T-021, T-024 | T-084 |
 | RNF-001..003 | T-013 | T-114 |

@@ -78,7 +78,8 @@ Escopo = os sete parâmetros da 002 (`modo`, `coordenador`, `vendedor`,
 | `s360SemanalDetalhe` | JAVASCRIPT | escopo + `ano`, `mes`, `clienteId` | `{ ok, semanas[{n, ini, fim, pedidos, valor}], itens[{semana, CODPROD, PRODUTO, qt, qtAnt, dif, vlUnit, total, movimento, ultimas8[], pico}], pedidos[{semana, NUMPED, valor}], sazonalidade[{CODPROD, PRODUTO, meses[{ano, mes, qt, valor}]}] }` | RF-006, RN-011 |
 | `s360SemanalProdutos` | JAVASCRIPT | escopo + `ano`, `mes` | itens por cliente × semana com movimento (aba "Produtos" da planilha) | RF-007, RN-012 |
 | `s360SemanalAtualizacao` | SQL | — | 1 linha `FIM_EM` da última execução `SUCCESS` (nenhuma = sem linha) | RF-010, RN-016 |
-| `s360SemanalCarga` | JAVASCRIPT, `cronExpression` `0 8-19 * * 1-5` (hora de Brasília: confirmar fuso do cron em T-001) | — | `{ ok, execucaoId, status, validos, erros, inativados }` ou `{ ok: false, error }` | RF-011..013, RN-013..017 |
+| `s360SemanalErros` | SQL | `tipo` (vazio = todos), `pagina` | erros abertos, 50 por página com `TOTAL`: `TIPO_ERRO`, `NUMPED`, `CODPROD`, `CODCLI`, `DETALHE`, `QTD_OCORRENCIAS`, `ULTIMA_OCORRENCIA_EM`; só ADMIN (TI) | RF-017 |
+| `s360SemanalCarga` | JAVASCRIPT, publicada **sem** agendamento (P-1); na troca ganha `0 8-19 * * 1-5` (fuso do cron em T-001) | — | `{ ok, execucaoId, status, validos, erros, inativados }` ou `{ ok: false, error }` | RF-011..013, RN-013..017 |
 
 Como `s360SemanalMatriz` trabalha (1 chamada por mês aberto, RNF-001):
 1. 2 consultas: (a) carteira do escopo (`carteiraVisivel`) + cadastro, ramo,
@@ -135,8 +136,9 @@ sequência com `runDmlMitra`, o log e a mensagem real de erro:
 `PERFIL_COMPRA_CLIENTE` continua sendo gravado pela 107 do antigo enquanto a
 prospecção antiga o ler (anexo da spec); a carga nova não grava.
 
-**Convivência:** a 107 do antigo continua agendada. Ver Pendência P-1 (as duas
-cargas não podem rodar ao mesmo tempo nas mesmas tabelas).
+**Convivência (P-1, decidido em 2026-11-03):** a carga nova é publicada pronta
+e **desligada**; no dia da troca ganha o agendamento e a 107 do antigo é
+desligada. Até lá a matriz lê o que a 107 carrega.
 
 ## Superfície de interação
 
@@ -222,20 +224,20 @@ Backend em `simulator/smoke/006-semanal.mjs`; tela em
 | D-604 | SQL da carga em `PASSOS` e o smoke executa o corpo publicado sobre a fonte semeada | testar funções JS paralelas | o teste roda o mesmo SQL que vai para produção |
 | D-605 | `exceljs` (o mesmo do antigo) importado só no clique | escrever .xlsx à mão | formato de moeda, %, colunas fixas e duas abas; o import dinâmico não pesa na abertura |
 | D-606 | Status do log gravado em inglês, exibido em português | gravar em português | o antigo lê `RUNNING`/`SUCCESS`/`FAILED` enquanto convivem |
-| D-607 | RF-017 (lista de erros para a TI, `could`) fica fora desta entrega | — | sem tela técnica no módulo (RF-016 cancelado); os erros ficam consultáveis no banco |
+| D-607 | RF-017: painel "Erros de ingestão" recolhido na visão Semanal, só para ADMIN (TI) | tela técnica própria | RF-016 cancelou as telas técnicas; o usuário pediu os opcionais nesta entrega (2026-11-03) |
 
 ## Riscos
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
 | Como o cron chama a SF JS (há `:VAR_USER`? qual fuso?) | carga recusada pela guarda da RN-017 ou fora de horário | T-001 confirma no sandbox antes de agendar; se o cron tiver usuário, a guarda passa a exigir `event.origem = 'ROTINA'` do `cronInputJson` |
-| Duas cargas (107 antiga e nova) nas mesmas tabelas | contadores e inativação trocados | P-1 |
+| Duas cargas (107 antiga e nova) nas mesmas tabelas | contadores e inativação trocados | P-1: a nova só liga quando a 107 desliga |
 | `EXISTS` com `vendaDoVendedor` por linha em "Time inteiro" | passar de 6 s (RNF-001) | pré-filtro por `CLIENTE_ID IN (carteira)` e janela de datas; T-003 mede no sandbox |
 | 100 mil itens em uma carga (RNF-002) | passar de 15 min | passos em SQL de conjunto, sem laço por item |
 
 ## Pendências
 
-- **P-1 (ao usuário):** convivência das duas cargas — ver resumo do plano.
+- [x] **P-1** — decidido em 2026-11-03: carga nova pronta e desligada até a troca.
 
 ## Complexity Tracking
 

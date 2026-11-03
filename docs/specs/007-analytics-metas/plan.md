@@ -15,7 +15,7 @@ os vendedores; os lançamentos manuais antigos (`METAS_BU`) não são lidos.
 |---|---|---|
 | Spec antes de código | sim | `spec.md` sem pendência aberta |
 | Backend local, executado no sandbox | sim | `novo/backend/add-007-analytics.mjs`, depois `add-000-perfil-acesso.mjs` |
-| Migrations append-only | sim | nenhuma tabela nem coluna nova; grava em `METAS_BU_VENDEDOR` (e `_RAMO_UF` na etapa 2) |
+| Migrations append-only | sim | nenhuma tabela nem coluna nova; grava em `METAS_BU_VENDEDOR` e `METAS_BU_VENDEDOR_RAMO_UF` |
 | Leitura e escrita por Server Function | sim | 13 SFs; gravação de metas por SF SQL com guarda de permissão |
 | Simulador cobre a feature | sim | `schema-producao/007-metas.mjs`, `seeds/007-analytics.mjs` (ids 7001+), `smoke/007-analytics.mjs` |
 | Testes automatizados | sim | mapa abaixo; regras de tela em `tests/analytics.test.mjs` |
@@ -67,7 +67,7 @@ Nenhum acréscimo. `schema-producao/007-metas.mjs` declara (DDL do
 | Tabela | Uso |
 |---|---|
 | `METAS_BU_VENDEDOR` | lê (meta do vendedor, RNT-009) e grava (redistribuição) |
-| `METAS_BU_VENDEDOR_RAMO_UF` | lê e grava (etapa 2: RF-017) |
+| `METAS_BU_VENDEDOR_RAMO_UF` | lê e grava (RF-017) |
 | `INTG_BUSINESS_UNIT`, `INTG_REGION`, `INTG_ACTIVITY_SEGMENT`, `INTG_MONTHLY_BILLING_TARGET` | só leitura (planejamento) |
 | `METAS_BU` | **não é lida**; declarada só para o smoke provar a C-007 |
 
@@ -130,8 +130,8 @@ Regras puras (o que os testes importam):
 
 | Arquivo | Funções |
 |---|---|
-| `src/lib/analytics.ts` | `periodo(tipo, hoje, de, ate)` + `validarIntervalo` (RN-001, C-017), `periodoAnterior`, `diasUteis`, `projecao` (RN-005), `pontosEvolucao` (RN-006), `cardsResumo` (RN-004), `ordenar` numérico (RF-022), `listaParam` |
-| `src/lib/metas.ts` | `lerValor` (RN-018), `alteracoes` (RN-019), `statusRateio` (RN-013), `statusVendedor` (RN-014), `ratear` (RN-015), `mensagemSalvar`, `rotuloBu` ("Filial N · UF · Departamento") |
+| `src/lib/analytics.ts` | `periodo(tipo, hoje, de, ate)` + `validarIntervalo` (RN-001, C-017), `periodoAnterior`, `diasUteis`, `projecao` (RN-005), `pontosEvolucao` (RN-006), `cardsResumo` (RN-004), `ordenar` numérico (RF-022), `listaParam`, `filtroDoClique` (RF-023) |
+| `src/lib/metas.ts` | `lerValor` (RN-018), `alteracoes` (RN-019), `statusRateio` (RN-013), `statusVendedor` (RN-014), `ratear` (RN-015), `mensagemSalvar`, `rotuloBu` ("Filial N · UF · Departamento"), `ramosDoVendedor`/`aplicarRamos`/`validarRamos` (RN-012), `insights`/`planilhaMetas` (RF-021) |
 | `src/lib/comparativo.ts` | `blocosPadrao(hoje)`, `METRICAS` por categoria, `diferenca` (RN-016), `planilhaModular`, `mensal(linhas, recorte)` (RN-017: variação, % vazio, selos, ordem) |
 
 ## Fluxo
@@ -146,8 +146,9 @@ Regras puras (o que os testes importam):
 3. **Aba Metas:** só ao abrir: `s360MetasCarregar` (1 chamada, RNF-002). Trocar
    mês/ano/BU ou recarregar com edição pendente pede confirmação (RF-019).
    `Salvar` → valida → `s360MetasSalvar` → 0 linhas com algo a gravar →
-   `s360MetasMotivo` → mensagem; sucesso → "Metas salvas: N vendedor(es) e 0
+   `s360MetasMotivo` → mensagem; sucesso → "Metas salvas: N vendedor(es) e M
    ajuste(s) por ramo/UF." e recarrega.
+   Ramos: `Aplicar ao vendedor` só mexe nos campos; vai junto no `Salvar`.
 4. **Aba Modular:** ao abrir, uma `s360AnalyticsComparativo` por bloco.
 5. **`/comparativo` → Mensal:** `s360SemanalMatriz` da 006 (já traz M−2, M−1 e
    M por cliente, mesmo cálculo: RN-017), sem chamada nova.
@@ -201,17 +202,47 @@ Backend em `simulator/smoke/007-analytics.mjs`; tela em
 | RN-009 | smoke | 8 + 4 concluídas em 30 dias → 12, média 2,8 (tela) |
 | RN-013 | tela | 90.000: 90.000 → rateio fechado; 0 → não distribuído; 60.000 → em aberto |
 | RN-014 | tela | 10.000 / 8.500 / 7.000 / meta 0 → acima / atenção / risco / sem meta |
+| C-013 / RN-012 | tela + smoke | 100.000 com bases 60/40 → 60.000/40.000; Clínica 30.000 → Hospital 70.000 e BU 100.000; 150.000 → recusado; as duas fixadas 50.000 e 30.000 → BU 80.000 repartida entre as filiais; ramo sem planejamento não editável; vendedor só em DF numa BU planejada em DF e GO → só ramos de DF. SF: grava as personalizadas, apaga a que voltou a automática |
+| RF-021 | tela | 3 UFs de maior meta; planilha com linha por vendedor × BU e por vendedor × BU × ramo × UF |
+| RF-023 | tela | clique em cliente/produto do ranking → filtro trocado; ramo/fornecedor/departamento → filtros iguais |
 | RF-001 | tela | abas por perfil: vendedor 4 (sem Metas), coordenador e diretoria 5 |
 | RF-006 | smoke | 120 devoluções → `TOTAL` 120, página 1 com 50, 3 páginas; `TOP` 4 |
 | RF-022 | tela | `ordenar` por número: 9.000 antes de 10.000 |
 
-## Etapa 2 (proposta ao usuário)
+## Ramo/UF, insights e clique no gráfico (entram nesta entrega)
 
-Fica fora desta entrega e sai daqui se o usuário preferir tudo agora:
-RF-017 / RN-012 / C-013 (personalizar meta por ramo/UF, `Aplicar ao vendedor`,
-gravação em `METAS_BU_VENDEDOR_RAMO_UF`); RF-021 (`could`: Ocupação por Região,
-Insights, `Exportar relatório`); RF-023 (`could`: clique no ranking filtra).
-Na etapa 1 a mensagem de sucesso sai com "0 ajuste(s) por ramo/UF".
+O usuário pediu tudo agora (2026-11-03): RF-017/RN-012/C-013, RF-021 e RF-023.
+
+- **Dados (RN-012):** `s360MetasCarregar` também devolve `base[]` (planejamento
+  do mês por departamento × UF × ramo: `INTG_ACTIVITY_SEGMENT.CODE`/`NAME`),
+  `ufs[]` (vendedor × departamento × UF das filiais em que ele atua),
+  `personalizadas[]` (`METAS_BU_VENDEDOR_RAMO_UF` do mês) e `realizadoRamo[]`
+  (líquido do vendedor por departamento × UF × ramo, ramo do cliente mapeado
+  para o código do planejamento pela tabela fixa da SF 295).
+- **Rateio (tela, `metas.ts` `ramosDoVendedor`):** a meta do vendedor na BU
+  (soma das filiais do departamento) é repartida entre os ramos/UF da base, só
+  nas UFs dele, na proporção da base; personalizada mantém o valor; as
+  automáticas dividem a sobra. Ramo com venda e sem planejamento aparece pelo
+  realizado e não é editável. Soma das personalizadas > meta → "Os ramos
+  ajustados passam da meta total de: Ana. Reduza os valores. Nada foi gravado."
+- **Gravação:** linha gravada em `METAS_BU_VENDEDOR_RAMO_UF` = personalizada
+  (como o antigo: existir a linha marca a personalização; `CODFILIAL` = 0). "Todos
+  os ramos gravados como estão na tela" = o estado do vendedor na BU vai inteiro:
+  personalizadas são gravadas e as que voltaram a automáticas são apagadas (D-710).
+  Sem nenhuma automática, a meta do vendedor na BU vira a soma das
+  personalizadas, repartida entre as filiais na proporção atual (a tela calcula
+  e manda nas `metas`). `s360MetasSalvar` ganha `ramos` (JSON `[{vendedorId,
+  codepto, ramo, ramoNome, uf, valor, percentual}]`) e `ramosLimpar` (JSON
+  `[{vendedorId, codepto}]`): mais três instruções (apagar, atualizar, inserir)
+  sob a mesma guarda do lote.
+- **RF-021:** Ocupação por Região (3 UFs de maior meta), Insights (região
+  destaque = maior atingimento, ramo líder = maior realizado, performance por
+  estado) calculados na tela sobre os dados da aba; `Exportar relatório` em
+  .xlsx com uma linha por vendedor × BU e uma por vendedor × BU × ramo × UF.
+- **RF-023:** clique numa barra do ranking de clientes ou de produtos troca o
+  filtro (Cliente ou Produto) e aplica como um `Buscar`; ramo, fornecedor e
+  departamento não filtram. O filtro de produto (`produtos`, como `clientes`)
+  entra no `LINHAS`.
 
 ## Decisões
 
@@ -219,12 +250,13 @@ Na etapa 1 a mensagem de sucesso sai com "0 ajuste(s) por ramo/UF".
 |---|---|---|---|
 | D-701 | Analytics lê `IMP_*` com a regra de atribuição da 006 (`contaNoEscopo`) | ler o RAW da carga | é a fonte da carteira (002) e do antigo Analytics; o Comparativo mensal usa a matriz da 006, como a RN-017 pede |
 | D-702 | Um fragmento `LINHAS` e uma SF SQL por bloco | uma SF JS que devolve tudo | cada bloco falha sozinho (C-007 da 000) e a contagem da RNF-001 fica visível |
-| D-703 | Filial, Departamento e Seção pelo filtro de escopo comum (um de cada) | três listas de escolha múltipla só nesta tela | P-2 |
+| D-703 | Filial, Departamento e Seção pelo filtro de escopo comum (um de cada) | três listas de escolha múltipla só nesta tela | decisão do usuário em 2026-11-03 (P-2) |
 | D-704 | Meta recebida calculada em JS sobre 3 consultas | SQL único como a SF 195 | a regra de rateio fica testável por função (RN-010) |
 | D-705 | Gravação em lote com guarda "nenhuma linha inválida" nas duas instruções | uma chamada por vendedor | tudo ou nada (A-03) sem transação explícita |
 | D-706 | ADMIN na aba Metas = diretoria (leitura) | ADMIN grava | só coordenador redistribui (RN-011); o escopo já trata ADMIN como diretoria |
 | D-707 | Gráficos em SVG/CSS próprios | `recharts` | poucos tipos de gráfico; sem dependência nova |
-| D-708 | `Baixar PDF` | — | P-3 |
+| D-708 | `Baixar PDF` abre a impressão do navegador com layout próprio (escopo e recorte no cabeçalho) | `jspdf` | decisão do usuário em 2026-11-03 (P-3); sem dependência nova |
+| D-710 | Existir linha em `METAS_BU_VENDEDOR_RAMO_UF` = ramo personalizado; voltar a automático apaga a linha | gravar todos os ramos | sem coluna nova não há outro jeito de distinguir; mesmo critério do antigo (`PERSONALIZADO`) |
 | D-709 | Comparativo mensal sem SF nova | SF própria | a matriz da 006 já soma M−2, M−1 e M por cliente com a mesma regra |
 
 ## Riscos
@@ -235,11 +267,11 @@ Na etapa 1 a mensagem de sucesso sai com "0 ajuste(s) por ramo/UF".
 | `JSON_TABLE` e duas instruções numa SF SQL no Mitra | gravação parcial | o mesmo padrão já roda na 009; T-001 confirma |
 | `INTG_*` com códigos diferentes do esperado (BU, região "Outros Estados") | meta recebida errada | T-001 lê os códigos reais e corrige a correspondência |
 
-## Pendências (ao usuário)
+## Pendências
 
-- **P-2:** filtros de Filial/Departamento/Seção do Analytics.
-- **P-3:** formato do PDF do Comparativo mensal.
-- **P-4:** etapa 2 acima.
+- [x] **P-2** — 2026-11-03: Filial/Departamento/Seção pelo filtro de escopo (um de cada); Ramos e Clientes aceitam vários.
+- [x] **P-3** — 2026-11-03: PDF pela impressão do navegador.
+- [x] **P-4** — 2026-11-03: ramo/UF e os itens `could` entram nesta entrega.
 
 ## Complexity Tracking
 
