@@ -15,64 +15,64 @@
 
 ## Backend
 
-- [ ] **T-010** — `novo/backend/schema-producao/002-carteira.mjs`: DDL inteiro de `VISITAS`, `RELATOS_CLIENTE`, `CLIENTE_TITULAR_DEPTO`, `COORDENADORES_BU`, `PRODUCT_MIX`, `PRODUCT_MIX_ITEMS`, `PRODUTOS_CUSTOS`, `PROSPECTS`, `PROSPECT_CONTATOS`; `IMP_*` com as colunas usadas, "confirmar no sandbox"
-- [ ] **T-011** — `novo/backend/lib/002-carteira.mjs`: `cod`, `num`, `semAcento`, `BLOQUEADOS`, `escopoAlvo`, `carteiraVisivel`, `vendaConta`, `vendaDoVendedor`, `candidatos`, `DEPTOS_POR_SECAO`, com comentário de uso (SF SQL e JS)
-- [ ] **T-012** — `novo/backend/lib/002-regras.mjs`: funções puras sem import — `normalizar`, `casaBusca`/`relevancia` (RN-018), `scoreRanking`, `curvaAuto`, `temperatura`, `classe` (RN-004…RN-008), `queda` (RN-012), `limiteCurva`/`pendente` (RN-006), `montarCarteira` (filtros, ordem, indicadores, página)
-- [ ] **T-013** — `novo/backend/add-002-carteira.mjs`: `definitions` das 24 SFs do plan (JS montada com o texto de `002-regras.mjs`); `cronExpression` nas duas de titulares; publica só em `isEntrypoint()`; `package.json` com `publish:002`
-- [ ] **T-014** — `novo/backend/simulator/seeds/002-carteira.mjs`: dados da tabela de seed do plan (ids 2001+; Carlos por `ctx.usuario`)
-- [ ] **T-015** — `npm run sim:check` sem `FALHOU`; shim novo em `mysql-dialect.mjs` só se faltar algo (com teste e nota no relatório)
+- [x] **T-010** — `novo/backend/schema-producao/002-carteira.mjs`: DDL inteiro de `VISITAS`, `RELATOS_CLIENTE`, `CLIENTE_TITULAR_DEPTO`, `COORDENADORES_BU`, `PRODUCT_MIX`, `PRODUCT_MIX_ITEMS`, `PRODUTOS_CUSTOS`, `PROSPECTS`, `PROSPECT_CONTATOS`; `IMP_*` com as colunas usadas, "confirmar no sandbox"
+- [x] **T-011** — `novo/backend/lib/002-carteira.mjs`: `cod`, `num`, `semAcento`, `BLOQUEADOS`, `escopoAlvo`, `carteiraVisivel`, `vendaConta`, `vendaDoVendedor`, `candidatos`, `DEPTOS_POR_SECAO`, com comentário de uso (SF SQL e JS)
+- [x] **T-012** — `novo/backend/lib/002-regras.mjs`: funções puras sem import — `normalizar`, `casaBusca`/`relevancia` (RN-018), `scoreRanking`, `curvaAuto`, `temperatura`, `classe` (RN-004…RN-008), `queda` (RN-012), `limiteCurva`/`pendente` (RN-006), `montarCarteira` (filtros, ordem, indicadores, página)
+- [x] **T-013** — `novo/backend/add-002-carteira.mjs`: `definitions` das 24 SFs do plan (JS montada com o texto de `002-regras.mjs`); `cronExpression` nas duas de titulares; publica só em `isEntrypoint()`; `package.json` com `publish:002`
+- [x] **T-014** — `novo/backend/simulator/seeds/002-carteira.mjs`: dados da tabela de seed do plan (ids 2001+; Carlos por `ctx.usuario`)
+- [x] **T-015** — `npm run sim:check` sem `FALHOU`; shim novo em `mysql-dialect.mjs` só se faltar algo (com teste e nota no relatório)
 
 ## Frontend
 
-- [ ] **T-020** — `src/lib/server-functions.ts`: as 24 entradas, em ordem alfabética, ids 201…224
-- [ ] **T-021** `[P]` — `src/lib/escopo.ts` + `src/components/FiltroEscopo.tsx` (RNT-003)
-- [ ] **T-022** `[P]` — `src/lib/carteira.ts` e `src/lib/titulares.ts` (funções da tabela do plan)
-- [ ] **T-023** — `pages/ClientesPage.tsx` (`.rota = '/clientes'`, abas, `?clienteId=`) e `pages/ClienteBuscaPage.tsx` (`.rota = '/clientes/:clienteId'`)
-- [ ] **T-024** — `pages/clientes/AbaCarteira.tsx`: cards, gráfico por ramo, legenda, filtros, lista, curva, temperatura, ficha, remover, novo prospect, relato
-- [ ] **T-025** — `pages/clientes/AbaDisponiveis.tsx`
-- [ ] **T-026** — `pages/clientes/AbaHistorico.tsx`: seletor, filtros, linha do tempo, pedidos, detalhes, última semana
-- [ ] **T-027** `[P]` — `pages/clientes/AbaProspects.tsx`: espaço reservado da spec 008
-- [ ] **T-028** — `pages/GestaoTitularesPage.tsx` (`.rota = '/gestao-titulares'`)
+- [x] **T-020** — `src/lib/server-functions.ts`: as 24 entradas, em ordem alfabética, ids 201…224
+- [x] **T-021** `[P]` — `src/lib/escopo.ts` + `src/components/FiltroEscopo.tsx` (RNT-003)
+- [x] **T-022** `[P]` — `src/lib/carteira.ts` e `src/lib/titulares.ts` (funções da tabela do plan)
+- [x] **T-023** — `pages/ClientesPage.tsx` (`.rota = '/clientes'`, abas, `?clienteId=`) e `pages/ClienteBuscaPage.tsx` (`.rota = '/clientes/:clienteId'`)
+- [x] **T-024** — `pages/clientes/AbaCarteira.tsx`: cards, gráfico por ramo, legenda, filtros, lista, curva, temperatura, ficha, remover, novo prospect, relato
+- [x] **T-025** — `pages/clientes/AbaDisponiveis.tsx`
+- [x] **T-026** — `pages/clientes/AbaHistorico.tsx`: seletor, filtros, linha do tempo, pedidos, detalhes, última semana
+- [x] **T-027** `[P]` — `pages/clientes/AbaProspects.tsx`: espaço reservado da spec 008
+- [x] **T-028** — `pages/GestaoTitularesPage.tsx` (`.rota = '/gestao-titulares'`)
 
 ## Testes
 
 Uma task por linha da seção Testes do plan. Backend em `simulator/smoke/002-carteira.mjs`.
 
-- [ ] **T-080** — `C-001 / RN-010`: indicadores de Ana; ticket nulo sem ativos
-- [ ] **T-081** — `C-002 / RN-006`: pendentes X e Z; 61/62 dias; visita de outro vendedor não conta
-- [ ] **T-082** — `C-003 / RN-007`: W = 92 Quente
-- [ ] **T-083** — `C-004 / RN-007`: V = 0 Frio, sem datas
-- [ ] **T-084** — `RN-007 (bordas)`: limites da tendência; visita agendada não conta
-- [ ] **T-085** — `C-005 / RN-004 / RN-005`: K 76,0 B; 100 A; 4,0 C; curva manual D em `TEAM`
-- [ ] **T-086** — `RN-008`: classes e média
-- [ ] **T-087** — `C-006 / RN-013`: `NOME_AZ` na carteira inteira
-- [ ] **T-088** — `C-007 / RN-018`: busca inteligente
-- [ ] **T-089** — `RN-012`: selo Queda e 250 alertas
-- [ ] **T-090** — `C-008 / RN-019`: disponíveis por escopo e adicionar
-- [ ] **T-091** — `C-009`: segunda adição recusada
-- [ ] **T-092** — `C-010`: sem escopo
-- [ ] **T-093** — `RN-019 (PF)`: Pessoa Física fora
-- [ ] **T-094** — `C-011 / RN-015`: remover só o próprio vínculo
-- [ ] **T-095** — `C-012 / RN-001`: cobertura por férias ativas
-- [ ] **T-096** — `C-013 / RN-002`: titular manual na carteira e nas vendas
-- [ ] **T-097** — `C-014 / RN-003`: titular automático e recálculo
-- [ ] **T-098** — `RN-002 (bloqueio)`
-- [ ] **T-099** — `RN-020`: agrupamento por seção e gestão fora das BUs
-- [ ] **T-100** — `C-015 / RN-017`: linha do tempo e pedidos de X
-- [ ] **T-101** — `RN-017 (filtros)`: período vale para todos os registros
-- [ ] **T-102** — `C-016 / RN-016`: relato avulso
-- [ ] **T-103** — `RN-014`: ficha só leitura vinda do cadastro
-- [ ] **T-104** — `C-017 / RN-021`: prospect
-- [ ] **T-105** — `RNT-003 (servidor)`: modo sem permissão não devolve dado
-- [ ] **T-106** `[P]` — `tests/carteira.test.mjs`: RN-009, C-006 (página 1), RN-011, C-016, RN-014, C-017, RF-015, RF-018
-- [ ] **T-107** `[P]` — `tests/escopo.test.mjs`: RNT-003 (cascata, padrão, quem vê o filtro)
-- [ ] **T-108** `[P]` — `tests/titulares.test.mjs`: RN-020 (tela)
+- [x] **T-080** — `C-001 / RN-010`: indicadores de Ana; ticket nulo sem ativos
+- [x] **T-081** — `C-002 / RN-006`: pendentes X e Z; 61/62 dias; visita de outro vendedor não conta
+- [x] **T-082** — `C-003 / RN-007`: W = 92 Quente
+- [x] **T-083** — `C-004 / RN-007`: V = 0 Frio, sem datas
+- [x] **T-084** — `RN-007 (bordas)`: limites da tendência; visita agendada não conta
+- [x] **T-085** — `C-005 / RN-004 / RN-005`: K 76,0 B; 100 A; 4,0 C; curva manual D em `TEAM`
+- [x] **T-086** — `RN-008`: classes e média
+- [x] **T-087** — `C-006 / RN-013`: `NOME_AZ` na carteira inteira
+- [x] **T-088** — `C-007 / RN-018`: busca inteligente
+- [x] **T-089** — `RN-012`: selo Queda e 250 alertas
+- [x] **T-090** — `C-008 / RN-019`: disponíveis por escopo e adicionar
+- [x] **T-091** — `C-009`: segunda adição recusada
+- [x] **T-092** — `C-010`: sem escopo
+- [x] **T-093** — `RN-019 (PF)`: Pessoa Física fora
+- [x] **T-094** — `C-011 / RN-015`: remover só o próprio vínculo
+- [x] **T-095** — `C-012 / RN-001`: cobertura por férias ativas
+- [x] **T-096** — `C-013 / RN-002`: titular manual na carteira e nas vendas
+- [x] **T-097** — `C-014 / RN-003`: titular automático e recálculo
+- [x] **T-098** — `RN-002 (bloqueio)`
+- [x] **T-099** — `RN-020`: agrupamento por seção e gestão fora das BUs
+- [x] **T-100** — `C-015 / RN-017`: linha do tempo e pedidos de X
+- [x] **T-101** — `RN-017 (filtros)`: período vale para todos os registros
+- [x] **T-102** — `C-016 / RN-016`: relato avulso
+- [x] **T-103** — `RN-014`: ficha só leitura vinda do cadastro
+- [x] **T-104** — `C-017 / RN-021`: prospect
+- [x] **T-105** — `RNT-003 (servidor)`: modo sem permissão não devolve dado
+- [x] **T-106** `[P]` — `tests/carteira.test.mjs`: RN-009, C-006 (página 1), RN-011, C-016, RN-014, C-017, RF-015, RF-018
+- [x] **T-107** `[P]` — `tests/escopo.test.mjs`: RNT-003 (cascata, padrão, quem vê o filtro)
+- [x] **T-108** `[P]` — `tests/titulares.test.mjs`: RN-020 (tela)
 
 ## Verificação
 
-- [ ] **T-110** — `cd novo/backend && npm test` verde
-- [ ] **T-111** — `cd novo/frontend && npm test`, `npm run build` e `npm run lint` limpos
-- [ ] **T-112** — No simulador (porta própria da sessão): Ana em `/clientes` (cards, filtros, temperatura, adicionar Q), `/clientes/2471`, `/clientes?clienteId=2001`, Carlos em `/gestao-titulares`
+- [x] **T-110** — `cd novo/backend && npm test` verde
+- [x] **T-111** — `cd novo/frontend && npm test`, `npm run build` e `npm run lint` limpos
+- [x] **T-112** — No simulador (porta própria da sessão): Ana em `/clientes` (cards, filtros, temperatura, adicionar Q), `/clientes/2471`, `/clientes?clienteId=2001`, Carlos em `/gestao-titulares` (feito com outra adição que não Q; o diálogo de temperatura ficou sem abrir no navegador)
 - [ ] **T-113** — Verificação manual da spec: 360 px nas 4 abas; legenda, temperatura e Titulares em tema escuro
 - [ ] **T-114** `[sandbox]` — Publicar `add-002` e `add-000-perfil-acesso`, `sync:function-map`; medir a carteira de um coordenador no modo Time inteiro (RNF-001/002)
 
