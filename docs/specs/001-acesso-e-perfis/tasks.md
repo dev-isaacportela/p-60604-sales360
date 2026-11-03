@@ -12,7 +12,7 @@
 
 > Roteiro e prompt para o sandbox: [`roteiro-sandbox.md`](roteiro-sandbox.md).
 
-- [ ] **T-001** `[sandbox]` — Ler a estrutura real de `USUARIO_PREFERENCIAS`, `USUARIO_BLOQUEIO`, `USUARIO_CARGO` (qual dos dois DDLs prevaleceu, L-04) e `INT_USER` com `listTablesMitra`; registrar no `plan.md` e corrigir `schema-producao.mjs` se divergir
+- [ ] **T-001** `[sandbox]` — Ler a estrutura real de `USUARIO_PREFERENCIAS`, `USUARIO_BLOQUEIO`, `USUARIO_CARGO` (qual dos dois DDLs prevaleceu, L-04) e `INT_USER` com `listTablesMitra`; registrar no `plan.md` e corrigir `schema-producao/001-acesso.mjs` se divergir
 - [ ] **T-002** `[sandbox]` — Confirmar como publicar um segundo frontend no projeto 60604 (ou num projeto só de hospedagem) e registrar a saída escolhida no `plan.md` (Riscos, linha 1)
 - [ ] **T-003** `[sandbox]` — Confirmar que não existe SF com prefixo `s360` no projeto (`listServerFunctionsMitra`)
 - [ ] **T-004** `[sandbox]` — Extrair a lista de quem tem `FUNCIONARIOS.STATUS = 'FERIAS'` ou `ID_SUBSTITUTO` preenchido (nome, substituto) e entregar à coordenação para recadastro (decisão A10) → `docs/specs/001-acesso-e-perfis/ferias-a-recadastrar.md`
@@ -26,7 +26,7 @@
 ## Backend
 
 - [x] **T-020** — `novo/backend/package.json` do kit (`mitra-sdk ^1.0.64`; scripts `publish:000`, `publish:001`, `sync:function-map`, `sim`, `sim:seed`, `sim:check`, `sim:smoke`, `test`) e `npm install` — *scripts: `publish:001` e `publish:perfil` (rodar nessa ordem)*
-- [x] **T-021** — `novo/backend/schema-producao.mjs`: `CREATE TABLE IF NOT EXISTS` de `USUARIO_CARGO`, `USUARIO_PREFERENCIAS`, `USUARIO_BLOQUEIO`, `COORDENADORES`, `FERIAS_VENDEDOR`, `VENDEDOR_RCA`, `BU_VENDEDOR`, `TAREFAS`, `ALERTAS_INTELIGENTES`, copiados de `modelo-de-dados.md`; um template literal por tabela; cabeçalho dizendo que não é publicado
+- [x] **T-021** — `novo/backend/schema-producao/001-acesso.mjs`: `CREATE TABLE IF NOT EXISTS` de `USUARIO_CARGO`, `USUARIO_PREFERENCIAS`, `USUARIO_BLOQUEIO`, `COORDENADORES`, `FERIAS_VENDEDOR`, `VENDEDOR_RCA`, `BU_VENDEDOR`, `TAREFAS`, `ALERTAS_INTELIGENTES`, copiados de `modelo-de-dados.md`; um template literal por tabela; cabeçalho dizendo que não é publicado
 - [x] **T-022** — `novo/backend/lib/guardas.mjs`: `semBloqueio`, `temPapel(...papeis)`, `coordenadorAtivo`, `papeisDoUsuario` (união de `USUARIO_PAPEL` e `USUARIO_CARGO`) — *feito: `SEM_BLOQUEIO`, `temPapel`, `COORDENADOR_ATIVO`; a união de papéis ficou na SF de sessão, único uso*
 - [x] **T-023** — `novo/backend/add-000-perfil-acesso.mjs`: acrescenta as SFs `s360*` e as tabelas lidas ao perfil `Operacao Comercial` (id 1), lendo as listas atuais antes e nunca substituindo
 - [x] **T-024** — `novo/backend/add-001-acesso.mjs`: `CREATE TABLE IF NOT EXISTS USUARIO_PAPEL` + carga inicial idempotente a partir de `USUARIO_CARGO`; `definitions` de `s360SessaoObter`, `s360ContadoresObter`, `s360FeriasMinhasObter`, `s360ConfiguracoesGarantir`, `s360ConfiguracoesSalvar` (contratos do plan); publica só em `isEntrypoint()`

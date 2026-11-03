@@ -9,13 +9,18 @@
 // Uso: cd backend && npm run sim:check
 
 import { DatabaseSync } from 'node:sqlite';
-import { existsSync } from 'node:fs';
-import { DB_PATH, CHECK_INPUT } from './config.mjs';
+import { rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { SEED, CHECK_INPUT } from './config.mjs';
 import { seedDatabase } from './seed.mjs';
 import { registerMysqlFunctions } from './mysql-dialect.mjs';
 import { loadDefinitions, createRunner } from './runtime.mjs';
 
-if (!existsSync(DB_PATH)) seedDatabase(DB_PATH);
+// Banco descartável próprio (pid no nome): não depende nem mexe no banco do
+// servidor, e duas sessões podem rodar o check ao mesmo tempo.
+const DB_PATH = join(tmpdir(), `mitra-${SEED}-check-${process.pid}.db`);
+seedDatabase(DB_PATH, { reset: true });
 
 const db = new DatabaseSync(DB_PATH);
 registerMysqlFunctions(db);
@@ -51,4 +56,5 @@ const vazias = ok.filter((r) => r.detalhe.startsWith('0 '));
 if (vazias.length) console.log(`  ${vazias.length} rodaram sem devolver linha (seed cobre?): ${vazias.map((r) => r.name).join(', ')}`);
 if (overridden.length) console.log(`  redefinidas entre scripts: ${overridden.map((o) => `${o.name} (${o.de} -> ${o.para})`).join(', ')}`);
 db.close();
+for (const sufixo of ['', '-wal', '-shm']) rmSync(`${DB_PATH}${sufixo}`, { force: true });
 process.exitCode = falhas.length ? 1 : 0;

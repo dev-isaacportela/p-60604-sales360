@@ -39,14 +39,14 @@ a) T-003: listServerFunctionsMitra e confirme que nenhuma SF começa com "s360".
    Se existir alguma, pare e me mostre.
 b) T-001: leia as colunas reais (information_schema.COLUMNS, TABLE_SCHEMA = DATABASE())
    de USUARIO_PREFERENCIAS, USUARIO_BLOQUEIO, USUARIO_CARGO e INT_USER.
-   Compare com novo/backend/schema-producao.mjs e com o que as SFs de
+   Compare com novo/backend/schema-producao/001-acesso.mjs e com o que as SFs de
    novo/backend/add-001-acesso.mjs usam:
    - USUARIO_PREFERENCIAS: ID, USER_ID, MODO_AGENDA, EXIBICAO_TAREFAS, PAGINA_INICIAL, ATUALIZADO_EM
    - USUARIO_BLOQUEIO: USER_ID, BLOQUEADO
    - USUARIO_CARGO: USER_ID, CARGO (diga também se existe a coluna ID — lacuna L-04)
    - INT_USER: ID, DESCR, NOME
    Diga também se existe a tabela USUARIO_PAPEL (não deveria).
-   Se alguma coluna usada faltar ou tiver outro nome, corrija schema-producao.mjs
+   Se alguma coluna usada faltar ou tiver outro nome, corrija schema-producao/001-acesso.mjs
    e as SFs, rode `cd novo/backend && npm install && npm test` (tem que passar)
    e registre a estrutura real em plan.md, seção Modelo de dados.
 c) T-004: liste quem ainda tem marcação de férias no cadastro antigo:

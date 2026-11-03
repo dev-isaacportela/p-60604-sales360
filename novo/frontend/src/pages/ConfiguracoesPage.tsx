@@ -29,7 +29,7 @@ const MSG_FALHA = 'Falha ao salvar configurações.'
 
 type Ferias = ReturnType<typeof textoFerias>
 
-export function ConfiguracoesPage() {
+export default function ConfiguracoesPage() {
   const { sessao, recarregar } = useSessao()
   const opcoesPagina = opcoesPaginaInicial(sessao).map(o => ({ value: o.valor, label: o.rotulo }))
   const paginaValida = podeAbrir(sessao.pagina, sessao) && opcoesPagina.some(o => o.value === sessao.pagina)
@@ -149,3 +149,5 @@ export function ConfiguracoesPage() {
     </>
   )
 }
+
+ConfiguracoesPage.rota = '/configuracoes'

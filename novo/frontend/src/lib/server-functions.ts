@@ -10,19 +10,24 @@
 //
 // Formato dos dois blocos e rigido (uma linha `chave: 'valor',` por entrada,
 // sem comentario dentro): o sync e o simulador fazem parse por texto.
+// Entradas em ORDEM ALFABETICA da chave: specs desenvolvidas em paralelo
+// acrescentam em linhas diferentes e o merge nao conflita. Antes de publicar,
+// o id de uma funcao nova sai da faixa da spec: NNN x 100 + n (spec 002 =
+// 201, 202...; spec 010 = 1001, 1002...). A 001 usa 1 a 5. O sync troca
+// tudo pelos ids reais.
 
 export const SERVER_FUNCTION_NAMES = {
-  sessaoObter: 's360SessaoObter',
-  contadoresObter: 's360ContadoresObter',
-  feriasMinhasObter: 's360FeriasMinhasObter',
   configuracoesGarantir: 's360ConfiguracoesGarantir',
   configuracoesSalvar: 's360ConfiguracoesSalvar',
+  contadoresObter: 's360ContadoresObter',
+  feriasMinhasObter: 's360FeriasMinhasObter',
+  sessaoObter: 's360SessaoObter',
 };
 
 export const SERVER_FUNCTIONS = {
-  sessaoObter: '1',
-  contadoresObter: '2',
-  feriasMinhasObter: '3',
   configuracoesGarantir: '4',
   configuracoesSalvar: '5',
+  contadoresObter: '2',
+  feriasMinhasObter: '3',
+  sessaoObter: '1',
 };

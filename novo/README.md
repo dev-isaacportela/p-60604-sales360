@@ -32,5 +32,5 @@ Nada do `mitra-sdk` roda desta máquina. No sandbox, por spec:
 cd novo/backend && node add-001-acesso.mjs && node add-000-perfil-acesso.mjs && npm run sync:function-map
 ```
 
-`schema-producao.mjs` **não** é publicado: descreve as tabelas que já existem,
+`schema-producao/` **não** é publicado: descreve as tabelas que já existem,
 para o simulador.

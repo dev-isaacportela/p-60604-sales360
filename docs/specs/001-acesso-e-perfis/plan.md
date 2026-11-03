@@ -188,8 +188,8 @@ Regra pura em `novo/frontend/src/lib/` (é o que os testes importam):
   `config.mjs`: `PROJECT_LABEL` "Comercial Externo 360 (novo)", `SEED` 60604,
   porta **3105** e app **5175** (próximas livres da tabela do hub),
   `PUBLISH_ORDER` = [`add-000-perfil-acesso.mjs`, `add-001-acesso.mjs`],
-  `DDL_SOURCES` = [`novo/backend/schema-producao.mjs`, `add-001-acesso.mjs`].
-- **`schema-producao.mjs` (D-008):** `CREATE TABLE IF NOT EXISTS` das tabelas
+  `DDL_SOURCES` = [`novo/backend/schema-producao/001-acesso.mjs`, `add-001-acesso.mjs`].
+- **`schema-producao/001-acesso.mjs` (D-008):** `CREATE TABLE IF NOT EXISTS` das tabelas
   de produção que o sistema novo lê, copiados de `modelo-de-dados.md`, um por
   template literal. Serve ao simulador e documenta o contrato; **não** é
   publicado (as tabelas já existem). Cada spec acrescenta as suas. Na 001:
@@ -271,7 +271,7 @@ Backend em `novo/backend/simulator/smoke.mjs`; tela em
 | D-005 | Preferências gravadas no formato do antigo (`/agenda`, `SEMANA`, `LISTA`) | chaves novas | a mesma linha é lida pelos dois sistemas na convivência |
 | D-006 | Salvar nome + preferências num único `UPDATE ... JOIN` | duas SFs; coluna nova de nome em preferências | uma instrução é atômica no MySQL (RN-014) sem mexer em estrutura |
 | D-007 | `hoje`/`agora` enviados pela tela, em Brasília | `NOW()`/`CURDATE()` no SQL | fuso do servidor incerto (L-17); simulador determinístico |
-| D-008 | `schema-producao.mjs` só para o simulador | apontar `DDL_SOURCES` para os ~100 scripts antigos | o DDL antigo está espalhado e redefinido; o contrato está em `modelo-de-dados.md` |
+| D-008 | `schema-producao/001-acesso.mjs` só para o simulador | apontar `DDL_SOURCES` para os ~100 scripts antigos | o DDL antigo está espalhado e redefinido; o contrato está em `modelo-de-dados.md` |
 | D-009 | Duas consultas na abertura (sessão + contadores) | uma SF por permissão, como hoje (8 em paralelo) | RNF-004 (≤ 3) e o teto de 300 SF/min |
 
 ## Riscos
@@ -279,7 +279,7 @@ Backend em `novo/backend/simulator/smoke.mjs`; tela em
 | Risco | Impacto | Mitigação |
 |---|---|---|
 | Hospedagem do frontend novo: o projeto publica um build; não está confirmado como servir `novo/frontend` ao lado do antigo | sem endereço para o piloto lado a lado | T-002 confirma no sandbox antes do primeiro build. Saídas: segundo app publicado no mesmo projeto, ou um projeto Mitra só para hospedar o frontend, chamando as SFs do 60604 pelo `projectId`. O código não muda; só `VITE_MITRA_PROJECT_ID` e o destino do build |
-| `USUARIO_PREFERENCIAS` sem DDL no repo | SF com coluna errada falha na publicação | T-001 lê a estrutura real com `listTablesMitra` no sandbox (só leitura) e corrige `schema-producao.mjs` antes de publicar |
+| `USUARIO_PREFERENCIAS` sem DDL no repo | SF com coluna errada falha na publicação | T-001 lê a estrutura real com `listTablesMitra` no sandbox (só leitura) e corrige `schema-producao/001-acesso.mjs` antes de publicar |
 | `UPDATE ... JOIN` em `INT_USER` recusado para usuário business | salvar falha em produção | o antigo já grava `INT_USER.NOME` por SF SQL (`atualizarDadosUsuario`); T-105 valida com um usuário business no sandbox antes de liberar |
 | Usuário business sem perfil chama SF nova | `User has no profile assigned` | `add-000-perfil-acesso.mjs` acrescenta as `s360*` ao perfil `Operacao Comercial` |
 | Escolha de tema compartilhada (`sales360:tema`) entre antigo e novo | trocar no novo muda o antigo | efeito desejado: é a mesma pessoa e o mesmo produto |

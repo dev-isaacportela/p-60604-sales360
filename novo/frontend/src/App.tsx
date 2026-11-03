@@ -2,6 +2,7 @@
 // (RN-001, C-002). Com sessão → moldura + rota conferida por podeAbrir antes
 // de montar a página (RN-015). Rota desconhecida ou cancelada → Dashboard.
 
+import type { ComponentType } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { hasSession } from './lib/mitra-auth'
 import { ROTAS, podeAbrir } from './lib/menu'
@@ -10,15 +11,25 @@ import { Layout } from './components/Layout'
 import { SessaoProvider } from './components/SessaoProvider'
 import { useSessao } from './components/sessao-contexto'
 import { AcessoRestrito } from './pages/AcessoRestrito'
-import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
 import { EmConstrucao } from './pages/EmConstrucao'
 import { LoginPage } from './pages/LoginPage'
+
+// Telas construídas: cada arquivo de pages/ que exporta por padrão um componente
+// com `.rota` (o caminho de ROTAS em lib/menu.ts) entra aqui sozinho. Uma spec
+// nova só cria o arquivo da tela; este não muda. Rota sem tela = EmConstrucao.
+type Tela = ComponentType & { rota?: string }
+const TELAS: Record<string, Tela> = Object.fromEntries(
+  Object.values(import.meta.glob<{ default?: Tela }>('./pages/*.tsx', { eager: true }))
+    .map(modulo => modulo.default)
+    .filter((tela): tela is Tela & { rota: string } => typeof tela?.rota === 'string')
+    .map(tela => [tela.rota, tela]),
+)
 
 function Tela({ caminho }: { caminho: string }) {
   const { sessao } = useSessao()
   if (!podeAbrir(caminho, sessao)) return <AcessoRestrito caminho={caminho} />
-  if (caminho === '/configuracoes') return <ConfiguracoesPage />
-  return <EmConstrucao caminho={caminho} />
+  const Pagina = TELAS[caminho]
+  return Pagina ? <Pagina /> : <EmConstrucao caminho={caminho} />
 }
 
 function AreaLogada() {
