@@ -135,7 +135,10 @@ function CamposTipo({ f, mudar }: { f: Formulario; mudar: (campo: keyof Formular
 
 /* ─────────────── + Nova agenda (RF-003/004/005/010/011) ─────────────── */
 
-export function NovaAgenda({ aberto, hoje, eu, fechar, salvo }: { aberto: boolean; hoje: string; eu: number; fechar: () => void; salvo: (texto: string) => void }) {
+// `cliente`: vem preenchido pelo "Agendar visita" da Prospecção (RF-014 da 008).
+export function NovaAgenda({ aberto, hoje, eu, fechar, salvo, cliente }: {
+  aberto: boolean; hoje: string; eu: number; fechar: () => void; salvo: (texto: string) => void; cliente?: { id: string; nome: string } | null
+}) {
   const [f, setF] = useState<Formulario>(() => formularioInicial('VISITA', hoje))
   const [erro, setErro] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
@@ -146,14 +149,14 @@ export function NovaAgenda({ aberto, hoje, eu, fechar, salvo }: { aberto: boolea
 
   useEffect(() => {
     if (!aberto) return
-    setF(formularioInicial('VISITA', hoje))
+    setF({ ...formularioInicial('VISITA', hoje), ...(cliente ? { clienteId: cliente.id, clienteNome: cliente.nome } : {}) })
     setErro(null)
     setBusca('')
     setClientes(null)
     linhas('agendaProspects', { busca: '' })
       .then(setProspects)
       .catch(falha => { console.error('s360AgendaProspects', falha); setProspects([]) })
-  }, [aberto, hoje])
+  }, [aberto, hoje, cliente])
 
   // RF-004: a partir de 2 letras, depois de 400 ms parado.
   useEffect(() => {
@@ -422,6 +425,8 @@ function CamposAtividade({ a, mudar }: { a: Atividade; mudar: (campo: keyof Ativ
 
 export function Encerrar({ item, fechar, salvo }: { item: Linha | null; fechar: () => void; salvo: (texto: string) => void }) {
   const [relato, setRelato] = useState('')
+  // RF-017 / RN-024 da 008: resultado da visita de prospecção (opcional).
+  const [resultado, setResultado] = useState({ objecoes: '', proximoPasso: '', dataProximoPasso: '' })
   const [atividades, setAtividades] = useState<Atividade[]>([])
   const [pendentes, setPendentes] = useState<Atividade[] | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -429,6 +434,7 @@ export function Encerrar({ item, fechar, salvo }: { item: Linha | null; fechar: 
 
   useEffect(() => {
     setRelato('')
+    setResultado({ objecoes: '', proximoPasso: '', dataProximoPasso: '' })
     setAtividades([])
     setPendentes(null)
     setErro(null)
@@ -454,7 +460,10 @@ export function Encerrar({ item, fechar, salvo }: { item: Linha | null; fechar: 
       const n = await gravar('agendaCheckout', { origem: item.ORIGEM, id: String(item.ID), relato })
       if (n < 1) { setErro('Nada foi alterado: só uma visita em andamento pode ser encerrada.'); return }
       if (visita && atividades.length) await gravarAtividades(atividades)
-      else salvo(visita ? 'Visita concluída.' : 'Prospecção concluída.')
+      else if (!visita && Object.values(resultado).some(v => v.trim())) {
+        const r = await gravar('prospectVisitaResultado', { visitaId: String(item.ID), ...resultado })
+        salvo(r > 0 ? 'Prospecção concluída com objeções e próximo passo.' : 'Prospecção concluída, mas objeções e próximo passo não foram gravados.')
+      } else salvo(visita ? 'Visita concluída.' : 'Prospecção concluída.')
     } catch (falha) {
       console.error('s360AgendaCheckout', falha)
       setErro(FALHA)
@@ -494,7 +503,21 @@ export function Encerrar({ item, fechar, salvo }: { item: Linha | null; fechar: 
                 ))}
                 <Actions><Button size="sm" onClick={() => setAtividades([...atividades, atividadeVazia()])}><Plus aria-hidden />Adicionar atividade</Button></Actions>
               </>
-            ) : null}
+            ) : (
+              <>
+                <LabelledField label="Objeções">
+                  <Textarea rows={2} value={resultado.objecoes} onChange={e => setResultado(r => ({ ...r, objecoes: e.target.value }))} />
+                </LabelledField>
+                <FormRow>
+                  <LabelledField label="Próximo passo">
+                    <Input value={resultado.proximoPasso} onChange={e => setResultado(r => ({ ...r, proximoPasso: e.target.value }))} />
+                  </LabelledField>
+                  <LabelledField label="Data do próximo passo">
+                    <Input type="date" value={resultado.dataProximoPasso} onChange={e => setResultado(r => ({ ...r, dataProximoPasso: e.target.value }))} />
+                  </LabelledField>
+                </FormRow>
+              </>
+            )}
           </>
         )}
         {erro ? <Alert tone={pendentes ? 'warn' : 'error'}>{erro}</Alert> : null}
