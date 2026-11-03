@@ -11,39 +11,39 @@
 
 ## Backend
 
-- [ ] **T-010** — `schema-producao/007-metas.mjs`: `METAS_BU_VENDEDOR`, `METAS_BU_VENDEDOR_RAMO_UF`, `METAS_BU`, `INTG_BUSINESS_UNIT`, `INTG_REGION`, `INTG_ACTIVITY_SEGMENT`, `INTG_MONTHLY_BILLING_TARGET`
-- [ ] **T-011** — `lib/007-analytics.mjs`: `LINHAS`, `META_DO_ESCOPO`, `UNIDADE_DO_DEPTO`, filtros de lista
-- [ ] **T-012** — `lib/007-regras.mjs`: `metaRecebida` (RN-010), sem import
-- [ ] **T-013** — `add-007-analytics.mjs`: as 13 SFs; `package.json` `publish:007`
-- [ ] **T-014** — `simulator/seeds/007-analytics.mjs` (ids 7001+, usuários por `ctx.usuario`)
-- [ ] **T-015** — `config.mjs` `CHECK_INPUT` (linha da 007); `npm run sim:check` sem `FALHOU`
+- [x] **T-010** — `schema-producao/007-metas.mjs`: `METAS_BU_VENDEDOR`, `METAS_BU_VENDEDOR_RAMO_UF`, `METAS_BU`, `INTG_BUSINESS_UNIT`, `INTG_REGION`, `INTG_ACTIVITY_SEGMENT`, `INTG_MONTHLY_BILLING_TARGET`
+- [x] **T-011** — `lib/007-analytics.mjs`: `LINHAS`, `META_DO_ESCOPO`, `UNIDADE_DO_DEPTO`, filtros de lista
+- [x] **T-012** — `lib/007-regras.mjs`: `metaRecebida` (RN-010), sem import
+- [x] **T-013** — `add-007-analytics.mjs`: as 13 SFs; `package.json` `publish:007`
+- [x] **T-014** — `simulator/seeds/007-analytics.mjs` (ids 7001+, usuários por `ctx.usuario`)
+- [x] **T-015** — `config.mjs` `CHECK_INPUT` (linha da 007); `npm run sim:check` sem `FALHOU`
 
 ## Frontend
 
-- [ ] **T-020** — `server-functions.ts`: 13 entradas `analytics*`/`metas*` (ids 701–713, ordem alfabética)
-- [ ] **T-021** `[P]` — `src/lib/analytics.ts`, `src/lib/metas.ts`, `src/lib/comparativo.ts`
-- [ ] **T-022** — `pages/analytics/graficos.tsx` (barras e evolução)
-- [ ] **T-023** — `AnalyticsPage.tsx`: filtros, `Buscar`, abas por perfil
-- [ ] **T-024** — `pages/analytics/Overview.tsx`, `Clientes.tsx`, `Produtos.tsx`
-- [ ] **T-025** — `pages/analytics/Metas.tsx` (inclui ramos/UF RF-017, insights e exportar RF-021)
-- [ ] **T-026** — `pages/analytics/Modular.tsx` + exportação
-- [ ] **T-027** — `ComparativoPage.tsx` (Semanal | Mensal) e `pages/comparativo/Mensal.tsx` + PDF
+- [x] **T-020** — `server-functions.ts`: 13 entradas `analytics*`/`metas*` (ids 701–713, ordem alfabética)
+- [x] **T-021** `[P]` — `src/lib/analytics.ts`, `src/lib/metas.ts`, `src/lib/comparativo.ts`
+- [x] **T-022** — `pages/analytics/graficos.tsx` (barras e evolução)
+- [x] **T-023** — `AnalyticsPage.tsx`: filtros, `Buscar`, abas por perfil
+- [x] **T-024** — `pages/analytics/Overview.tsx`, `Clientes.tsx`, `Produtos.tsx`
+- [x] **T-025** — `pages/analytics/Metas.tsx` (inclui ramos/UF RF-017, insights e exportar RF-021)
+- [x] **T-026** — `pages/analytics/Modular.tsx` + exportação
+- [x] **T-027** — `ComparativoPage.tsx` (Semanal | Mensal) e `pages/comparativo/Mensal.tsx` + PDF
 
 ## Testes
 
-- [ ] **T-080** — smoke: C-001, C-003, C-004, C-005, RN-006, RN-008, RN-009, RF-006
-- [ ] **T-081** — smoke: C-006, C-007, RN-010 (unidade), C-008
-- [ ] **T-082** — smoke: C-009, C-011, C-013 (gravação de ramos), C-014
-- [ ] **T-083** — smoke: C-015 (SF)
-- [ ] **T-084** `[P]` — `tests/analytics.test.mjs`: C-001, C-002, C-017, RN-006, RF-001, RF-022, RF-023
-- [ ] **T-085** `[P]` — `tests/metas.test.mjs`: C-009, C-010, C-012, C-013, RN-013, RN-014, RF-021
-- [ ] **T-086** `[P]` — `tests/comparativo.test.mjs`: C-015, C-016
+- [x] **T-080** — smoke: C-001, C-003, C-004, C-005, RN-006, RN-008, RN-009, RF-006
+- [x] **T-081** — smoke: C-006, C-007, RN-010 (unidade), C-008
+- [x] **T-082** — smoke: C-009, C-011, C-013 (gravação de ramos), C-014
+- [x] **T-083** — smoke: C-015 (SF)
+- [x] **T-084** `[P]` — `tests/analytics.test.mjs`: C-001, C-002, C-017, RN-006, RF-001, RF-022, RF-023
+- [x] **T-085** `[P]` — `tests/metas.test.mjs`: C-009, C-010, C-012, C-013, RN-013, RN-014, RF-021
+- [x] **T-086** `[P]` — `tests/comparativo.test.mjs`: C-015, C-016
 
 ## Verificação
 
-- [ ] **T-110** — `cd novo/backend && npm test` verde
-- [ ] **T-111** — `cd novo/frontend && npm test`, `npm run lint`, `npm run build`
-- [ ] **T-112** — No simulador (porta própria): Amélia em `/analytics` (5 blocos, Buscar, Modular, exportar), Caio na aba Metas (ratear, salvar, erro), Gil em leitura, `/comparativo` → Mensal e PDF
+- [x] **T-110** — `cd novo/backend && npm test` verde
+- [x] **T-111** — `cd novo/frontend && npm test`, `npm run lint`, `npm run build`
+- [x] **T-112** — No simulador (porta própria): Amélia em `/analytics` (5 blocos, Buscar, Modular, exportar), Caio na aba Metas (ratear, salvar, erro), Gil em leitura, `/comparativo` → Mensal e PDF — conferido: Amélia (C-001, C-004, RF-023, Em risco, Produtos, Modular), Caio (Ratear igual, Salvar, ramo/UF gravado e relido, RF-019), Gil em leitura (C-014); arquivos .xlsx e PDF só pelos testes de regra
 - [ ] **T-113** — Verificação manual: RF-019 (confirmação), PDF legível, 360 px e tema escuro
 - [ ] **T-114** `[sandbox]` — Publicar `add-007` + `add-000-perfil-acesso`, `sync:function-map`; T-003
 
