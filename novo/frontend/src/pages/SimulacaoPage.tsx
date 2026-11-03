@@ -546,7 +546,8 @@ function Catalogo({ liberado, ocupado, onIncluir }: { liberado: boolean; ocupado
         aria-label="Adicionar produto"
         value={busca}
         disabled={!liberado}
-        placeholder={liberado ? 'Nome, código, código de fábrica ou auxiliar' : 'Selecione um cliente para liberar o catálogo de custos'}
+        title="Nome, código, código de fábrica ou código auxiliar"
+        placeholder={liberado ? 'Nome ou código do produto' : 'Escolha o cliente para buscar'}
         onChange={e => setBusca(e.target.value)}
       />
       {falhou && <Alert tone="error">Não foi possível buscar no catálogo agora.</Alert>}
@@ -606,19 +607,22 @@ function CampoNumero({ valor, onGravar, label, casas = 2, className }: { valor: 
 }
 
 /** RF-005: menu de custo do item com as opções válidas para o cliente. */
-function MenuCusto({ item, opcoes, onEscolher }: { item: Item; opcoes: OpcaoCusto[]; onEscolher: (o: OpcaoCusto) => void }) {
+/** `linha`: tudo numa linha (cartão do celular); sem ela, empilhado (coluna da tabela). */
+function MenuCusto({ item, opcoes, onEscolher, linha }: { item: Item; opcoes: OpcaoCusto[]; onEscolher: (o: OpcaoCusto) => void; linha?: boolean }) {
   const [aberto, setAberto] = useState(false)
   const especial = especialDisponivel(item, opcoes)
   return (
     <Popover open={aberto} onOpenChange={setAberto}>
       <PopoverTrigger asChild>
-        <button type="button" className="text-left text-[13px] text-ink hover:underline">
-          {moeda(item.custo)}
-          <span className="block text-[12px] text-ink-secondary">{rotuloCusto(item)}</span>
+        <button type="button" className={cn('text-left text-[13px] text-ink hover:underline', linha && 'flex flex-wrap items-center gap-x-2 gap-y-1')}>
+          <span>
+            {moeda(item.custo)}
+            <span className={cn('text-[12px] text-ink-secondary', !linha && 'block')}>{linha && ' · '}{rotuloCusto(item)}</span>
+          </span>
           {especial && (
-            <span className="mt-1 block w-fit max-w-32 rounded-lg bg-attention-bg px-2 py-0.5 text-[11px] font-semibold text-attention">
+            <span className={cn('block w-fit rounded-lg bg-attention-bg px-2 py-0.5 text-[11px] font-semibold text-attention', !linha && 'mt-1 max-w-32')}>
               <span className="whitespace-nowrap">Especial {moeda(especial.custo)}</span>
-              {especial.politicaNome && <span className="block truncate" title={especial.politicaNome}>{especial.politicaNome}</span>}
+              {especial.politicaNome && <span className={cn('truncate', !linha && 'block')} title={especial.politicaNome}>{linha && ' · '}{especial.politicaNome}</span>}
             </span>
           )}
         </button>
@@ -663,7 +667,7 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
     return {
       c,
       faixa,
-      custo: editavel && onCusto ? <MenuCusto item={item} opcoes={opcoes.get(item.codprod) ?? []} onEscolher={o => onCusto(item.codprod, o)} /> : <>{moeda(item.custo)}<RowMeta>{rotuloCusto(item)}</RowMeta></>,
+      custo: (linha = false) => editavel && onCusto ? <MenuCusto linha={linha} item={item} opcoes={opcoes.get(item.codprod) ?? []} onEscolher={o => onCusto(item.codprod, o)} /> : <>{moeda(item.custo)}<RowMeta>{rotuloCusto(item)}</RowMeta></>,
       qtd: editavel ? <CampoNumero label={`Quantidade de ${item.nome}`} casas={0} className="w-14" valor={item.qtd} onGravar={q => onQtd!(item.codprod, q)} /> : item.qtd,
       margem: editavel ? <CampoNumero label={`Margem de ${item.nome}`} className="w-20" valor={item.margem} onGravar={m => onMargem!(item.codprod, m)} /> : pct(item.margem),
       preco: editavel ? <CampoNumero label={`Preço de ${item.nome}`} className="w-20" valor={item.preco} onGravar={p => onPreco!(item.codprod, p)} /> : moeda(item.preco),
@@ -702,7 +706,7 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
                       </span>
                     </span>
                   </Td>
-                  <Td>{x.custo}</Td>
+                  <Td>{x.custo()}</Td>
                   <Td numeric>{x.qtd}</Td>
                   <Td numeric>
                     {x.margem}
@@ -722,25 +726,32 @@ function ItensMix({ itens, opcoes, comparativo, onQtd, onMargem, onPreco, onConc
         {itens.map(item => {
           const x = celula(item)
           return (
-            <li key={item.codprod} className={cn('flex flex-col gap-2 px-4 py-3', x.faixa === 'Baixa' && 'bg-destructive-bg')}>
-              <div className="flex items-start gap-2">
+            <li key={item.codprod} className={cn('flex flex-col gap-3 px-4 py-3', x.faixa === 'Baixa' && 'bg-destructive-bg')}>
+              <div className="flex items-start gap-3">
                 <Foto url={item.foto} nome={item.nome} />
                 <span className="min-w-0 flex-1">
                   <RowTitle>{item.nome}</RowTitle>
-                  <RowMeta><Code>{item.codprod}</Code> · <Status tone={TOM_FAIXA[x.faixa]}>{x.faixa}</Status></RowMeta>
+                  <RowMeta><Code>{item.codprod}</Code></RowMeta>
                   {x.etiqueta}
                 </span>
+                <span className="shrink-0 pt-0.5 text-[13px]"><Status tone={TOM_FAIXA[x.faixa]}>{x.faixa}</Status></span>
                 {x.remover}
               </div>
-              <dl className="grid grid-cols-2 gap-2 text-[13px]">
-                <Par rotulo="Custo">{x.custo}</Par>
+              <div className="flex items-baseline gap-2 text-[13px]">
+                <span className="text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">Custo</span>
+                {x.custo(true)}
+              </div>
+              {/* Três campos lado a lado, largura toda e altura de toque. */}
+              <dl className="grid grid-cols-3 gap-2 text-[13px] [&_input]:h-10 [&_input]:w-full">
                 <Par rotulo="Qtd">{x.qtd}</Par>
                 <Par rotulo="Margem %">{x.margem}</Par>
                 <Par rotulo="Preço">{x.preco}</Par>
-                <Par rotulo="CMV · Mark up">{pct(x.c.cmv)} · {pct(x.c.markup)}</Par>
-                <Par rotulo="Subtotal"><span className="font-semibold">{moeda(x.c.subtotal)}</span></Par>
                 {comparativo && <><Par rotulo="Preço Conc.">{x.conc}</Par><Par rotulo="CMV Conc.">{x.cmvConc}</Par></>}
               </dl>
+              <p className="flex items-baseline justify-between gap-2 border-t border-rule-row pt-2 text-[13px]">
+                <span className="text-ink-secondary">CMV {pct(x.c.cmv)} · Mark up {pct(x.c.markup)}</span>
+                <span className="font-semibold whitespace-nowrap text-ink">{moeda(x.c.subtotal)}</span>
+              </p>
             </li>
           )
         })}
