@@ -59,7 +59,7 @@ no merge — nota na pasta compartilhada). `META_SEMANAL_VISITAS` é declarada n
 |---|---|---|---|
 | `ehCoordenador(pessoa)` | predicado: cadastro ativo em `COORDENADORES` | perfil da meta (o mesmo do `metaDe` da 003) | — |
 | `metaSemanal(pessoa, segunda)` | inteiro: `VALOR` da linha do perfil com a maior `VIGENCIA_INICIO <= segunda` | RN-005, RF-004 | — (a 003 passa a usar este) |
-| `PESSOAS_META` | `pessoasEscopo(ESCOPO_SQL, { comCobertura: false })` | as pessoas da meta e do faturamento: as do escopo, sem o titular coberto (RN-005 "a meta da pessoa") | — |
+| `pessoasMeta()` | `pessoasEscopo(ESCOPO_SQL, { comCobertura: false })` | as pessoas da meta e do faturamento: as do escopo, sem o titular coberto (RN-005 "a meta da pessoa") | — |
 | `vendaNoEscopo(s)` | predicado: a linha conta para alguma pessoa do escopo (`vendaDoVendedor` da 002 pela data da venda) e casa o recorte de filial/departamento/seção do filtro | RNT-007/008, RN-006 | **007**: se o Analytics publicar outro fragmento de realizado, a 005 passa a usá-lo (mesmo número, C-004 da 000) |
 | `metaMensal` | `SUM(META_VALOR)` de `METAS_BU_VENDEDOR` das pessoas do escopo no mês, recortado por filial/departamento; sem linha = `NULL` | RNT-009, RN-006, C-007 | **007**: fragmento de meta do vendedor do planejamento (D2), se a 007 criar um |
 | `alertaNoEscopo(a)` | predicado: `ID_VENDEDOR` é dono (não cobertura) de uma linha de `escopoAlvo` com a mesma filial, departamento (quando o alerta tem) e seção (quando os dois têm) | RN-010 + regra de escopo da 000 | **008**: fragmento de visibilidade de alerta da spec 008 |
@@ -117,7 +117,7 @@ dela). Três linhas em arquivos da 003:
 | Tela / rota | Responsabilidade | Novos |
 |---|---|---|
 | `/` | aviso de usuário sem configuração (RN-017 da 001), saudação, frase de compromissos com a janela, filtro de escopo, cards Meta semanal e Meta mensal, Vendas líquidas diárias, Alertas não lidos, Últimas Atividades, Resumo da Semana; cada bloco com o próprio `useBloco` (C-011) | `pages/DashboardPage.tsx` (`.rota = '/'`) e blocos em `pages/dashboard/*.tsx` |
-| Meta semanal (DIRETORIA/ADMIN) | botão `Configurar` no card: dois campos (vendedor, coordenador), aviso "vale a partir de dd/mm (próxima segunda)", `Salvar` → linhas afetadas (RNT-013) | `pages/dashboard/ConfigurarMeta.tsx` — **local a confirmar com o usuário** |
+| `/configuracoes`, seção `Meta semanal de visitas` (só DIRETORIA/ADMIN; usuário, 2026-11-03) | valores vigentes e o já marcado para a semana seguinte; dois campos (vendedor, coordenador), aviso "vale a partir de dd/mm (próxima segunda)", `Salvar` → linhas afetadas (RNT-013) | `pages/dashboard/MetaVisitasConfig.tsx`; `ConfiguracoesPage.tsx` (001) ganha uma linha que monta a seção |
 | links | `Abrir agenda completa`/`Abrir agenda do dia` → `/agenda?modo=DIA&data=<hoje>`; `Ver agenda completa` → `/agenda`; `Ver todos` → `/alertas`; alerta → `/alertas?alertaId=<id>` (a 008 lê o parâmetro); `Ver histórico completo` → `/tarefas` | — |
 
 Regra pura em `novo/frontend/src/lib/dashboard.ts` (o que os testes importam):
@@ -150,7 +150,7 @@ Regra pura em `novo/frontend/src/lib/dashboard.ts` (o que os testes importam):
 - `simulator/smoke/005-dashboard.mjs`: banco descartável; cada teste monta os
   dados do cenário (datas da spec) e fixa o relógio quando a regra usa o do
   servidor (padrão do smoke da 003).
-- `CHECK_INPUT`: + `inicio`, `fim`, `perfil`, `valor` (edição pontual).
+- `CHECK_INPUT`: não muda (parâmetro ausente vira texto vazio e as SFs de leitura rodam sem erro no `sim:check`).
 
 ## Testes
 
@@ -167,7 +167,7 @@ Backend em `simulator/smoke/005-dashboard.mjs`; tela em
 | RN-005 / RF-004 | smoke + tests | diretoria salva 14 para vendedor com relógio em 12/11 → vigência 16/11; `s360AgendaResumo` semana 09/11 → 16 por vendedor, semana 16/11 → 14; vendedor salvando → 0 linhas; filtro vazio → `META` 0 e `Nenhuma pessoa no filtro atual.` |
 | C-005 / RN-006 / RN-007 | smoke + tests | SF: bruto 70.000, devolução 5.000, meta distribuída 100.000 → `LIQUIDO` 65.000, `META` 100.000; tela com hoje 20/11/2026 → 15 de 21 dias úteis, 65,0%, projeção 91.000, `No ritmo` |
 | C-006 | tests | meta 50.000, líquido 60.000 → `120,0%`, círculo 100, `Acima da meta` |
-| C-007 | smoke + tests | sem `METAS_BU_VENDEDOR` e com linha em `METAS_VENDEDOR`/`METAS` de 80.000 inseridas no teste → `META` nula; tela → `Meta não distribuída`, sem selo |
+| C-007 | smoke + tests | sem `METAS_BU_VENDEDOR` → `META` nula; tela → `Meta não distribuída`, sem selo. As tabelas legadas nem existem no simulador: nenhuma SF da 005 as cita |
 | RN-006 (recorte) | smoke | metas em F1·9 e F2·9 → filtro filial 1 · departamento 9 soma só F1·9 |
 | RN-007 (bordas) | tests | outubro consultado em novembro → projeção = realizado; sábado 21/11/2026 → 15 decorridos (20/11 conta); sábado 01/08/2026 → 0 decorridos, projeção = realizado |
 | RN-008 | tests | meta 100.000: projeção 100.000 Acima, 90.000 No ritmo, 89.999 Abaixo; realizado 85.000 com projeção 88.000 → Abaixo; a função não recebe o escopo (mesmo selo em todos) |
@@ -185,7 +185,8 @@ Backend em `simulator/smoke/005-dashboard.mjs`; tela em
 |---|---|---|---|
 | D-501 | Compromissos, Resumo da Semana, meta semanal e atividades pelas SFs da 003 e da 004 | SFs `s360Dashboard*` próprias | o número do Dashboard é o da Agenda e de Atividades por construção (RF-014 da 003, C-004 da 000); menos SQL |
 | D-502 | Meta semanal em tabela nova por perfil e vigência (segunda); a 003 troca `metaDe` pela da 005 | manter 16/8 fixo na 003 | RF-004/A2; sem a troca a Agenda e o Dashboard divergem na primeira mudança |
-| D-503 | Faturamento pela `vendaDoVendedor` da 002, uma vez por linha de venda no total do escopo (**a confirmar com o usuário**) | somar pessoa a pessoa | uma venda não vira duas no total do time |
+| D-503 | Faturamento pela `vendaDoVendedor` da 002, uma vez por linha de venda no total do escopo (usuário, 2026-11-03) | somar pessoa a pessoa | uma venda não vira duas no total do time; cada vendedor sozinho continua vendo a venda |
+| D-508 | Configuração da meta semanal em Configurações, seção só da diretoria (usuário, 2026-11-03) | botão no card do Dashboard | escolha do usuário; o componente fica nos arquivos da 005 e a tela da 001 só o monta |
 | D-504 | Meta mensal = `METAS_BU_VENDEDOR` (C3), recortada por filial/departamento | ler o planejamento direto | RNT-009/D2: o planejamento chega distribuído; a 007 pode trocar o fragmento |
 | D-505 | Contas da tela (percentual, projeção, selo, variação, relato) em `lib/dashboard.ts` | no SQL | testáveis sem banco; a SF devolve só somas |
 | D-506 | Gráfico e círculo em SVG à mão | biblioteca de gráfico | 7 barras; nenhuma dependência nova |

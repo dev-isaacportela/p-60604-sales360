@@ -14,6 +14,7 @@ import {
   SelectMenu, Stack,
 } from '@/components/page'
 import { useSessao } from '@/components/sessao-contexto'
+import { MetaVisitasConfig } from './dashboard/MetaVisitasConfig'
 
 const MODOS_AGENDA = [
   { value: 'DIA', label: 'Dia' },
@@ -141,6 +142,8 @@ export default function ConfiguracoesPage() {
             </form>
           </PanelBody>
         </Panel>
+
+        <MetaVisitasConfig />
 
         <Panel>
           <PanelHeader title="Google Agenda" hint="Disponível na spec 003." />
