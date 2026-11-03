@@ -119,6 +119,7 @@ export default async function ({ teste, chamar, linhas, banco, db, ID, assert })
     assert.equal(p1.filter((x) => x.PARTE === 'LINHA').length, 50);
     assert.equal(p1.filter((x) => x.PARTE === 'TOP').length, 4);
     assert.equal(Number(p1.find((x) => x.PARTE === 'TOP' && Number(x.ORDEM) === 1).VALOR), 2000);
+    assert.equal(Number(p1.find((x) => x.PARTE === 'LINHA').VALOR), 2000);
     assert.equal((await bloco('Devolucoes', AMELIA, { pagina: '3' })).filter((x) => x.PARTE === 'LINHA').length, 20);
     exec("DELETE FROM IMP_DEVOLUCOES_TOTVS WHERE NOTA_DEVOLUCAO LIKE 'DX%'");
   });

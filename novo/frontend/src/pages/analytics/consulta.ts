@@ -35,8 +35,12 @@ export interface Blocos {
 
 export type FiltrarPor = (grafico: 'CLIENTE' | 'PRODUTO', item: Opcao) => void
 
-/** Barras de um grupo da s360AnalyticsProdutos. */
+/** RF-005: produto sem descrição não aparece como "null". */
+export const nomeProduto = (nome: unknown, cod: unknown) =>
+  nome ? String(nome) : cod != null && cod !== '' ? `Produto ${cod}` : 'Produto sem descrição'
+
+/** Barras de um grupo da s360AnalyticsProdutos; chave vazia = produto sem código. */
 export function barrasDe(rows: Linha[] | null, grupo: string, campo: 'VALOR' | 'QT', limite: number) {
   return (rows ?? []).filter(r => r.GRUPO === grupo).slice(0, limite)
-    .map(r => ({ chave: String(r.CHAVE), rotulo: String(r.NOME ?? r.CHAVE), valor: Number(r[campo] || 0) }))
+    .map(r => ({ chave: r.CHAVE == null ? '' : String(r.CHAVE), rotulo: grupo === 'VALOR' || grupo === 'QTD' ? nomeProduto(r.NOME, r.CHAVE) : String(r.NOME ?? r.CHAVE ?? 'Sem descrição'), valor: Number(r[campo] || 0) }))
 }

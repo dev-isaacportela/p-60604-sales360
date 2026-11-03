@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  periodo, validarIntervalo, periodoAnterior, diasUteis, projecao, pontosEvolucao, cardsResumo, fmtPct,
+  periodo, validarIntervalo, periodoAnterior, diasUteis, projecao, pontosEvolucao, cardsResumo, fmtPct, metaBatidaEm,
   ordenar, listaParam, filtroDoClique, abas, visitas, MSG_ORDEM, MSG_24_MESES,
 } from '../src/lib/analytics.ts';
 
@@ -48,6 +48,14 @@ test('RN-006: evolução por dia com meta diária; por mês acima de 31 dias', (
   const meses = pontosEvolucao([{ TIPO: 'L', CHAVE: '2026-09', VALOR: 10 }], '2026-05-01', '2026-10-31');
   assert.deepEqual(meses.map(p => p.rotulo), ['mai/26', 'jun/26', 'jul/26', 'ago/26', 'set/26', 'out/26']);
   assert.equal(meses[4].valor, 10);
+});
+
+test('RN-004: meta batida no primeiro ponto em que o acumulado alcança a meta', () => {
+  const p = (rotulo, valor) => ({ chave: rotulo, rotulo, valor, meta: 0 });
+  const pontos = [p('13/10', 121750), p('14/10', 5800), p('15/10', 5500)];
+  assert.equal(metaBatidaEm(pontos, 125000), '14/10');
+  assert.equal(metaBatidaEm(pontos, 200000), null);
+  assert.equal(metaBatidaEm(pontos, 0), null, 'sem meta');
 });
 
 test('RF-022: ordena pelo número', () => {

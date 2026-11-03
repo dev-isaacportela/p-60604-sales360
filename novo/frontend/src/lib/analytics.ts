@@ -112,6 +112,13 @@ export function pontosEvolucao(linhas: Record<string, unknown>[], de: string, at
   return pontos;
 }
 
+/** RN-004: rótulo do primeiro ponto em que o líquido acumulado alcança a meta; null se não alcançou. */
+export function metaBatidaEm(pontos: Ponto[], meta: number): string | null {
+  if (meta <= 0) return null;
+  let acumulado = 0;
+  return pontos.find(p => (acumulado += p.valor) >= meta)?.rotulo ?? null;
+}
+
 /** "80,0%" a partir de uma fração. */
 export const fmtPct = (fracao: number) =>
   `${(Math.round(fracao * 1000) / 10).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;

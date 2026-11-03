@@ -1,6 +1,7 @@
 // Gráficos do Analytics (spec 007, D-707): barras horizontais em CSS e
-// evolução barras × linha em SVG, sem biblioteca. Cores da rampa de dados
-// (design.md §12): série única = data-1; meta = data-2. Texto sempre em tinta.
+// evolução em barras SVG, sem biblioteca. Ranking: série única = data-1.
+// Evolução: barra cinza, verde quando alcança a meta do ponto; a meta é uma
+// marca tracejada sobre cada barra (fim de semana sem meta fica sem marca).
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
@@ -63,7 +64,7 @@ const TOPO = 8
 const BASE = 24
 const ESQ = 56
 
-/** RF-004: líquido em barras × meta em linha, um eixo só (os dois em R$). */
+/** RF-004: líquido em barras × meta de cada ponto em marca tracejada, um eixo só (os dois em R$). */
 export function Evolucao({ pontos, formato, compacto }: { pontos: PontoEvolucao[]; formato: (v: number) => string; compacto: (v: number) => string }) {
   const [foco, setFoco] = React.useState<number | null>(null)
   const ref = React.useRef<HTMLDivElement>(null)
@@ -84,14 +85,14 @@ export function Evolucao({ pontos, formato, compacto }: { pontos: PontoEvolucao[
   const cx = (i: number) => ESQ + passo * i + passo / 2
   const grade = [0, 0.5, 1].map(f => f * max)
   const cadaRotulo = Math.ceil(pontos.length / Math.max(1, Math.floor((largura - ESQ) / 44)))
-  const linha = pontos.map((p, i) => `${i ? 'L' : 'M'}${cx(i)},${y(p.meta)}`).join(' ')
   const p = foco === null ? null : pontos[foco]
 
   return (
     <div>
       <div className="mb-2 flex items-center gap-4 text-[12px] text-ink-secondary">
-        <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-[3px] bg-data-1" aria-hidden />Faturamento líquido</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 rounded-full bg-data-2" aria-hidden />Meta</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-[3px] bg-ink-muted/50" aria-hidden />Faturamento líquido</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-[3px] bg-primary" aria-hidden />Alcançou a meta</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-3 border-t-2 border-dashed border-ink-secondary" aria-hidden />Meta</span>
       </div>
       <div ref={ref} className="relative" onMouseLeave={() => setFoco(null)}>
         <svg width={largura} height={ALTURA} role="img" aria-label="Evolução do faturamento líquido e da meta" className="block">
@@ -106,20 +107,23 @@ export function Evolucao({ pontos, formato, compacto }: { pontos: PontoEvolucao[
               {pt.valor > 0 ? (
                 <path
                   d={`M${cx(i) - barra / 2},${y(0)} V${y(pt.valor) + Math.min(4, (y(0) - y(pt.valor)) / 2)} q0,-4 4,-4 H${cx(i) + barra / 2 - 4} q4,0 4,4 V${y(0)} Z`}
-                  className={cn('fill-data-1 transition-opacity', foco !== null && foco !== i && 'opacity-50')}
+                  className={cn(
+                    'transition-opacity',
+                    pt.meta > 0 && pt.valor >= pt.meta ? 'fill-primary' : pt.meta > 0 ? 'fill-ink-muted/50' : 'fill-ink-muted/25',
+                    foco !== null && foco !== i && 'opacity-50',
+                  )}
                 />
+              ) : null}
+              {pt.meta > 0 ? (
+                <line x1={cx(i) - passo / 2 + 1} x2={cx(i) + passo / 2 - 1} y1={y(pt.meta)} y2={y(pt.meta)} className="stroke-ink-secondary" strokeWidth={1.5} strokeDasharray="3 2" />
               ) : null}
               {i % cadaRotulo === 0 ? (
                 <text x={cx(i)} y={ALTURA - 6} textAnchor="middle" className="fill-ink-muted text-[10px]">{pt.rotulo}</text>
               ) : null}
             </g>
           ))}
-          <path d={linha} fill="none" className="stroke-data-2" strokeWidth={2} strokeLinejoin="round" />
           {p && foco !== null ? (
-            <>
-              <line x1={cx(foco)} x2={cx(foco)} y1={TOPO} y2={y(0)} className="stroke-ink-muted" strokeWidth={1} strokeDasharray="3 3" />
-              <circle cx={cx(foco)} cy={y(p.meta)} r={4} className="fill-data-2 stroke-card" strokeWidth={2} />
-            </>
+            <line x1={cx(foco)} x2={cx(foco)} y1={TOPO} y2={y(0)} className="stroke-ink-muted" strokeWidth={1} strokeDasharray="3 3" />
           ) : null}
           {pontos.map((pt, i) => (
             <rect key={pt.chave} x={ESQ + passo * i} y={TOPO} width={passo} height={alto} fill="transparent" onMouseEnter={() => setFoco(i)} />
@@ -132,7 +136,7 @@ export function Evolucao({ pontos, formato, compacto }: { pontos: PontoEvolucao[
           >
             <p className="font-semibold text-ink">{p.rotulo}</p>
             <p className="text-ink-secondary">Líquido: <span className="text-ink">{formato(p.valor)}</span></p>
-            <p className="text-ink-secondary">Meta: <span className="text-ink">{formato(p.meta)}</span></p>
+            <p className="text-ink-secondary">Meta: <span className="text-ink">{p.meta > 0 ? formato(p.meta) : 'sem meta'}</span></p>
           </div>
         ) : null}
       </div>
