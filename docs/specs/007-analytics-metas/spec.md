@@ -249,7 +249,7 @@ Origem `A-nn` aponta para o anexo.
 ## Fora de escopo
 
 - [ ] Matriz do acompanhamento semanal e a visão `Semanal` do Comparativo (spec 006).
-- [ ] Meta do Painel de Gestão (spec 010).
+- [ ] Meta do Painel de Gestão: tela cancelada em 2026-11-03 (D4).
 - [ ] Lançar meta da BU: a meta vem do planejamento estratégico, que é outro sistema (RNT-009). A tela Gestão de Metas foi cancelada em 2026-11-03.
 - [ ] Cards de meta do Dashboard (spec 005), que usam as mesmas regras RN-003/004.
 - [ ] Planejamento estratégico e sua rotina semanal de metas: só leitura aqui.

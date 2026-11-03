@@ -66,7 +66,7 @@ Usuário sem papel definido é tratado como **Vendedor** (RNT-001).
 | 007 | Analytics, comparativo e redistribuição de metas | vendedor, coordenador, diretoria |
 | 008 | Alertas inteligentes, direcionamento semanal e prospecção | vendedor, coordenador |
 | 009 | Mix Builder (propostas com custo real) | vendedor |
-| 010 | Gestão, coordenação e diretoria (Painel de Gestão, governança de cadastros, papéis, coordenadores, carteira, férias, acesso) | coordenador, diretoria, gestão |
+| 010 | Gestão, coordenação e diretoria (governança RCA e BUs, papéis, coordenadores, carteira, férias, acesso; Painel de Gestão e Gestão Cadastros cancelados em 2026-11-03) | coordenador, diretoria, gestão |
 | 011 | ~~Solicitações de compras~~ — **cancelada em 2026-10-30** | — |
 | 012 | ~~Suporte, ajuda e notas de versão~~ — **cancelada em 2026-10-30** | — |
 
@@ -89,7 +89,7 @@ Usuário sem papel definido é tratado como **Vendedor** (RNT-001).
 
 **C-004 — Mesmo número em todas as telas**
 - **Dado que** Ana faturou R$ 10.000 brutos no mês e teve R$ 800 de devolução
-- **Quando** se olha o faturamento líquido de Ana no Dashboard, no Analytics, no acompanhamento semanal, no acompanhamento do coordenador e no Painel de Gestão, para o mesmo mês e escopo
+- **Quando** se olha o faturamento líquido de Ana no Dashboard, no Analytics, no acompanhamento semanal e no acompanhamento do coordenador, para o mesmo mês e escopo
 - **Então** todas mostram R$ 9.200; uma tela que mostre bruto escreve "bruto" no rótulo
 
 **C-005 — Substituto de férias herda a carteira do titular**
@@ -209,7 +209,7 @@ Verificação manual:
 | Painel de Gestão e Faturamento mostram bruto sem dizer; Dashboard, Analytics e Diretoria mostram líquido | Líquido é o padrão; bruto só com rótulo (RNT-008) | manual de suporte, "Por que os números diferem entre os painéis" |
 | Substituto de férias não herda a carteira no acompanhamento semanal | Herda em todas as áreas (RNT-007/010) | pendências, item 12 |
 | Dois cadastros de férias (Configurações do titular e Férias de Vendedores) com efeitos diferentes; férias sobrepostas aceitas | Cadastro único, sem sobreposição (RNT-010) | manual de suporte, seção 13 |
-| Duas telas técnicas liberadas pelo e-mail de uma pessoa | Liberação por papel ADMIN (TI) (RNT-002) | pendências, item 5 |
+| Duas telas técnicas liberadas pelo e-mail de uma pessoa | As duas telas foram canceladas em 2026-11-03 | pendências, item 5 |
 | Salvar papel de quem é GESTOR/ADMIN apaga esse papel | Papéis acumulam (RNT-001) | manual de suporte, seção 13 |
 | Diretoria não vê no menu telas que tem permissão de abrir | Menu = permissões (spec 001) | manual de suporte, seção 1 |
 | Lista "Vendedor específico" ignora o coordenador escolhido | Lista sempre recortada pelo coordenador (RNT-003) | manual de suporte, seção 1 |

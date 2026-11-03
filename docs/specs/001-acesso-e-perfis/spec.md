@@ -70,8 +70,8 @@ Configurações as preferências que de fato mudam o sistema.
 
 **C-008 — Tela restrita aberta pelo endereço**
 - **Dado que** Ana é vendedora
-- **Quando** digita o endereço de `Painel de Validação`
-- **Então** vê `Acesso restrito` e `Esta tela está disponível apenas para TI.`, e nenhum dado é carregado (conforme RNT-002)
+- **Quando** digita o endereço de `Papéis de Usuários`
+- **Então** vê `Acesso restrito` e `Esta tela está disponível apenas para Diretoria e TI.`, e nenhum dado é carregado (conforme RNT-002)
 
 **C-009 — Contador de atividades atualiza na hora**
 - **Dado que** o menu mostra `Atividades` com contador 3
@@ -83,8 +83,8 @@ Configurações as preferências que de fato mudam o sistema.
 - **Quando** abre Atividades pelo menu
 - **Então** a tela abre no Kanban; ele pode trocar para Lista na tela sem mudar a preferência salva
 
-**C-011 — Página inicial sem permissão cai no Dashboard**
-- **Dado que** Carla tinha `Painel de Gestão` como página inicial e perdeu o papel GESTOR
+**C-011 — Página inicial cancelada cai no Dashboard**
+- **Dado que** Carla tinha `Painel de Gestão` como página inicial, e essa tela foi cancelada em 2026-11-03
 - **Quando** faz login
 - **Então** entra no Dashboard, e em Configurações o campo `Página inicial` mostra `Dashboard`
 
@@ -157,7 +157,7 @@ Valem RNFT-002, RNFT-003, RNFT-004, RNFT-006 e RNFT-007. Específicos:
   - **Principal (todos):** Dashboard, Agenda, Clientes, Atividades (contador), Mix Builder, Analytics, Comparativo, Alertas (contador). `Direcionamento Semanal` para coordenador ativo, DIRETORIA e ADMIN.
   - **Coordenador (coordenador com cadastro ativo):** Gestão de Carteira, Titulares de Clientes, Férias de Vendedores.
   - **Diretoria (DIRETORIA, ADMIN):** Papéis de Usuários, Gestão Coordenadores e Titulares de Clientes (só se o item não estiver na seção Coordenador).
-  - **Gestão:** Executivas de Venda (coordenador ativo, DIRETORIA, ADMIN); Acomp. Semanal, Painel de Gestão, Governança RCA, BUs e Vendedores, Escopo Usuários, Gestão Cadastros (GESTOR, ADMIN); Acomp. Semanal Admin, Painel de Validação (TI).
+  - **Gestão:** Executivas de Venda (coordenador ativo, DIRETORIA, ADMIN); Governança RCA, BUs e Vendedores, Escopo Usuários (GESTOR, ADMIN). Não há tela só da TI.
   - **Final:** Configurações. **Rodapé:** Sair.
   Ajuda, Suporte, Painel do desenvolvedor, Notas de versão e Solicitações de compras foram canceladas e não aparecem no menu, no rodapé nem como tela restrita; a janela de novidades da versão não abre ao entrar. Seção sem itens não aparece. Papéis acumulam (RNT-001): quem tem dois papéis vê as duas seções.
 - **RN-006 — Coordenador.** É coordenador quem tem cadastro de coordenador **ativo** ligado ao seu login (spec 010); o papel COORDENADOR sem esse cadastro não mostra a seção Coordenador do menu (RN-005), e quem abrir uma dessas telas pelo endereço vê a mensagem de acesso restrito.
@@ -165,7 +165,7 @@ Valem RNFT-002, RNFT-003, RNFT-004, RNFT-006 e RNFT-007. Específicos:
 - **RN-008 — Contadores.** `Atividades` = atividades do usuário com status A Fazer ou Em andamento (spec 004). `Alertas` = alertas não lidos do usuário (spec 008). Contador zero não aparece.
 - **RN-009 — Tema.** Ao abrir, vale, nesta ordem: o tema informado pelo painel do workspace na abertura da aba; a escolha salva pela pessoa no botão do sistema; a preferência do sistema operacional. Aviso de tema vindo do painel é aplicado e **não** é salvo. Trocar no botão do sistema aplica, salva e avisa o painel. O ícone do botão reflete o tema que está na tela, não o salvo. Enquanto ninguém escolheu e o painel não avisou, o sistema acompanha a troca de tema do sistema operacional.
 - **RN-010 — Nome de exibição.** Texto de até 120 caracteres; vazio volta ao nome da conta. Usado na saudação do Dashboard, nas iniciais do avatar e nas listas de responsáveis.
-- **RN-011 — Página inicial.** Opções: Dashboard, Agenda, Clientes, Atividades, Mix Builder, Analytics e, para quem tem permissão, Painel de Gestão. Padrão: Dashboard. Telas canceladas (Ajuda, Suporte, Solicitações) não são opção; quem tem uma delas gravada como página inicial entra no Dashboard (RN-004). Modo da Agenda padrão: Semana. Exibição de Atividades padrão: Lista.
+- **RN-011 — Página inicial.** Opções: Dashboard, Agenda, Clientes, Atividades, Mix Builder e Analytics, as mesmas para todos. Padrão: Dashboard. Telas canceladas (Ajuda, Suporte, Solicitações, Painel de Gestão) não são opção; quem tem uma delas gravada como página inicial entra no Dashboard (RN-004). Modo da Agenda padrão: Semana. Exibição de Atividades padrão: Lista.
 - **RN-012 — Configurações de férias só leitura.** O selo mostra `Status: Férias` quando há férias ATIVAS do usuário como titular, e `Status: Ativo` nos outros casos. `Substituto em Férias` mostra o nome do substituto das férias ativas ou da próxima férias FUTURA; sem nenhuma, `Não definido`. Havendo férias futuras, aparece "Férias programadas de dd/mm/aaaa a dd/mm/aaaa". Se o usuário é substituto de alguém em férias ativas, aparece "Você cobre <nome> até dd/mm/aaaa". Status e substituto não são editáveis aqui (RNT-010).
 - **RN-013 — Cards de Configurações.** `Nome` (nome de exibição), `Papéis` (lista real, ex.: "Coordenador, Gestor"), `Substituto em Férias` e o identificador do usuário (`ID do usuário: X`, para o suporte).
 - **RN-014 — Salvar Configurações.** Grava nome e preferências numa única ação: `Configurações atualizadas com sucesso.` ou `Falha ao salvar configurações.` sem gravação parcial (RNT-013).
@@ -185,13 +185,13 @@ Valem RNFT-002, RNFT-003, RNFT-004, RNFT-006 e RNFT-007. Específicos:
 | C-005 | Nova senha "abc12345" e confirmação "abc12346" → `As senhas não conferem`; sucesso → login com `Senha redefinida. Entre com a nova senha.` | regra de tela |
 | C-006 / RN-016 | Usuário bloqueado consulta a carteira → zero linhas e resposta "acesso bloqueado"; desbloqueado → 40 linhas | regra de negócio |
 | C-007 / RN-005 | Papéis {DIRETORIA, COORDENADOR ativo} → seções Principal, Coordenador (4 itens), Diretoria (5 itens, sem Titulares), Final; papéis {VENDEDOR} → só Principal (8 itens) e Final | regra de tela |
-| RN-005 (permissões) | Consulta de permissões devolve para GESTOR: Gestão = 6 itens; para TI: 2 itens técnicos (Acomp. Semanal Admin, Painel de Validação); para nenhum papel aparecem Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; seção Final = só Configurações e rodapé = só Sair | regra de negócio |
-| C-008 / RN-015 | Vendedor consulta dados do Painel de Validação → "sem permissão" e zero linhas; tela mostra `Esta tela está disponível apenas para TI.` | regra de negócio |
+| RN-005 (permissões) | Consulta de permissões devolve para GESTOR: Gestão = 3 itens; para TI: Gestão = 4 itens, nenhum só da TI; para nenhum papel aparecem Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; seção Final = só Configurações e rodapé = só Sair | regra de negócio |
+| C-008 / RN-015 | Vendedora abre Papéis de Usuários → tela mostra `Esta tela está disponível apenas para Diretoria e TI.` e não consulta nada; a recusa no servidor é testada na spec 010 | regra de negócio |
 | RN-006 | Papel COORDENADOR sem cadastro ativo → permissão de coordenador = não; com cadastro ativo → sim | regra de negócio |
 | C-009 / RN-008 | 2 A Fazer + 1 Em andamento + 4 Concluídas → contador 3; após concluir uma → 2 | regra de negócio |
 | RN-007 | Contadores relidos após 5 min e imediatamente após a ação de concluir atividade | regra de tela |
 | C-010 | Preferência Kanban → Atividades abre em Kanban; trocar para Lista na tela não altera a preferência gravada | regra de tela |
-| C-011 / RN-011 | Página inicial gravada = Painel de Gestão, usuário sem GESTOR → destino Dashboard; lista de opções sem Painel de Gestão | regra de negócio |
+| C-011 / RN-011 | Página inicial gravada = Painel de Gestão (cancelada) → destino Dashboard e gravação recusada, para qualquer papel; lista de opções sem Painel de Gestão | regra de negócio |
 | RN-011 (telas canceladas) | Página inicial gravada = Ajuda ou Solicitações → destino Dashboard; nenhuma tela cancelada na lista de opções | regra de negócio |
 | C-012 / RN-012 | Férias de Ana 01/11–15/11 com Bruno: em 30/10 → status Ativo, substituto "Bruno Lima", aviso de férias programadas; em 05/11 → status Férias; em 16/11 → status Ativo, substituto "Não definido" | regra de negócio |
 | RN-012 (substituto) | Em 05/11, Configurações de Bruno mostra "Você cobre Ana Souza até 15/11/2026" | regra de negócio |
@@ -217,6 +217,7 @@ Verificação manual:
 - [ ] Busca global e sino na barra superior: saem da tela (decisão de 2026-10-30, spec 000). Busca de cliente fica em Clientes e alertas no menu `Alertas`.
 - [ ] Janela de novidades da versão ao entrar, Ajuda, Suporte, Painel do desenvolvedor e Notas de versão: cancelados em 2026-10-30 (spec 012). Solicitações de compras: cancelada em 2026-10-30 (spec 011).
 - [ ] Agenda dos Vendedores, Análise Diretoria, Faturamento e Gestão de Metas: canceladas em 2026-11-03 (specs 003 e 010). Endereço antigo dessas telas, ou página inicial gravada com uma delas, leva ao Dashboard (RN-011).
+- [ ] Acomp. Semanal Admin, Acomp. Semanal, Painel de Validação (spec 006), Painel de Gestão e Gestão Cadastros (spec 010): canceladas em 2026-11-03. Endereço antigo dessas telas leva ao Dashboard, como as demais canceladas.
 - [ ] Autocadastro de conta ("Criar conta" com código de verificação): não existe; contas com senha são criadas pela gestão.
 - [ ] Filtro de escopo do topo das telas: regra RNT-003, implementado em cada módulo.
 - [ ] Login com outros provedores (Apple, SSO corporativo) e autenticação em dois fatores.
@@ -247,10 +248,10 @@ Verificação manual:
 | `Status do Funcionário` e `Substituto` editáveis em Configurações; o substituto marcado ali vê a carteira do titular para sempre, sem período | Só leitura, a partir do cadastro único de férias (RN-012, RNT-010) | `ConfiguracoesUsuarioPage.tsx:540-556`; `backend/migrations/update-sf-minhacarteiraclientes-1792674223.sql:24-28` |
 | Card `Substituto em Férias` mostra `Usuário #ID` | Mostra o nome (RN-012) | `ConfiguracoesUsuarioPage.tsx:518` |
 | Cards `Tipo de Acesso` = "Usuário" e `Perfil` = "Usuário autenticado", fixos | Card `Papéis` com os papéis reais (RN-013) | `ConfiguracoesUsuarioPage.tsx:444-446` |
-| `Página inicial` oferece `Painel de Gestão` a todos | Só telas que o usuário pode abrir (RN-011) | `ConfiguracoesUsuarioPage.tsx:74-82` |
+| `Página inicial` oferece `Painel de Gestão` a todos | Painel de Gestão cancelado; as opções são as mesmas para todos (RN-011) | `ConfiguracoesUsuarioPage.tsx:74-82` |
 | Salvar em duas partes; a segunda falha e a primeira fica gravada | Uma ação, tudo ou nada (RN-014) | manual seção 2; `ConfiguracoesUsuarioPage.tsx:407-435` |
 | Coordenador com papel DIRETORIA não vê a seção Coordenador; DIRETORIA não vê Análise, Faturamento e Metas | Menu = permissões, papéis acumulam (RN-005) | `Layout.tsx:118-134`; manual seção 1 |
-| Acomp. Semanal Admin e Painel de Validação liberados pelo e-mail de uma pessoa | Liberados pelo papel ADMIN (TI) (RN-005) | `Layout.tsx:76-79`; pendências item 5 |
+| Acomp. Semanal Admin e Painel de Validação liberados pelo e-mail de uma pessoa | As duas telas foram canceladas em 2026-11-03 (RN-005) | `Layout.tsx:76-79`; pendências item 5 |
 | Permissão de coordenador aceita cargo com grafia parecida ("CORDENADOR") ou o e-mail da TI | Coordenador = cadastro ativo (RN-006) | `backend/add-painel-coordenador-dashboard.mjs:249-252` |
 | Bloqueio de executiva só é checado pelo menu a cada 5 minutos; as telas continuam devolvendo dados | Bloqueio conferido no servidor em toda ação (RN-016) | `Layout.tsx:52-58` |
 | Erro do Google/Microsoft/e-mail mostra o texto técnico do provedor quando existe | Mensagens fixas (RN-002) | `LoginPage.tsx:64,90,113` |

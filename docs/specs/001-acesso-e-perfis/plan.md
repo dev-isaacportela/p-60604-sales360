@@ -99,8 +99,8 @@ Regras de contrato:
   configurações.` (RNT-013).
 - **Validação no servidor:** `modoAgenda IN ('DIA','SEMANA','MES')`,
   `exibicaoAtividades IN ('LISTA','KANBAN')`, `paginaInicial IN ('/',
-  '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics',
-  '/painel-gestao')`, e `/painel-gestao` só com papel GESTOR ou ADMIN;
+  '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics')` (Painel de
+  Gestão saiu da lista: tela cancelada em 2026-11-03);
   `CHAR_LENGTH(TRIM('{{nome}}')) <= 120`. Nome vazio grava `NULL` e a sessão
   devolve `COALESCE(NULLIF(TRIM(U.NOME), ''), U.DESCR)`.
 - **Datas vêm da tela (D-007):** `hoje` e `agora` são calculados em
@@ -202,7 +202,7 @@ Regra pura em `novo/frontend/src/lib/` (é o que os testes importam):
   |---|---|---|
   | Ana Souza | C-001, C-009, C-010, C-012 | VENDEDOR; RCA 101; escopo F1·Nutrição; preferências `/agenda`, `SEMANA`, `LISTA`; 2 tarefas PENDENTE, 1 EM_ANDAMENTO, 4 CONCLUIDA; 4 alertas não lidos; férias 01/11–15/11/2026, substituto Bruno |
   | Bruno Lima | C-010, RN-012 | VENDEDOR; RCA 102; escopo; preferência `KANBAN` |
-  | Carla Mendes | C-011 | VENDEDOR; preferência `/painel-gestao` sem GESTOR |
+  | Carla Mendes | C-011 | VENDEDOR; preferência `/painel-gestao` (tela cancelada) |
   | Diego Ramos | C-004, C-013 | VENDEDOR; RCA 103; sem linha de preferências |
   | Eva Castro | C-005, C-014 | VENDEDOR; RCA 104 |
   | Fábio Nunes | C-006 | VENDEDOR; RCA 105; `USUARIO_BLOQUEIO.BLOQUEADO = 1` |
@@ -237,13 +237,13 @@ Backend em `novo/backend/simulator/smoke.mjs`; tela em
 | C-005 | `tests/login.test.mjs` | `validarNovaSenha('abc12345','abc12346')` → `As senhas não conferem`; iguais → ok |
 | C-006 / RN-016 | `smoke.mjs` | como Fábio: `s360SessaoObter` → `BLOQUEADO = 1`; `s360ContadoresObter` → 0 linhas; `s360ConfiguracoesSalvar` → 0 afetadas; após desbloquear no teste → contadores voltam |
 | C-007 / RN-005 | `tests/menu.test.mjs` | Gil {DIRETORIA, coordenador ativo} → Principal (com Direcionamento Semanal), Coordenador (3), Diretoria (2, sem Titulares), Gestão (Executivas de Venda), Final; Ana {VENDEDOR} → Principal (8) e Final |
-| RN-005 (permissões) | `smoke.mjs` + `tests/menu.test.mjs` | backend: Paulo → `PAPEIS` contém GESTOR (de `USUARIO_CARGO`) e COORDENADOR (de `USUARIO_PAPEL`); Tânia → ADMIN. Tela: GESTOR → Gestão com 6 itens; ADMIN → inclui os 2 técnicos; nenhum papel gera Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; Final = Configurações; rodapé = Sair |
-| C-008 / RN-015 | `tests/menu.test.mjs` | `podeAbrir('/painel-validacao', ana)` = false; `perfisPermitidos('/painel-validacao')` = `TI`. A recusa no servidor é testada no smoke da spec 006, na SF da tela |
+| RN-005 (permissões) | `smoke.mjs` + `tests/menu.test.mjs` | backend: Paulo → `PAPEIS` contém GESTOR (de `USUARIO_CARGO`) e COORDENADOR (de `USUARIO_PAPEL`); Tânia → ADMIN. Tela: GESTOR → Gestão com 3 itens; ADMIN → Gestão com 4, sem tela só da TI; nenhum papel gera Ajuda, Suporte, Painel Dev, Notas de Versão ou Solicitações; Final = Configurações; rodapé = Sair |
+| C-008 / RN-015 | `tests/menu.test.mjs` | `podeAbrir('/gestao-cargos-usuarios', ana)` = false; `perfisPermitidos('/gestao-cargos-usuarios')` = `Diretoria e TI`. A recusa no servidor é testada no smoke da spec 010, na SF da tela |
 | RN-006 | `smoke.mjs` | Rita → `COORDENADOR_ATIVO = 0`; Gil → `1` |
 | C-009 / RN-008 | `smoke.mjs` | Ana → `ATIVIDADES_PENDENTES = 3`; após o teste concluir uma tarefa (UPDATE direto no banco descartável) → `2`; `ALERTAS_NAO_LIDOS = 4` |
 | RN-007 | `tests/contadores.test.mjs` | `precisaRecarregar(t0, t0 + 299 s)` = false; `+ 300 s` = true |
 | C-010 | `tests/sessao.test.mjs` | preferência `KANBAN` → modo inicial de Atividades `KANBAN`; trocar na tela não altera o objeto de sessão |
-| C-011 / RN-011 | `smoke.mjs` + `tests/menu.test.mjs` | backend: Carla `s360ConfiguracoesSalvar(paginaInicial:'/painel-gestao')` → 0 afetadas. Tela: `destinoAposLogin(null, carla)` = `/`; `opcoesPaginaInicial(carla)` sem Painel de Gestão |
+| C-011 / RN-011 | `smoke.mjs` + `tests/menu.test.mjs` | backend: Carla, Paulo (GESTOR) e Tânia (ADMIN) `s360ConfiguracoesSalvar(paginaInicial:'/painel-gestao')` → 0 afetadas. Tela: `destinoAposLogin(null, carla)` = `/`; `opcoesPaginaInicial(carla)` sem Painel de Gestão |
 | RN-011 (telas canceladas) | `tests/menu.test.mjs` | página inicial gravada `/ajuda` ou `/solicitacoes-compras` → destino `/`; nenhuma tela cancelada nas opções |
 | C-012 / RN-012 | `smoke.mjs` + `tests/perfil.test.mjs` | backend: Ana em `2026-10-30` → 1 linha `TITULAR`/`FUTURA` 01/11–15/11 com Bruno Lima; em `2026-11-05` → `ATIVA`; em `2026-11-16` → 0 linhas. Tela: `textoFerias` → selo `Ativo`/`Férias`/`Ativo`, substituto `Bruno Lima`/`Não definido`, aviso "Férias programadas de 01/11/2026 a 15/11/2026" |
 | RN-012 (substituto) | `smoke.mjs` + `tests/perfil.test.mjs` | Bruno em `2026-11-05` → `SUBSTITUTO`/`ATIVA` com Ana Souza; texto "Você cobre Ana Souza até 15/11/2026" |

@@ -74,14 +74,14 @@ test('C-026: bloco que falha mostra a frase padrão', () => {
   assert.equal(MSG_BLOCO, 'Não foi possível carregar este bloco agora. Tente atualizar a tela.');
 });
 
-test('RN-002: bloqueio do Painel para vendedora diz os perfis e o dela, sem nome de cadastro interno', () => {
-  const linhas = mensagemBloqueio('/painel-gestao', { papeis: ['VENDEDOR'], coordenadorAtivo: false });
-  assert.deepEqual(linhas, ['Esta tela está disponível apenas para Gestão e TI.', 'Seu perfil: Vendedor']);
+test('RN-002: bloqueio de Usuários para vendedora diz os perfis e o dela, sem nome de cadastro interno', () => {
+  const linhas = mensagemBloqueio('/governanca-rca', { papeis: ['VENDEDOR'], coordenadorAtivo: false });
+  assert.deepEqual(linhas, ['Esta tela está disponível apenas para Diretoria, Gestão e TI.', 'Seu perfil: Vendedor']);
   assert.ok(!/USUARIO|CARGO|COORDENADORES|tabela/i.test(linhas.join(' ')));
 });
 
 test('RN-001: COORDENADOR sem cadastro ativo vê a mensagem própria nas telas do coordenador', () => {
   const rita = { papeis: ['COORDENADOR'], coordenadorAtivo: false };
   assert.deepEqual(mensagemBloqueio('/ferias-vendedor', rita), ['Seu cadastro de coordenador não está ativo. Procure a diretoria.']);
-  assert.equal(mensagemBloqueio('/painel-gestao', rita)[0], 'Esta tela está disponível apenas para Gestão e TI.');
+  assert.equal(mensagemBloqueio('/gestao-coordenadores', rita)[0], 'Esta tela está disponível apenas para Diretoria e TI.');
 });

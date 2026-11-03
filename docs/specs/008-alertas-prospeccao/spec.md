@@ -301,7 +301,7 @@ Verificação manual:
 - [ ] A tela Clientes e as outras abas dela (spec 002): aqui ficam só as regras do prospect e o conteúdo da aba "Prospects".
 - [ ] Incluir automaticamente na carteira o cliente de um prospect convertido.
 - [ ] Sincronização de vendas e o status "Alerta" do acompanhamento semanal (spec 006).
-- [ ] Botão `Gerar novos alertas` do Painel de Gestão (spec 010); ele só aciona a RN-016.
+- [ ] Botão `Gerar novos alertas` do Painel de Gestão: tela cancelada em 2026-11-03 (D4); a fila automática da RN-016 continua.
 - [ ] Alerta em tempo real, notificação no celular ou por mensageiro.
 - [ ] Cadastrar o cliente no ERP a partir do prospect: o cadastro continua sendo feito no ERP.
 - [ ] Mudar horários das rotinas ou textos dos e-mails pela tela.

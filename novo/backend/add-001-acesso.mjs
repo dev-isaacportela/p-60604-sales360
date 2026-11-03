@@ -21,7 +21,7 @@ import {
   runDdlMitra,
   runDmlMitra,
 } from 'mitra-sdk';
-import { SEM_BLOQUEIO, temPapel, COORDENADOR_ATIVO } from './lib/guardas.mjs';
+import { SEM_BLOQUEIO, COORDENADOR_ATIVO } from './lib/guardas.mjs';
 
 configureSdkMitra({
   baseURL: process.env.MITRA_BASE_URL,
@@ -149,8 +149,7 @@ SET U.NOME = NULLIF(TRIM('{{nome}}'), ''),
 WHERE U.ID = :VAR_USER
   AND '{{modoAgenda}}' IN ('DIA', 'SEMANA', 'MES')
   AND '{{exibicaoAtividades}}' IN ('LISTA', 'KANBAN')
-  AND '{{paginaInicial}}' IN ('/', '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics', '/painel-gestao')
-  AND ('{{paginaInicial}}' <> '/painel-gestao' OR ${temPapel('GESTOR', 'ADMIN')})
+  AND '{{paginaInicial}}' IN ('/', '/agenda', '/clientes', '/tarefas', '/simulacao', '/analytics')
   AND CHAR_LENGTH(TRIM('{{nome}}')) <= 120
   AND '{{agora}}' <> ''
   AND ${SEM_BLOQUEIO}`,

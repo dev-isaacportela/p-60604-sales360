@@ -61,7 +61,7 @@ Uma task por linha da seção Testes do plan.
 - [x] **T-082** — `teste('RN-006: coordenador só com cadastro ativo')` em `smoke.mjs`: Rita 0, Gil 1
 - [x] **T-083** — `teste('C-009: contadores')` em `smoke.mjs`: Ana 3 → 2 após concluir; alertas 4
 - [x] **T-084** — `teste('dialeto: UPDATE JOIN é tudo ou nada')` em `smoke.mjs`: falha na segunda atribuição não altera nenhuma tabela
-- [x] **T-085** — `teste('C-011: página inicial sem permissão é recusada')` em `smoke.mjs`: Carla `/painel-gestao` → 0 afetadas
+- [x] **T-085** — `teste('C-011: página inicial sem permissão é recusada')` em `smoke.mjs`: Carla `/painel-gestao` → 0 afetadas (desde 2026-11-03, também GESTOR e ADMIN: tela cancelada)
 - [x] **T-086** — `teste('C-012: férias do titular')` em `smoke.mjs`: Ana em 30/10 FUTURA, 05/11 ATIVA, 16/11 nenhuma
 - [x] **T-087** — `teste('RN-012: substituto vê quem cobre')` em `smoke.mjs`: Bruno em 05/11 → SUBSTITUTO/ATIVA com Ana Souza
 - [x] **T-088** — `teste('C-013: salvar é tudo ou nada')` em `smoke.mjs`: Garantir cria 1; valor inválido → 0 e nome inalterado; válido → 1 e 4 campos; Garantir não duplica
