@@ -4,7 +4,7 @@
 // A visão inicial é a preferência `Modo padrão da Agenda` (sessão da 001).
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { linha, linhas, linhasAfetadas, acao as executar } from '@/lib/mitra-api'
 import { hojeBrasilia } from '@/lib/formato'
@@ -31,8 +31,10 @@ const MODOS: { modo: Modo; rotulo: string }[] = [
 export default function AgendaPage() {
   const { sessao } = useSessao()
   const hoje = hojeBrasilia()
-  const [modo, setModo] = useState<Modo>(sessao.modoAgenda)
-  const [data, setData] = useState(hoje)
+  // ?modo=DIA&data=AAAA-MM-DD: o Dashboard abre a agenda do dia (spec 005, RF-008).
+  const [params] = useSearchParams()
+  const [modo, setModo] = useState<Modo>(params.get('modo') === 'DIA' ? 'DIA' : sessao.modoAgenda)
+  const [data, setData] = useState(/^\d{4}-\d{2}-\d{2}$/.test(params.get('data') ?? '') ? String(params.get('data')) : hoje)
   const filtro = useEscopo()
   const escopo = useMemo(() => paraInput(filtro.escopo, hoje), [filtro.escopo, hoje])
   const { de, ate } = periodo(modo, data)

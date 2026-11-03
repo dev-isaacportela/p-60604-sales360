@@ -24,7 +24,7 @@ import { num, dia, nomeUsuario, nomeCliente, semAcento, ESCOPO_SQL } from './lib
 import {
   AGORA_BR, HOJE_BR, RECENTE_BR, TIPOS, lista, tipoProspeccao, objetivoProspeccao, objetivoGravado,
   textoOk, preenchido, acrescentar, horarioOk, dataOk, pessoasJson, alvos, pessoaValida, podeOperar,
-  pessoasEscopo, compromissos, sobrepoe, conflito, CLIENTES_DE_QUEM_CRIA, PROSPECTS_DE_QUEM_CRIA, metaDe,
+  pessoasEscopo, compromissos, sobrepoe, conflito, CLIENTES_DE_QUEM_CRIA, PROSPECTS_DE_QUEM_CRIA, metaDe, ehCoordenador,
 } from './lib/003-agenda.mjs';
 
 configureSdkMitra({
@@ -113,9 +113,9 @@ K AS (
 SELECT
   (SELECT COUNT(*) FROM K WHERE K.STATUS = 'CONCLUIDA' AND K.DATA <= '{{sexta}}'
      AND (K.ORIGEM IN ('VISITA', 'PROSPECCAO') OR K.TIPO = 'Deslocamento')) AS REALIZADO,
-  (SELECT COALESCE(SUM(${metaDe('PES.PESSOA_ID')}), 0) FROM PES) AS META,
+  (SELECT COALESCE(SUM(${metaDe('PES.PESSOA_ID', "'{{segunda}}'")}), 0) FROM PES) AS META,
   (SELECT COUNT(*) FROM PES) AS PESSOAS,
-  (SELECT COUNT(*) FROM PES WHERE ${metaDe('PES.PESSOA_ID')} = 8) AS COORDENADORES,
+  (SELECT COUNT(*) FROM PES WHERE ${ehCoordenador('PES.PESSOA_ID')}) AS COORDENADORES,
   (SELECT COUNT(DISTINCT CONCAT(K.ORIGEM, '-', K.ID)) FROM K WHERE K.STATUS = 'AGENDADA') AS AGENDADAS,
   (SELECT COUNT(DISTINCT CONCAT(K.ORIGEM, '-', K.ID)) FROM K WHERE K.STATUS = 'EM_ANDAMENTO') AS EM_ANDAMENTO,
   (SELECT COUNT(DISTINCT CONCAT(K.ORIGEM, '-', K.ID)) FROM K WHERE K.STATUS = 'CONCLUIDA') AS CONCLUIDAS,
@@ -142,7 +142,7 @@ export const definitions = [
   {
     name: 's360AgendaResumo',
     type: 'SQL',
-    description: `Painel lateral (RF-014): REALIZADO da meta semanal (seg-sex, um por pessoa; visita, prospeccao e deslocamento), META (16 vendedor, 8 coordenador), contagem por status de seg a dom. ${ESCOPO_DESCR} Mais segunda, sexta, domingo.`,
+    description: `Painel lateral (RF-014): REALIZADO da meta semanal (seg-sex, um por pessoa; visita, prospeccao e deslocamento), META (configurada por perfil na semana, spec 005), contagem por status de seg a dom. ${ESCOPO_DESCR} Mais segunda, sexta, domingo.`,
     code: RESUMO,
   },
   {

@@ -133,5 +133,5 @@ export const PROSPECTS_DE_QUEM_CRIA = `(SELECT P_Q.ID FROM PROSPECTS P_Q
 
 /* ─────────────── meta semanal ─────────────── */
 
-// ponytail: meta fixa (16 vendedor, 8 coordenador ativo) ate a spec 005 criar a meta configuravel.
-export const metaDe = (pessoa) => `CASE WHEN EXISTS (SELECT 1 FROM COORDENADORES C_M WHERE C_M.USER_ID = ${pessoa} AND C_M.ATIVO = 1) THEN 8 ELSE 16 END`;
+// Meta configuravel por perfil e vigencia (spec 005, RN-005): metaDe(pessoa, segunda).
+export { metaSemanal as metaDe, ehCoordenador } from './005-dashboard.mjs';

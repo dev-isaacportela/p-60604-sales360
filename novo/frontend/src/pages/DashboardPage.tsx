@@ -1,0 +1,93 @@
+// Dashboard (spec 005): a primeira tela de todo usuário. Os blocos de agenda,
+// meta semanal e atividades usam as SFs da 003 e da 004 (D-501), então os
+// números são os mesmos das outras telas. Cada bloco carrega e falha sozinho
+// (RF-011); a carga faz 8 consultas e trocar a barra do gráfico não consulta.
+
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { linha, linhas } from '@/lib/mitra-api'
+import { agoraBrasilia, hojeBrasilia } from '@/lib/formato'
+import { paraInput } from '@/lib/escopo'
+import { semanaDe } from '@/lib/agenda'
+import { FILTROS_VAZIOS } from '@/lib/atividades'
+import { compromissosDeHoje, fraseCompromissos, mesDe, saudacao, ultimosDiasUteis } from '@/lib/dashboard'
+import { AVISO_NAO_CONFIGURADO, mostrarAvisoNaoConfigurado } from '@/lib/sessao'
+import {
+  Alert, Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, PageHeader, Panel, PanelBody, Stack, TextLink,
+} from '@/components/page'
+import { FiltroEscopo, useEscopo } from '@/components/FiltroEscopo'
+import { useSessao } from '@/components/sessao-contexto'
+import { useBloco } from '@/components/use-bloco'
+import { Alertas, ListaCompromissos, MetaMensal, MetaSemanal, ResumoSemana, UltimasAtividades, VendasDiarias } from './dashboard/blocos'
+
+export default function DashboardPage() {
+  const { sessao } = useSessao()
+  const navegar = useNavigate()
+  const hoje = hojeBrasilia()
+  const filtro = useEscopo()
+  const escopo = useMemo(() => paraInput(filtro.escopo, hoje), [filtro.escopo, hoje])
+  const chave = JSON.stringify(escopo)
+  const semana = semanaDe(hoje)
+  const { inicio, fim } = mesDe(hoje)
+  const [janela, setJanela] = useState(false)
+
+  const agenda = useBloco(() => linhas('agendaListar', { ...escopo, de: semana.segunda, ate: semana.domingo }), [chave])
+  const metaSemana = useBloco(() => Promise.all([
+    linha('agendaResumo', { ...escopo, ...semana }),
+    linha('metaVisitasObter', { segunda: semana.segunda }),
+  ]), [chave])
+  const mes = useBloco(() => linha('dashboardMes', { ...escopo, inicio, fim }), [chave])
+  const diarias = useBloco(() => linhas('dashboardVendasDiarias', { ...escopo, de: ultimosDiasUteis(hoje, 8)[0], ate: hoje }), [chave])
+  const alertas = useBloco(() => linhas('dashboardAlertas', escopo), [chave])
+  const atividades = useBloco(() => linhas('atividadesAbertas', { ...escopo, ...FILTROS_VAZIOS }), [chave])
+
+  const deHoje = agenda.dados ? compromissosDeHoje(agenda.dados, hoje) : null
+  const nomeVendedor = String((filtro.opcoes ?? []).find(o => String(o.VENDEDOR_ID) === escopo.vendedor)?.VENDEDOR ?? '').split(' ')[0]
+
+  return (
+    <Stack>
+      <PageHeader
+        module="Sales 360"
+        title={saudacao(agoraBrasilia().slice(11, 16), sessao.nome, sessao.email)}
+        description="Semana de visitas, mês de faturamento e o que precisa de ação hoje."
+        actions={<FiltroEscopo {...filtro} />}
+      />
+      {mostrarAvisoNaoConfigurado(sessao) ? <Alert tone="warn">{AVISO_NAO_CONFIGURADO}</Alert> : null}
+
+      <Panel>
+        <PanelBody>
+          {agenda.erro ? (
+            <p className="text-[13px] text-destructive">Não foi possível carregar os compromissos de hoje.</p>
+          ) : deHoje ? (
+            <TextLink onClick={() => setJanela(true)} className="text-[15px]">{fraseCompromissos(deHoje.length, escopo.modo, nomeVendedor)}</TextLink>
+          ) : (
+            <span className="text-[13px] text-ink-secondary">Carregando compromissos…</span>
+          )}
+        </PanelBody>
+      </Panel>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <MetaSemanal estado={metaSemana} modo={escopo.modo} segunda={semana.segunda} sexta={semana.sexta} />
+        <MetaMensal estado={mes} inicio={inicio} fim={fim} hoje={hoje} />
+        <Alertas estado={alertas} className="md:col-span-2 xl:col-span-1" />
+      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <VendasDiarias estado={diarias} mes={mes.dados} hoje={hoje} className="xl:col-span-2" />
+        <UltimasAtividades estado={atividades} hoje={hoje} />
+      </div>
+      <ResumoSemana estado={agenda} hoje={hoje} />
+
+      <Dialog open={janela} onOpenChange={setJanela}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader><DialogTitle>Compromissos de hoje</DialogTitle></DialogHeader>
+          <DialogBody><ListaCompromissos itens={deHoje ?? []} /></DialogBody>
+          <DialogFooter>
+            <Button variant="primary" onClick={() => navegar(`/agenda?modo=DIA&data=${hoje}`)}>Abrir agenda completa</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Stack>
+  )
+}
+
+DashboardPage.rota = '/'
