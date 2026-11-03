@@ -21,53 +21,53 @@
 
 ## Backend
 
-- [ ] **T-010** — `novo/backend/schema-producao/010-gestao.mjs`: `PEDIDOS_SEMANAIS_SYNC_RAW`, `IMP_DEVOLUCOES_TOTVS`, `METAS_BU_VENDEDOR`, `VISITAS`, `COMISSOES`, `VENDEDOR_RCA_AUDITORIA`, `RCA_TOTVS`, `COORDENADORES_BU`
-- [ ] **T-011** — `novo/backend/lib/010-gestao.mjs`: `REALIZADO` (RNT-007/008), `naEquipe`, `GESTAO`, `DIRETORIA`
-- [ ] **T-012** — `novo/backend/add-010-gestao.mjs`: `definitions` das SFs do plan (Painel, comissões, BUs, escopos, RCA, coordenadores, papéis, férias, executivas); publica só em `isEntrypoint()`; script `publish:010` no `package.json`
-- [ ] **T-013** — `simulator/config.mjs`: chaves novas em `CHECK_INPUT` (`vendedorId`, `busca`, `filtro`, `papel`, `limite`, `offset`)
+- [x] **T-010** — `novo/backend/schema-producao/010-gestao.mjs`: `PEDIDOS_SEMANAIS_SYNC_RAW`, `IMP_DEVOLUCOES_TOTVS`, `METAS_BU_VENDEDOR`, `VISITAS`, `COMISSOES`, `VENDEDOR_RCA_AUDITORIA`, `RCA_TOTVS`, `COORDENADORES_BU`
+- [x] **T-011** — `novo/backend/lib/010-gestao.mjs`: `REALIZADO` (RNT-007/008), `naEquipe`, `GESTAO`, `DIRETORIA`
+- [x] **T-012** — `novo/backend/add-010-gestao.mjs`: `definitions` das SFs do plan (Painel, comissões, BUs, escopos, RCA, coordenadores, papéis, férias, executivas); publica só em `isEntrypoint()`; script `publish:010` no `package.json`
+- [x] **T-013** — `simulator/config.mjs`: chaves novas em `CHECK_INPUT` (`vendedorId`, `busca`, `filtro`, `papel`, `limite`, `offset`)
 
 ## Simulador
 
-- [ ] **T-020** — `simulator/seeds/010-gestao.mjs`: usuários, RCAs, escopos, carteira, vendas, devoluções, metas, tarefas, visitas, coordenador, papéis, férias e bloqueios da tabela de seed do plan (ids 10001+)
-- [ ] **T-021** — `npm run sim:check` sem `FALHOU`
+- [x] **T-020** — `simulator/seeds/010-gestao.mjs`: usuários, RCAs, escopos, carteira, vendas, devoluções, metas, tarefas, visitas, coordenador, papéis, férias e bloqueios da tabela de seed do plan (ids 10001+)
+- [x] **T-021** — `npm run sim:check` sem `FALHOU`
 
 ## Frontend
 
-- [ ] **T-030** `[P]` — `src/lib/gestao.ts`, `src/lib/ferias.ts`, `src/lib/papeis.ts` com as funções da tabela do plan
-- [ ] **T-031** — `src/lib/server-functions.ts`: entradas `s360*` da 010 em ordem alfabética, ids 1001+
-- [ ] **T-032** — `src/lib/menu.ts`: Férias de Vendedores para coordenador ativo, DIRETORIA e ADMIN (na seção Diretoria para quem não é coordenador ativo); `AcessoRestrito.tsx` com `mensagemBloqueio`
-- [ ] **T-033** — `src/components/Confirmacao.tsx`: diálogo que nomeia o alvo e só executa no `Confirmar`
-- [ ] **T-034** — `PainelGestaoPage` (`/painel-gestao`)
-- [ ] **T-035** — `GestaoCadastrosPage` (`/gestao-cadastros`)
-- [ ] **T-036** — `BusVendedoresPage` (`/gestao-bus-vendedores`)
-- [ ] **T-037** — `EscopoUsuariosPage` (`/configuracao-escopo-usuarios`)
-- [ ] **T-038** — `GovernancaRcaPage` (`/governanca-rca`)
-- [ ] **T-039** — `GestaoCoordenadoresPage` (`/gestao-coordenadores`)
-- [ ] **T-040** — `PapeisUsuariosPage` (`/gestao-cargos-usuarios`)
-- [ ] **T-041** — `FeriasVendedorPage` (`/ferias-vendedor`)
-- [ ] **T-042** — `ExecutivasPage` (`/gestao-acesso-executivas`)
+- [x] **T-030** `[P]` — `src/lib/gestao.ts`, `src/lib/ferias.ts`, `src/lib/papeis.ts` com as funções da tabela do plan
+- [x] **T-031** — `src/lib/server-functions.ts`: entradas `s360*` da 010 em ordem alfabética, ids 1001+
+- [x] **T-032** — `src/lib/menu.ts`: Férias de Vendedores para coordenador ativo, DIRETORIA e ADMIN (na seção Diretoria para quem não é coordenador ativo); `AcessoRestrito.tsx` com `mensagemBloqueio`; `/configuracao-escopo-usuarios` sai do menu e Governança RCA vira "RCA e Escopo"
+- [x] **T-033** — `src/components/Confirmacao.tsx` (+ `use-bloco.ts`): diálogo que nomeia o alvo e só executa no `Confirmar`
+- [x] **T-034** — `PainelGestaoPage` (`/painel-gestao`)
+- [x] **T-035** — `GestaoCadastrosPage` (`/gestao-cadastros`)
+- [x] **T-036** — `BusVendedoresPage` (`/gestao-bus-vendedores`)
+- [x] **T-037** — escopos dentro de `GovernancaRcaPage` (telas fundidas em 2026-11-03; `EscopoUsuariosPage` e `/configuracao-escopo-usuarios` saíram)
+- [x] **T-038** — `GovernancaRcaPage` (`/governanca-rca`, "RCA e Escopo": vínculo RCA + escopos no painel do usuário)
+- [x] **T-039** — `GestaoCoordenadoresPage` (`/gestao-coordenadores`)
+- [x] **T-040** — `PapeisUsuariosPage` (`/gestao-cargos-usuarios`)
+- [x] **T-041** — `FeriasVendedorPage` (`/ferias-vendedor`)
+- [x] **T-042** — `ExecutivasPage` (`/gestao-acesso-executivas`)
 
 ## Testes
 
 Uma task por grupo de linhas da seção Testes do plan.
 
-- [ ] **T-080** — smoke Painel: C-001, C-002, C-003, RN-003, RNT-007 (férias), RN-005, RN-007
-- [ ] **T-081** — smoke cadastros: C-010, C-011, C-012/RN-013, C-013, RN-012
-- [ ] **T-082** — smoke RCA: C-014, C-015, RN-014
-- [ ] **T-083** — smoke coordenadores e papéis: C-016/RN-015, C-017, RN-016 (com o legado)
-- [ ] **T-084** — smoke férias: C-021, C-022, RN-020
-- [ ] **T-085** — smoke executivas: C-023, C-024, RN-021, RN-022
-- [ ] **T-086** — smoke RN-001: matriz papel × tela das 9 telas
-- [ ] **T-087** `[P]` — `tests/gestao.test.mjs`: C-001, C-002, C-010, C-011, C-012, C-016, C-026, RN-001, RN-002, RN-006, RN-011, RN-022, RN-025
-- [ ] **T-088** `[P]` — `tests/ferias.test.mjs`: C-021, RN-020
-- [ ] **T-089** `[P]` — `tests/papeis.test.mjs` e `tests/menu.test.mjs` (Férias para DIRETORIA sem cadastro de coordenador)
+- [x] **T-080** — smoke Painel: C-001, C-002, C-003, RN-003, RNT-007 (férias), RN-005, RN-007
+- [x] **T-081** — smoke cadastros: C-010, C-011, C-012/RN-013, C-013, RN-012
+- [x] **T-082** — smoke RCA: C-014, C-015, RN-014
+- [x] **T-083** — smoke coordenadores e papéis: C-016/RN-015, C-017, RN-016 (com o legado)
+- [x] **T-084** — smoke férias: C-021, C-022, RN-020
+- [x] **T-085** — smoke executivas: C-023, C-024, RN-021, RN-022
+- [x] **T-086** — smoke RN-001: matriz papel × tela das telas da etapa 1
+- [x] **T-087** `[P]` — `tests/gestao.test.mjs`: C-001, C-002, C-010, C-011, C-012, C-016, C-026, RN-001, RN-002, RN-006, RN-011, RN-022, RN-025
+- [x] **T-088** `[P]` — `tests/ferias.test.mjs`: C-021, RN-020
+- [x] **T-089** `[P]` — `tests/papeis.test.mjs` e `tests/menu.test.mjs` (Férias para DIRETORIA sem cadastro de coordenador)
 
 ## Verificação
 
-- [ ] **T-100** — `cd novo/backend && npm test` verde
-- [ ] **T-101** — `cd novo/frontend && npm test` verde; `npm run build` e `npm run lint` limpos
-- [ ] **T-102** — No simulador (portas próprias desta sessão): Painel como Paulo (GESTOR), Papéis como Gil, Férias e Executivas como Carlos, bloqueio como Ana
-- [ ] **T-103** — Verificação manual da spec: menu de DIRETORIA com Papéis de Usuários e Gestão Coordenadores; as 9 telas em tema escuro e em 360 px
+- [x] **T-100** — `cd novo/backend && npm test` verde
+- [x] **T-101** — `cd novo/frontend && npm test` verde; `npm run build` e `npm run lint` limpos
+- [x] **T-102** — No simulador (portas próprias desta sessão): Painel como Paulo (GESTOR), Papéis como Gil, Férias e Executivas como Carlos, bloqueio como Ana (feito em 2026-11-03: Painel, BUs, RCA e Escopo como Paulo; Papéis, Coordenadores e Férias como Gil; Executivas e bloqueio do RCA e Escopo como Carlos)
+- [ ] **T-103** — Verificação manual da spec: menu de DIRETORIA com Papéis de Usuários e Gestão Coordenadores; as 8 telas em tema escuro e em 360 px
 - [ ] **T-104** `[sandbox]` — Publicar `add-010-gestao.mjs`, depois `add-000-perfil-acesso.mjs` e `sync:function-map`; medir o Painel com outubro/2026 de produção (RNF-001)
 
 ## Dependências

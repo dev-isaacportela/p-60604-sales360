@@ -169,18 +169,20 @@ que mudou.
 |---|---|---|---|
 | RF-020 | O sistema DEVE manter comissões por vendedor e mês/ano (Vendas, %, Comissão), com busca por nome e 10 por página | C-010 | must |
 
-### BUs e Vendedores / Escopo Usuários
+### BUs e Vendedores
 
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
 | RF-021 | O sistema DEVE listar BUs (código, nome, status, nº de vendedores), criar pela RN-012, editar nome e `Inativar`/`Ativar` com confirmação | C-011 | must |
-| RF-022 | O sistema DEVE manter escopos por usuário (BU, filial, uma ou várias seções ou "Todas as seções") só na tela Escopo Usuários, listar com busca e `Desvincular` com confirmação | C-012, C-013; BUs e Vendedores não grava escopo | must |
 
-### Governança RCA
+### RCA e Escopo
+
+Uma tela só para o vínculo RCA e o escopo de cada usuário (antes Governança RCA e Escopo Usuários; fundidas em 2026-11-03). A lista mostra cada usuário uma vez; `Editar` abre o painel do usuário com o vínculo RCA e os escopos dele.
 
 | ID | Requisito | Critério de aceite | Prioridade |
 |---|---|---|---|
-| RF-023 | O sistema DEVE listar vínculos (Usuário, E-mail, RCA ou "Sem vínculo", Supervisor ou "Sem supervisor") e permitir `Editar vínculo`, com supervisor sugerido pelo ERP e editável | "Vínculo RCA salvo com sucesso." | must |
+| RF-022 | O sistema DEVE manter escopos por usuário (BU, filial, uma ou várias seções ou "Todas as seções") só no painel do usuário em RCA e Escopo, listando os escopos ativos dele com `Desvincular` com confirmação | C-012, C-013; BUs e Vendedores não grava escopo | must |
+| RF-023 | O sistema DEVE listar usuários com busca (Usuário, E-mail, RCA ou "Sem vínculo", Supervisor ou "Sem supervisor") e permitir editar o vínculo no painel do usuário, com supervisor sugerido pelo ERP e editável | "Vínculo RCA salvo com sucesso." | must |
 | RF-024 | O sistema DEVE permitir `Remover vínculo` com confirmação | C-015 | must |
 | RF-025 | O sistema DEVE mostrar a auditoria das 80 últimas alterações (quando, usuário, RCA e supervisor anteriores e novos, quem alterou, observação) | C-014, C-015 | must |
 
@@ -249,7 +251,7 @@ Transversais aplicáveis: RNFT-001, RNFT-002, RNFT-004, RNFT-005, RNFT-007, RNFT
 
   | Tela | Libera | Recorte |
   |---|---|---|
-  | Painel de Gestão, Governança RCA, BUs e Vendedores, Escopo Usuários, Gestão Cadastros | GESTOR ou ADMIN | todos os vendedores |
+  | Painel de Gestão, RCA e Escopo, BUs e Vendedores, Gestão Cadastros | GESTOR ou ADMIN | todos os vendedores |
   | Papéis de Usuários, Gestão Coordenadores | DIRETORIA ou ADMIN | todas as BUs |
   | Gestão de Carteira | coordenador com cadastro ativo e usuário vinculado | equipe (RNT-004) |
   | Férias de Vendedores | coordenador ativo; DIRETORIA ou ADMIN | equipe; todas as BUs |
@@ -348,7 +350,7 @@ Verificação manual:
 | Não dá para remover o RCA de um usuário | `Remover vínculo` com auditoria (RF-024) | manual seção 13, Governança RCA |
 | Auditoria de RCA gravada numa segunda chamada, com valores enviados pela tela | Auditoria na mesma operação, valores do servidor (RN-014) | `GovernancaRcaPage.tsx:173` |
 | Telas mostram nomes de cadastro interno ao gestor | Só linguagem de negócio (RNFT-007) | `GestaoBuVendedoresPage.tsx:739,877` |
-| Escopo gravado em dois lugares: bloco "Vincular BU ao vendedor" de BUs e Vendedores e tela Escopo Usuários | Só em Escopo Usuários (RF-022); o bloco sai de BUs e Vendedores | `GestaoBuVendedoresPage.tsx`; `ConfiguracaoEscopoUsuariosPage.tsx` |
+| Escopo gravado em dois lugares: bloco "Vincular BU ao vendedor" de BUs e Vendedores e tela Escopo Usuários | Só em RCA e Escopo (RF-022); o bloco sai de BUs e Vendedores | `GestaoBuVendedoresPage.tsx`; `ConfiguracaoEscopoUsuariosPage.tsx` |
 | BUs e Vendedores tem um bloco de vínculo vendedor ↔ departamento e filial, paralelo ao escopo | Bloco sai da tela; o registro só é aposentado depois de confirmado que nada mais o usa | `GestaoBuVendedoresPage.tsx` (bloco 3) |
 | Coordenador precisa ser salvo antes de vincular BUs | Cadastro e BUs num único salvar (RN-015) | manual seção 13, Gestão Coordenadores |
 | Salvar papel substitui GESTOR/ADMIN e pré-seleciona Vendedor | Papéis acumulam (RN-016, RNT-001) | manual seção 13, Papéis de Usuários |
@@ -370,7 +372,7 @@ Verificação manual:
 - [ ] Análise Diretoria, Faturamento e Gestão de Metas: canceladas em 2026-11-03. A meta da BU vem do planejamento estratégico, que é outro sistema (RNT-009); os cenários, requisitos e regras dessas telas saíram desta spec e os ids não são reaproveitados (C-004 a C-009, C-025, RF-010 a RF-019, RN-008 a RN-010). Agenda dos Vendedores: cancelada no mesmo dia (spec 003).
 - [ ] Um "Painel do coordenador" com KPIs, performance, anomalias, riscos, gaps e concentração: não há tela e as funções que existem sem tela são aposentadas (decidido em 2026-10-30).
 - [ ] Aba Metas de Gestão Cadastros (meta por vendedor com realizado digitado): sai; a meta do vendedor é a distribuída pelo coordenador (spec 007).
-- [ ] Bloco "Vincular BU ao vendedor" de BUs e Vendedores: sai; escopo só em Escopo Usuários.
+- [ ] Bloco "Vincular BU ao vendedor" de BUs e Vendedores: sai; escopo só em RCA e Escopo.
 - [ ] Bloco de vínculo vendedor ↔ departamento e filial de BUs e Vendedores: sai da tela; o registro é aposentado só depois de confirmado que nada mais o usa.
 - [ ] Cadastro de produtos pela gestão: não há tela hoje; o catálogo vem do sistema de custos (spec 009).
 - [ ] Cálculo automático de comissão a partir das vendas (spec 000).
@@ -384,6 +386,7 @@ Verificação manual:
 - [x] Decidido em 2026-10-30: o "Painel do coordenador" não é construído; as funções que existem sem tela são aposentadas.
 - [x] Decidido em 2026-10-30: o bloco de vínculo vendedor ↔ departamento e filial sai, e o registro só é aposentado depois de confirmado que nada mais o usa.
 - [x] Decidido em 2026-10-30: escopo é cadastrado só em Escopo Usuários; sai o bloco duplicado de BUs e Vendedores.
+- [x] Decidido em 2026-11-03: Governança RCA e Escopo Usuários viram uma tela só, RCA e Escopo (`/governanca-rca`); `/configuracao-escopo-usuarios` sai do menu.
 - [x] Decidido em 2026-10-30: não há histórico de alterações da meta da BU; guarda só o último valor e quem lançou, como hoje. *Sem efeito desde 2026-11-03: a tela Gestão de Metas foi cancelada e a meta vem só do planejamento.*
 - [x] Decidido em 2026-10-30: a diretoria tem o botão `Remover lançamento manual`, que volta à meta do planejamento (RN-010). *Sem efeito desde 2026-11-03: a tela Gestão de Metas foi cancelada e a meta vem só do planejamento.*
 - [x] Decidido em 2026-10-30: não; quem está de férias não pode ser substituto no mesmo período, e quem está substituindo não pode sair de férias nele.

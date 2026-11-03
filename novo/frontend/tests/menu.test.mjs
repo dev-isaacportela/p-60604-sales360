@@ -32,13 +32,14 @@ test('C-007 / RN-005: Diretoria + coordenador ativo veem as duas seções, Titul
 test('RN-005 (permissões): Gestão por papel, técnicos só para TI, telas canceladas nunca aparecem', () => {
   const gestao = porId(montarMenu({ papeis: ['GESTOR'] }), 'gestao');
   assert.deepEqual(rotulos(gestao),
-    ['Acomp. Semanal', 'Painel de Gestão', 'Governança RCA', 'BUs e Vendedores', 'Escopo Usuários', 'Gestão Cadastros']);
+    ['Acomp. Semanal', 'Painel de Gestão', 'RCA e Escopo', 'BUs e Vendedores', 'Gestão Cadastros']); // 010: RCA e Escopo funde Governança RCA e Escopo Usuários
 
   const ti = montarMenu({ papeis: ['ADMIN'] });
   const gestaoTi = rotulos(porId(ti, 'gestao'));
-  assert.equal(gestaoTi.length, 9);
+  assert.equal(gestaoTi.length, 8);
   assert.deepEqual(gestaoTi.slice(-2), ['Acomp. Semanal Admin', 'Painel de Validação']);
-  assert.deepEqual(rotulos(porId(ti, 'diretoria')), ['Papéis de Usuários', 'Gestão Coordenadores', 'Titulares de Clientes']);
+  // Férias de Vendedores abre para Diretoria/TI desde a spec 010 (RN-001).
+  assert.deepEqual(rotulos(porId(ti, 'diretoria')), ['Papéis de Usuários', 'Gestão Coordenadores', 'Titulares de Clientes', 'Férias de Vendedores']);
 
   for (const papeis of [['VENDEDOR'], ['COORDENADOR'], ['DIRETORIA'], ['GESTOR'], ['ADMIN']]) {
     const menu = montarMenu({ papeis, coordenadorAtivo: true });

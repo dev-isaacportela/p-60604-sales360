@@ -1,0 +1,116 @@
+// Regras de tela da spec 010 (gestão, coordenação e diretoria).
+// Regra pura: sem React, sem SDK. É o que tests/gestao.test.mjs importa.
+
+import { moeda } from './formato.ts';
+import { perfisPermitidos, podeAbrir } from './menu.ts';
+import { rotuloPapeis } from './sessao.ts';
+
+/** RF-005 / C-026: bloco que falhou mostra isto e o resto da tela segue. */
+export const MSG_BLOCO = 'Não foi possível carregar este bloco agora. Tente atualizar a tela.';
+
+/** RNT-011: aceita `1.500,50`, `1500.50`, `1500` e `1.500`. Inválido = NaN. */
+export function lerValor(texto: string | number | null | undefined): number {
+  const t = String(texto ?? '').trim().replace(/\s|R\$/g, '');
+  if (!t) return NaN;
+  const normal = t.includes(',')
+    ? t.replace(/\./g, '').replace(',', '.')
+    : /^\d{1,3}(\.\d{3})+$/.test(t) ? t.replace(/\./g, '') : t;
+  return /^-?\d+(\.\d+)?$/.test(normal) ? Number(normal) : NaN;
+}
+
+/** Percentual com uma casa: 80 → "80,0%" (RNT-011). */
+export function percentual(valor: number): string {
+  return `${valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+}
+
+/** RN-006: meta zero não é número; é "Meta não distribuída" (equipe/vendedor) ou "Sem meta" (BU). */
+export function textoMeta(meta: number, { bu = false } = {}): string {
+  if (meta > 0) return moeda(meta);
+  return bu ? 'Sem meta' : 'Meta não distribuída';
+}
+
+export function textoAtingimento(realizado: number, meta: number): string {
+  return meta > 0 ? percentual((realizado / meta) * 100) : '—';
+}
+
+/** Gap = meta − realizado. Sem meta não há texto de gap (C-002). */
+export function textoGap(meta: number, realizado: number): string {
+  if (!(meta > 0)) return '';
+  const gap = Math.round((meta - realizado) * 100) / 100;
+  return gap > 0 ? `Faltam ${moeda(gap)}` : `Meta superada em ${moeda(Math.abs(gap))}`;
+}
+
+/** RN-011: vendas × % ÷ 100, duas casas. O servidor grava o mesmo cálculo. */
+export function calcularComissao(vendas: number, perc: number): number {
+  if (!Number.isFinite(vendas) || !Number.isFinite(perc)) return NaN;
+  return Math.round((vendas * perc / 100 + Number.EPSILON) * 100) / 100;
+}
+
+const NUMERICO = /^[1-9]\d*$/;
+
+/** RN-012 / C-011. Devolve a mensagem de recusa ou null. */
+export function validarCodigoBu(codigo: string, existentes: string[]): string | null {
+  const c = String(codigo ?? '').trim();
+  if (!NUMERICO.test(c)) return 'Use o código numérico do departamento no ERP (ex.: 1, 2, 3).';
+  if (existentes.some(e => String(e).trim() === c)) return `Já existe a BU ${c}.`;
+  return null;
+}
+
+/** RN-015 / C-016. */
+export function validarSupervisor(codigo: string): string | null {
+  return NUMERICO.test(String(codigo ?? '').trim()) ? null : 'Informe um código de supervisor numérico.';
+}
+
+/** RN-022. */
+export function validarMotivo(motivo: string): string | null {
+  return String(motivo ?? '').trim().length > 500 ? 'O motivo pode ter até 500 caracteres.' : null;
+}
+
+/** C-012: "2 escopos vinculados. 1 já existia." */
+export function resumoEscopos(pedidos: number, vinculados: number): string {
+  const existiam = Math.max(0, pedidos - vinculados);
+  const partes = [
+    vinculados === 0 ? 'Nenhum escopo novo.' : vinculados === 1 ? '1 escopo vinculado.' : `${vinculados} escopos vinculados.`,
+  ];
+  if (existiam) partes.push(existiam === 1 ? '1 já existia.' : `${existiam} já existiam.`);
+  return partes.join(' ');
+}
+
+type Acao =
+  | 'inativarBu' | 'ativarBu' | 'desvincularEscopo' | 'removerRca' | 'inativarCoordenador' | 'ativarCoordenador'
+  | 'removerBuCoordenador' | 'excluirComissao' | 'encerrarFerias' | 'desativarAcesso' | 'reativarAcesso';
+
+const CONFIRMACOES: Record<Acao, { titulo: string; texto: (alvo: string) => string; botao: string; perigo: boolean }> = {
+  inativarBu: { titulo: 'Inativar BU', texto: a => `Inativar a BU ${a}? Ela deixa de aceitar escopos e coordenadores novos; os vínculos atuais continuam.`, botao: 'Inativar', perigo: true },
+  ativarBu: { titulo: 'Ativar BU', texto: a => `Ativar a BU ${a}?`, botao: 'Ativar', perigo: false },
+  desvincularEscopo: { titulo: 'Desvincular escopo', texto: a => `Desvincular o escopo ${a}? A pessoa deixa de atuar nele.`, botao: 'Desvincular', perigo: true },
+  removerRca: { titulo: 'Remover vínculo', texto: a => `Remover o RCA de ${a}? A pessoa sai da equipe do coordenador e não pode ter férias.`, botao: 'Remover vínculo', perigo: true },
+  inativarCoordenador: { titulo: 'Inativar coordenador', texto: a => `Inativar o coordenador ${a}? Ele deixa de ver a equipe.`, botao: 'Inativar coordenador', perigo: true },
+  ativarCoordenador: { titulo: 'Ativar coordenador', texto: a => `Ativar o coordenador ${a}?`, botao: 'Ativar coordenador', perigo: false },
+  removerBuCoordenador: { titulo: 'Remover BU do coordenador', texto: a => `Remover ${a} do coordenador? Os vendedores que só atuam nela saem da equipe dele.`, botao: 'Remover e salvar', perigo: true },
+  excluirComissao: { titulo: 'Excluir comissão', texto: a => `Excluir a comissão de ${a}? Esta ação não pode ser desfeita.`, botao: 'Excluir', perigo: true },
+  encerrarFerias: { titulo: 'Encerrar férias', texto: a => `Encerrar as férias de ${a}? Férias em andamento terminam hoje; férias futuras são canceladas.`, botao: 'Encerrar', perigo: true },
+  desativarAcesso: { titulo: 'Desativar acesso', texto: a => `Desativar o acesso de ${a}? Ela é desconectada na próxima ação e não consegue entrar. Carteira e histórico continuam.`, botao: 'Desativar acesso', perigo: true },
+  reativarAcesso: { titulo: 'Reativar acesso', texto: a => `Reativar o acesso de ${a}? Ela pode entrar de novo na hora.`, botao: 'Reativar acesso', perigo: false },
+};
+
+export const ACOES_CONFIRMADAS = Object.keys(CONFIRMACOES) as Acao[];
+
+/** RN-025: texto do diálogo, nomeando o alvo. A tela só chama o servidor no botão dele. */
+export function confirmacao(acao: Acao, alvo: string) {
+  const c = CONFIRMACOES[acao];
+  return { titulo: c.titulo, texto: c.texto(alvo), botao: c.botao, perigo: c.perigo };
+}
+
+interface SessaoAcesso {
+  papeis: string[];
+  coordenadorAtivo?: boolean;
+}
+
+/** RN-001 / RN-002: mensagem de tela restrita, sem nome de cadastro interno. */
+export function mensagemBloqueio(caminho: string, sessao: SessaoAcesso): string[] {
+  const coordenadorSemCadastro = sessao.papeis.includes('COORDENADOR') && !sessao.coordenadorAtivo
+    && podeAbrir(caminho, { ...sessao, coordenadorAtivo: true });
+  if (coordenadorSemCadastro) return ['Seu cadastro de coordenador não está ativo. Procure a diretoria.'];
+  return [`Esta tela está disponível apenas para ${perfisPermitidos(caminho)}.`, `Seu perfil: ${rotuloPapeis(sessao.papeis)}`];
+}

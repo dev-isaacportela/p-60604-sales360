@@ -11,7 +11,7 @@ A spec 010 é construída em três etapas, cada uma com o seu plano e o seu
 
 | Etapa | O quê | Por quê separado |
 |---|---|---|
-| **1 (este plano)** | Painel de Gestão, Gestão Cadastros (comissões), BUs e Vendedores, Escopo Usuários, Governança RCA, Gestão Coordenadores, Papéis de Usuários, Férias de Vendedores, Executivas de Venda | só depende da 001 |
+| **1 (este plano)** | Painel de Gestão, Gestão Cadastros (comissões), BUs e Vendedores, RCA e Escopo, Gestão Coordenadores, Papéis de Usuários, Férias de Vendedores, Executivas de Venda | só depende da 001 |
 | **2** | Gestão de Carteira: RF-028, RF-029, RN-017 a RN-019, C-018 a C-020, RNF-004 | depende das regras de carteira da spec 002, construída em paralelo |
 | **3** (aprovada em 2026-11-03) | Rotinas automáticas: RF-033, RF-034, RN-023, RN-024, RNF-002, RNF-003 | nada roda nem se verifica nesta máquina: integração com o planejamento estratégico e Data Loader do ERP só existem no sandbox, e a rotina de clientes grava `CLIENTES`, dado da 002 |
 
@@ -133,7 +133,7 @@ Gravações respondem `affectedRows`; 0 = recusado e a tela mostra o motivo
 O bloco "Vincular BU ao vendedor" e o de vínculo RCA ↔ departamento **não**
 existem na tela nova (RF-022, Fora de escopo).
 
-### Escopo Usuários (GESTOR, ADMIN)
+### RCA e Escopo: escopos (GESTOR, ADMIN)
 
 | Nome | Entrada | Saída | Atende |
 |---|---|---|---|
@@ -149,7 +149,7 @@ existem na tela nova (RF-022, Fora de escopo).
 - Seção nula = todas; a unicidade compara `COALESCE(ID_SECAO, 0)`, porque o
   índice único de produção não impede duplicata com seção nula.
 
-### Governança RCA (GESTOR, ADMIN)
+### RCA e Escopo: vínculo RCA (GESTOR, ADMIN)
 
 | Nome | Entrada | Saída | Atende |
 |---|---|---|---|
@@ -222,13 +222,12 @@ Titular e substituto chegam por **usuário**; o RCA é resolvido no servidor.
 | `/painel-gestao` | cards, filtro de vendedor, fila; data da última atualização das vendas | `PainelGestaoPage` |
 | `/gestao-cadastros` | comissões: lista com busca e 10 por página, formulário com comissão calculada, excluir com confirmação | `GestaoCadastrosPage` |
 | `/gestao-bus-vendedores` | lista de BUs, `+ Nova BU`, editar nome, `Inativar`/`Ativar` com confirmação | `BusVendedoresPage` |
-| `/configuracao-escopo-usuarios` | vincular escopo (BU, filial, várias seções ou todas), lista com busca, `Desvincular` com confirmação | `EscopoUsuariosPage` |
-| `/governanca-rca` | lista de vínculos, `Editar vínculo`, `Remover vínculo` com confirmação, auditoria | `GovernancaRcaPage` |
+| `/governanca-rca` (RCA e Escopo) | lista de usuários com busca, RCA e supervisor; `Editar` abre o painel do usuário com o vínculo RCA (supervisor sugerido, `Remover vínculo` com confirmação) e os escopos dele (vincular BU, filial, várias seções ou todas; `Desvincular` com confirmação); auditoria embaixo. `/configuracao-escopo-usuarios` sai do menu (fundida em 2026-11-03) | `GovernancaRcaPage` |
 | `/gestao-coordenadores` | cadastro + BUs num salvar, `Inativar`/`Ativar` com confirmação, remover BU com confirmação | `GestaoCoordenadoresPage` |
 | `/gestao-cargos-usuarios` | cards por papel, busca, filtro, marcar DIRETORIA/COORDENADOR/VENDEDOR; GESTOR e ADMIN só leitura | `PapeisUsuariosPage` |
 | `/ferias-vendedor` | cadastro (calendário), lista "Férias ativas e futuras", `Encerrar` com confirmação | `FeriasVendedorPage` |
 | `/gestao-acesso-executivas` | lista com busca, filtro e 20 por página, `Desativar acesso`/`Reativar acesso` com confirmação | `ExecutivasPage` |
-| (comum) | diálogo de confirmação nomeando o alvo (RN-025) | `components/Confirmacao.tsx` |
+| (comum) | diálogo de confirmação nomeando o alvo (RN-025), aviso de bloco que falhou, marcador; carregar bloco e gravar | `components/Confirmacao.tsx`, `components/use-bloco.ts` |
 
 Toda tela carrega os blocos com `Promise.allSettled`; bloco que falha mostra
 "Não foi possível carregar este bloco agora. Tente atualizar a tela." e o
@@ -246,7 +245,7 @@ Regra pura em `novo/frontend/src/lib/` (o que os testes importam):
 
 | Arquivo | Mudança | Por quê |
 |---|---|---|
-| `novo/frontend/src/lib/menu.ts` | `/ferias-vendedor` passa a `COORDENADOR_ATIVO`, DIRETORIA, ADMIN; para quem não é coordenador ativo, o item aparece na seção Diretoria (como Titulares) | RN-001 da 010; hoje está só coordenador (spec 001, linha do menu) |
+| `novo/frontend/src/lib/menu.ts` | `/ferias-vendedor` passa a `COORDENADOR_ATIVO`, DIRETORIA, ADMIN; para quem não é coordenador ativo, o item aparece na seção Diretoria (como Titulares); `/governanca-rca` passa a "RCA e Escopo" e `/configuracao-escopo-usuarios` sai de `ROTAS` e da seção Gestão (telas fundidas) | RN-001 da 010; hoje está só coordenador (spec 001, linha do menu) |
 | `novo/frontend/src/pages/AcessoRestrito.tsx` | usa `mensagemBloqueio`: acrescenta "Seu perfil: …" e a mensagem de COORDENADOR sem cadastro ativo | RN-001, RN-002 |
 | `novo/frontend/src/lib/server-functions.ts` | entradas novas em ordem alfabética, ids 1001+ | contrato com o `add-010` |
 | `novo/backend/simulator/config.mjs` | `CHECK_INPUT` ganha `vendedorId`, `busca`, `filtro`, `papel`, `limite`, `offset` | o `sim:check` executa as leituras novas |
